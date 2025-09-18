@@ -3,10 +3,12 @@ import { DnaIcon } from "@/components/icons/dna-icon"
 import { CalculatorIcon } from "@/components/icons/calculator-icon"
 import { TableIcon } from "@/components/icons/table-icon"
 import { StatsIcon } from "@/components/icons/stats-icon"
+import { OrfIcon } from "@/components/icons/orf-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
 import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
 import { SequenceStats } from "@/components/tools/sequence-stats"
+import { OrfFinder } from "@/components/tools/orf-finder"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -20,6 +22,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "sequence-analysis",
         icon: StatsIcon,
         component: SequenceStats,
+      },
+      {
+        id: "orf-finder",
+        nameKey: "tools.orf-finder.name",
+        descriptionKey: "tools.orf-finder.description",
+        category: "sequence-analysis",
+        icon: OrfIcon,
+        component: OrfFinder,
       },
       {
         id: "base-complement",
