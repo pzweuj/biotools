@@ -17,6 +17,16 @@ export const zh = {
     welcome: "欢迎使用生物信息工具库",
     welcomeDesc: "从左侧选择一个工具开始使用。所有计算都在您的浏览器中本地进行，确保数据安全。",
   },
+  intro: {
+    subtitle: "生物信息学工具库",
+    about: {
+      title: "关于项目",
+      description: "BioTools 是一个现代化的生物信息学工具集合，专为生物学研究者和学生设计。采用简洁的黑白极客风格，提供直观易用的界面和强大的功能。",
+      viewSource: "查看源码",
+      author: "作者",
+    },
+    usage: "选择左侧工具开始使用，点击右上角可切换语言",
+  },
   categories: {
     "sequence-analysis": "序列分析",
     "primer-design": "引物设计",

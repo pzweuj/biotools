@@ -18,6 +18,16 @@ export const en = {
     welcomeDesc:
       "Select a tool from the sidebar to get started. All calculations are performed locally in your browser for data security.",
   },
+  intro: {
+    subtitle: "Bioinformatics Tools Library",
+    about: {
+      title: "About Project",
+      description: "BioTools is a modern collection of bioinformatics tools designed for biologists and students. It features a clean black-and-white geek-style design with an intuitive interface and powerful functionality.",
+      viewSource: "View Source",
+      author: "Author",
+    },
+    usage: "Select a tool from the left sidebar to get started, click the top-right corner to switch languages",
+  },
   categories: {
     "sequence-analysis": "Sequence Analysis",
     "primer-design": "Primer Design",
