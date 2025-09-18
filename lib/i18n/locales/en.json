@@ -8,7 +8,9 @@
     "search": "Search",
     "clear": "Clear",
     "copy": "Copy",
-    "copied": "Copied"
+    "copied": "Copied",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "nav": {
     "title": "BioTools",
@@ -35,11 +37,17 @@
   "tools": {
     "base-complement": {
       "name": "Base Complement",
-      "description": "Calculate complement and reverse complement of DNA sequences",
+      "description": "Calculate complement, reverse, and reverse complement of DNA sequences with IUPAC base code support",
       "inputLabel": "Input DNA Sequence",
-      "inputPlaceholder": "Enter DNA sequence, e.g.: ATCGATCG",
-      "complement": "Get Complement",
-      "reverseComplement": "Get Reverse Complement",
+      "inputPlaceholder": "Enter DNA sequence, supports standard bases (ATCG) and IUPAC codes (like RYSWKM etc.)...",
+      "outputLabel": "Output Result",
+      "outputPlaceholder": "Click buttons above to see results...",
+      "complement": "Complement",
+      "reverse": "Reverse",
+      "reverseComplement": "Reverse Complement",
+      "preserveDelimiters": "Preserve delimiter format (for Excel copied data)",
+      "inputLength": "Input Length",
+      "outputLength": "Output Length",
       "result": "Result",
       "original": "Original",
       "output": "Result"
