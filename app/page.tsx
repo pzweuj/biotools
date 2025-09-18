@@ -2,7 +2,7 @@
 
 import { Header } from "@/components/header"
 import { ToolSidebar } from "@/components/tool-sidebar"
-import { ProjectIntro } from "@/components/project-intro"
+import { ProjectIntro } from "../components/project-intro"
 import { getToolCategories } from "@/lib/config/tools"
 
 export default function HomePage() {

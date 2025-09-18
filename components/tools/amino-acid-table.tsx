@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useI18n } from "@/lib/i18n"
 
 const aminoAcids = [
@@ -52,6 +53,7 @@ const aminoAcids = [
 export function AminoAcidTable() {
   const { t, locale } = useI18n()
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCodon, setSelectedCodon] = useState<string | null>(null)
 
   const filteredAminoAcids = aminoAcids.filter(
     (aa) =>
@@ -61,6 +63,10 @@ export function AminoAcidTable() {
       aa.oneCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       aa.codon.some((codon) => codon.toLowerCase().includes(searchTerm.toLowerCase())),
   )
+
+  const handleCodonClick = (codon: string) => {
+    setSelectedCodon(selectedCodon === codon ? null : codon)
+  }
 
   return (
     <Card className="w-full geek-card">
@@ -84,29 +90,91 @@ export function AminoAcidTable() {
           />
         </div>
 
-        <div className="grid gap-3 max-h-96 overflow-y-auto">
-          {filteredAminoAcids.map((aa, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors geek-card"
-            >
-              <div className="flex-1">
-                <div className="font-medium font-mono">{locale === "zh" ? aa.name : aa.nameEn}</div>
-                <div className="text-sm text-muted-foreground font-mono">
-                  {t("tools.amino-acid-table.oneCode")}: <span className="font-bold">{aa.oneCode}</span>
-                  {" • "}
-                  {t("tools.amino-acid-table.threeCode")}: <span className="font-bold">{aa.threeCode}</span>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {aa.codon.map((codon, codonIndex) => (
-                  <Badge key={codonIndex} variant="secondary" className="font-mono text-xs">
-                    {codon}
-                  </Badge>
-                ))}
-              </div>
+        {selectedCodon && (
+          <div className="p-3 bg-muted/50 rounded-lg border">
+            <div className="font-mono text-sm">
+              <span className="text-muted-foreground">{t("tools.amino-acid-table.selectedCodon")}:</span>{" "}
+              <Badge variant="default" className="font-mono">
+                {selectedCodon}
+              </Badge>
             </div>
-          ))}
+          </div>
+        )}
+
+        <div className="border rounded-lg overflow-hidden">
+          <div className="max-h-96 overflow-y-auto">
+            <Table>
+              <TableHeader className="sticky top-0 bg-background">
+                <TableRow>
+                  <TableHead className="font-mono font-bold">
+                    {t("tools.amino-acid-table.aminoAcid")}
+                  </TableHead>
+                  <TableHead className="font-mono font-bold text-center w-20">
+                    {t("tools.amino-acid-table.oneCode")}
+                  </TableHead>
+                  <TableHead className="font-mono font-bold text-center w-24">
+                    {t("tools.amino-acid-table.threeCode")}
+                  </TableHead>
+                  <TableHead className="font-mono font-bold">
+                    {t("tools.amino-acid-table.codons")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAminoAcids.map((aa, index) => (
+                  <TableRow
+                    key={index}
+                    className={`hover:bg-muted/50 transition-colors ${
+                      selectedCodon && aa.codon.includes(selectedCodon) ? "bg-primary/10" : ""
+                    }`}
+                  >
+                    <TableCell className="font-mono">
+                      <div className="font-medium">{locale === "zh" ? aa.name : aa.nameEn}</div>
+                      {locale === "zh" && (
+                        <div className="text-xs text-muted-foreground">{aa.nameEn}</div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="outline"
+                        className={`font-mono font-bold ${
+                          selectedCodon && aa.codon.includes(selectedCodon) ? "bg-primary text-primary-foreground" : ""
+                        }`}
+                      >
+                        {aa.oneCode}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="outline"
+                        className={`font-mono ${
+                          selectedCodon && aa.codon.includes(selectedCodon) ? "bg-primary text-primary-foreground" : ""
+                        }`}
+                      >
+                        {aa.threeCode}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {aa.codon.map((codon, codonIndex) => (
+                          <Badge
+                            key={codonIndex}
+                            variant={selectedCodon === codon ? "default" : "secondary"}
+                            className={`font-mono text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors ${
+                              selectedCodon === codon ? "ring-2 ring-primary" : ""
+                            }`}
+                            onClick={() => handleCodonClick(codon)}
+                          >
+                            {codon}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
         {filteredAminoAcids.length === 0 && (
