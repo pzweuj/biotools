@@ -1,0 +1,59 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "search": "Search",
+    "clear": "Clear",
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "nav": {
+    "title": "BioTools",
+    "subtitle": "Bioinformatics Tools Lib",
+    "selectTool": "Select a tool to get started",
+    "welcome": "Welcome to BioTools",
+    "welcomeDesc": "Select a tool from the sidebar to get started. All calculations are performed locally in your browser for data security."
+  },
+  "categories": {
+    "sequence-analysis": "Sequence Analysis",
+    "primer-design": "Primer Design",
+    "reference-tables": "Reference Tables"
+  },
+  "tools": {
+    "base-complement": {
+      "name": "Base Complement",
+      "description": "Calculate complement and reverse complement of DNA sequences",
+      "inputLabel": "Input DNA Sequence",
+      "inputPlaceholder": "Enter DNA sequence, e.g.: ATCGATCG",
+      "complement": "Get Complement",
+      "reverseComplement": "Get Reverse Complement",
+      "result": "Result",
+      "original": "Original",
+      "output": "Result"
+    },
+    "tm-calculator": {
+      "name": "Tm Calculator",
+      "description": "Calculate primer melting temperature",
+      "sequenceLabel": "Primer Sequence",
+      "sequencePlaceholder": "Enter primer sequence, e.g.: ATCGATCGATCG",
+      "saltLabel": "Salt Concentration (mM)",
+      "methodLabel": "Calculation Method",
+      "wallace": "Wallace Rule",
+      "nearestNeighbor": "Nearest Neighbor",
+      "calculate": "Calculate Tm",
+      "result": "Calculation Result",
+      "length": "Sequence Length"
+    },
+    "amino-acid-table": {
+      "name": "Amino Acid Table",
+      "description": "Query amino acid abbreviations and codons",
+      "searchPlaceholder": "Enter amino acid name, abbreviation or codon...",
+      "oneCode": "One Letter",
+      "threeCode": "Three Letter",
+      "noResults": "No matching amino acids found"
+    }
+  }
+}
