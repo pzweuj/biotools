@@ -97,7 +97,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       {/* 侧边栏容器 - 包含悬停检测 */}
       <div 
         className={cn(
-          "fixed md:relative top-0 left-0 h-full z-40",
+          "fixed md:relative top-0 left-0 h-full z-40 sidebar-transition overflow-hidden",
           isCollapsed ? "w-0" : "w-80"
         )}
         onMouseEnter={() => !isMobile && setIsHovering(true)}
@@ -105,10 +105,8 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       >
         {/* 实际侧边栏内容 */}
         <div className={cn(
-          "h-full bg-sidebar/95 backdrop-blur-sm border-r sidebar-transition",
-          isCollapsed 
-            ? "w-0 overflow-hidden"
-            : "w-80",
+          "h-full w-80 bg-sidebar/95 backdrop-blur-sm border-r sidebar-transition",
+          isCollapsed ? "opacity-0 -translate-x-4" : "opacity-100 translate-x-0",
           isMobile && !isCollapsed && "shadow-lg"
         )}>
         <div className="p-4 border-b">
@@ -169,7 +167,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
         size="sm"
         onClick={toggleSidebar}
         className={cn(
-          "fixed top-1/2 -translate-y-1/2 z-[60] h-12 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none transition-all duration-300 hover:bg-gray-50",
+          "fixed top-1/2 -translate-y-1/2 z-[60] h-12 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-gray-50",
           isCollapsed 
             ? "left-0" 
             : "left-80",

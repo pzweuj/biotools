@@ -10,7 +10,7 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "BioTools - 生物信息工具库",
   description: "Modern bioinformatics tool library with geek-inspired design",
-  generator: "v0.app",
+  generator: "pzweuj",
 }
 
 export default function RootLayout({

@@ -141,7 +141,10 @@
 
 /* 响应式侧边栏动画 */
 .sidebar-transition {
-  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+  transition: 
+    width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* 移动端侧边栏遮罩 */
