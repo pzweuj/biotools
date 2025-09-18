@@ -138,10 +138,10 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
                     key={tool.id}
                     variant="ghost"
                     className={cn(
-                      "w-full justify-center h-auto min-h-10 py-3 px-4 font-mono text-sm whitespace-normal text-center",
+                      "sidebar-tool-button w-full justify-center h-auto min-h-10 py-3 px-4 font-mono text-sm whitespace-normal text-center cursor-pointer transition-colors duration-200 ease-in-out rounded-md",
                       selectedToolId === tool.id
-                        ? "!bg-black !text-white border-2 border-black"
-                        : "text-sidebar-foreground hover:bg-gray-100 hover:text-gray-900",
+                        ? "!bg-black !text-white"
+                        : "text-sidebar-foreground",
                     )}
                     onClick={() => handleToolSelect(tool.id)}
                   >
@@ -167,7 +167,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
         size="sm"
         onClick={toggleSidebar}
         className={cn(
-          "fixed top-1/2 -translate-y-1/2 z-[60] h-12 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-gray-50",
+          "fixed top-1/2 -translate-y-1/2 z-[60] h-12 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-muted cursor-pointer",
           isCollapsed 
             ? "left-0" 
             : "left-80",

@@ -151,3 +151,9 @@
 .sidebar-overlay {
   backdrop-filter: blur(4px);
 }
+
+/* 侧边栏工具按钮简单悬停效果 */
+.sidebar-tool-button:hover {
+  background: var(--sidebar-accent) !important;
+  color: var(--sidebar-accent-foreground) !important;
+}
