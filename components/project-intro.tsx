@@ -1,10 +1,7 @@
 "use client"
 
 import { useI18n } from "@/lib/i18n"
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Badge } from "./ui/badge"
-import { GitHubIcon } from "./icons/github-icon"
-import { Button } from "./ui/button"
 
 export function ProjectIntro() {
   const { t } = useI18n()
