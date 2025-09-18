@@ -10,7 +10,7 @@ export function ProjectIntro() {
   const { t } = useI18n()
 
   return (
-    <div className="flex-1 overflow-auto p-6 bg-background">
+    <div className="w-full min-h-full p-6 bg-background">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* 项目标题和描述 */}
         <div className="text-center space-y-6">

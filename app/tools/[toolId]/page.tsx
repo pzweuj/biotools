@@ -24,12 +24,12 @@ export default function ToolPage({ params }: ToolPageProps) {
   return (
     <div className="flex flex-col h-screen bg-background">
       <Header />
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative">
         <ToolSidebar 
           categories={toolCategories} 
           selectedToolId={params.toolId}
         />
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto">
           <ToolDisplay tool={selectedTool} />
         </div>
       </div>

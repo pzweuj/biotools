@@ -25,7 +25,7 @@ export function ToolDisplay({ tool }: ToolDisplayProps) {
   const ToolComponent = tool.component
 
   return (
-    <div className="flex-1 p-6 bg-background">
+    <div className="w-full min-h-full p-6 bg-background">
       <div className="max-w-4xl mx-auto">
         <ToolComponent />
       </div>
