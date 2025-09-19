@@ -13,6 +13,7 @@ import { SequenceTranslation } from "@/components/tools/sequence-translation"
 import { PrimerDimerDetector } from "@/components/tools/primer-dimer-detector"
 import { PCRProductCalculator } from "@/components/tools/pcr-product-calculator"
 import { MolecularWeightCalculator } from "@/components/tools/molecular-weight-calculator"
+import { RestrictionEnzymesTool } from "@/components/tools/restriction-enzymes-tool"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -94,6 +95,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "molecular-biology",
         icon: CalculatorIcon,
         component: MolecularWeightCalculator,
+      },
+      {
+        id: "restriction-enzymes",
+        nameKey: "tools.restriction-enzymes.name",
+        descriptionKey: "tools.restriction-enzymes.description",
+        category: "molecular-biology",
+        icon: DnaIcon,
+        component: RestrictionEnzymesTool,
       },
     ],
   },
