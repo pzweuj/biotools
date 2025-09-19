@@ -11,6 +11,7 @@ import { SequenceStats } from "@/components/tools/sequence-stats"
 import { OrfFinder } from "@/components/tools/orf-finder"
 import { SequenceTranslation } from "@/components/tools/sequence-translation"
 import { PrimerDimerDetector } from "@/components/tools/primer-dimer-detector"
+import { PCRProductCalculator } from "@/components/tools/pcr-product-calculator"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -70,6 +71,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "primer-design",
         icon: DnaIcon,
         component: PrimerDimerDetector,
+      },
+      {
+        id: "pcr-product-calculator",
+        nameKey: "tools.pcr-product-calculator.name",
+        descriptionKey: "tools.pcr-product-calculator.description",
+        category: "primer-design",
+        icon: CalculatorIcon,
+        component: PCRProductCalculator,
       },
     ],
   },
