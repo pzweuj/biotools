@@ -17,6 +17,7 @@ import { RestrictionEnzymesTool } from "@/components/tools/restriction-enzymes-t
 import { ProteinAnalysisTool } from "@/components/tools/protein-analysis-tool"
 import { SequenceFormatConverter } from "@/components/tools/sequence-format-converter"
 import { QpcrDataAnalyzer } from "@/components/tools/qpcr-data-analyzer"
+import { QpcrFluorescenceChannelTool } from "@/components/tools/qpcr-fluorescence-channel-tool"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -136,6 +137,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "data-processing",
         icon: CalculatorIcon,
         component: QpcrDataAnalyzer,
+      },
+      {
+        id: "qpcr-fluorescence-channel-tool",
+        nameKey: "tools.qpcr-fluorescence.name",
+        descriptionKey: "tools.qpcr-fluorescence.description",
+        category: "data-processing",
+        icon: DnaIcon,
+        component: QpcrFluorescenceChannelTool,
       },
     ],
   },
