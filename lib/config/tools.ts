@@ -16,6 +16,7 @@ import { MolecularWeightCalculator } from "@/components/tools/molecular-weight-c
 import { RestrictionEnzymesTool } from "@/components/tools/restriction-enzymes-tool"
 import { ProteinAnalysisTool } from "@/components/tools/protein-analysis-tool"
 import { SequenceFormatConverter } from "@/components/tools/sequence-format-converter"
+import { QpcrDataAnalyzer } from "@/components/tools/qpcr-data-analyzer"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -127,6 +128,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "data-processing",
         icon: DnaIcon,
         component: SequenceFormatConverter,
+      },
+      {
+        id: "qpcr-data-analyzer",
+        nameKey: "tools.qpcr-data-analyzer.name",
+        descriptionKey: "tools.qpcr-data-analyzer.description",
+        category: "data-processing",
+        icon: CalculatorIcon,
+        component: QpcrDataAnalyzer,
       },
     ],
   },
