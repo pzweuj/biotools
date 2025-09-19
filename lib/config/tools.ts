@@ -15,6 +15,7 @@ import { PCRProductCalculator } from "@/components/tools/pcr-product-calculator"
 import { MolecularWeightCalculator } from "@/components/tools/molecular-weight-calculator"
 import { RestrictionEnzymesTool } from "@/components/tools/restriction-enzymes-tool"
 import { ProteinAnalysisTool } from "@/components/tools/protein-analysis-tool"
+import { SequenceFormatConverter } from "@/components/tools/sequence-format-converter"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -112,6 +113,20 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "molecular-biology",
         icon: CalculatorIcon,
         component: ProteinAnalysisTool,
+      },
+    ],
+  },
+  {
+    id: "data-processing",
+    nameKey: "categories.data-processing",
+    tools: [
+      {
+        id: "sequence-format-converter",
+        nameKey: "tools.sequence-format-converter.name",
+        descriptionKey: "tools.sequence-format-converter.description",
+        category: "data-processing",
+        icon: DnaIcon,
+        component: SequenceFormatConverter,
       },
     ],
   },
