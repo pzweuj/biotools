@@ -18,6 +18,7 @@ import { ProteinAnalysisTool } from "@/components/tools/protein-analysis-tool"
 import { SequenceFormatConverter } from "@/components/tools/sequence-format-converter"
 import { QpcrDataAnalyzer } from "@/components/tools/qpcr-data-analyzer"
 import { QpcrFluorescenceChannelTool } from "@/components/tools/qpcr-fluorescence-channel-tool"
+import { GelElectrophoresisAnalyzer } from "@/components/tools/gel-electrophoresis-analyzer"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -145,6 +146,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "data-processing",
         icon: DnaIcon,
         component: QpcrFluorescenceChannelTool,
+      },
+      {
+        id: "gel-electrophoresis-analyzer",
+        nameKey: "tools.gel-electrophoresis.name",
+        descriptionKey: "tools.gel-electrophoresis.description",
+        category: "data-processing",
+        icon: CalculatorIcon,
+        component: GelElectrophoresisAnalyzer,
       },
     ],
   },
