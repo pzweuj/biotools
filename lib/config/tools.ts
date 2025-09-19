@@ -20,6 +20,7 @@ import { QpcrDataAnalyzer } from "@/components/tools/qpcr-data-analyzer"
 import { QpcrFluorescenceChannelTool } from "@/components/tools/qpcr-fluorescence-channel-tool"
 import { GelElectrophoresisAnalyzer } from "@/components/tools/gel-electrophoresis-analyzer"
 import { BufferCalculator } from "@/components/tools/buffer-calculator"
+import { CellCultureCalculator } from "@/components/tools/cell-culture-calculator"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -169,6 +170,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "laboratory-calculations",
         icon: CalculatorIcon,
         component: BufferCalculator,
+      },
+      {
+        id: "cell-culture-calculator",
+        nameKey: "tools.cell-culture-calculator.name",
+        descriptionKey: "tools.cell-culture-calculator.description",
+        category: "laboratory-calculations",
+        icon: CalculatorIcon,
+        component: CellCultureCalculator,
       },
     ],
   },
