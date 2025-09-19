@@ -21,6 +21,7 @@ import { QpcrFluorescenceChannelTool } from "@/components/tools/qpcr-fluorescenc
 import { GelElectrophoresisAnalyzer } from "@/components/tools/gel-electrophoresis-analyzer"
 import { BufferCalculator } from "@/components/tools/buffer-calculator"
 import { CellCultureCalculator } from "@/components/tools/cell-culture-calculator"
+import { ProteinPurificationCalculator } from "@/components/tools/protein-purification-calculator"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -178,6 +179,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "laboratory-calculations",
         icon: CalculatorIcon,
         component: CellCultureCalculator,
+      },
+      {
+        id: "protein-purification-calculator",
+        nameKey: "tools.protein-purification.name",
+        descriptionKey: "tools.protein-purification.description",
+        category: "laboratory-calculations",
+        icon: CalculatorIcon,
+        component: ProteinPurificationCalculator,
       },
     ],
   },
