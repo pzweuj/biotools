@@ -19,6 +19,7 @@ import { SequenceFormatConverter } from "@/components/tools/sequence-format-conv
 import { QpcrDataAnalyzer } from "@/components/tools/qpcr-data-analyzer"
 import { QpcrFluorescenceChannelTool } from "@/components/tools/qpcr-fluorescence-channel-tool"
 import { GelElectrophoresisAnalyzer } from "@/components/tools/gel-electrophoresis-analyzer"
+import { BufferCalculator } from "@/components/tools/buffer-calculator"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -154,6 +155,20 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "data-processing",
         icon: CalculatorIcon,
         component: GelElectrophoresisAnalyzer,
+      },
+    ],
+  },
+  {
+    id: "laboratory-calculations",
+    nameKey: "categories.laboratory-calculations",
+    tools: [
+      {
+        id: "buffer-calculator",
+        nameKey: "tools.buffer-calculator.name",
+        descriptionKey: "tools.buffer-calculator.description",
+        category: "laboratory-calculations",
+        icon: CalculatorIcon,
+        component: BufferCalculator,
       },
     ],
   },
