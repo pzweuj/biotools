@@ -12,6 +12,7 @@ import { OrfFinder } from "@/components/tools/orf-finder"
 import { SequenceTranslation } from "@/components/tools/sequence-translation"
 import { PrimerDimerDetector } from "@/components/tools/primer-dimer-detector"
 import { PCRProductCalculator } from "@/components/tools/pcr-product-calculator"
+import { MolecularWeightCalculator } from "@/components/tools/molecular-weight-calculator"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -79,6 +80,20 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "primer-design",
         icon: CalculatorIcon,
         component: PCRProductCalculator,
+      },
+    ],
+  },
+  {
+    id: "molecular-biology",
+    nameKey: "categories.molecular-biology",
+    tools: [
+      {
+        id: "molecular-weight-calculator",
+        nameKey: "tools.molecular-weight-calculator.name",
+        descriptionKey: "tools.molecular-weight-calculator.description",
+        category: "molecular-biology",
+        icon: CalculatorIcon,
+        component: MolecularWeightCalculator,
       },
     ],
   },
