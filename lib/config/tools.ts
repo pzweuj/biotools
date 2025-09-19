@@ -10,6 +10,7 @@ import { AminoAcidTable } from "@/components/tools/amino-acid-table"
 import { SequenceStats } from "@/components/tools/sequence-stats"
 import { OrfFinder } from "@/components/tools/orf-finder"
 import { SequenceTranslation } from "@/components/tools/sequence-translation"
+import { PrimerDimerDetector } from "@/components/tools/primer-dimer-detector"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -61,6 +62,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "primer-design",
         icon: CalculatorIcon,
         component: TmCalculator,
+      },
+      {
+        id: "primer-dimer-detector",
+        nameKey: "tools.primer-dimer-detector.name",
+        descriptionKey: "tools.primer-dimer-detector.description",
+        category: "primer-design",
+        icon: DnaIcon,
+        component: PrimerDimerDetector,
       },
     ],
   },
