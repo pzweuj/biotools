@@ -40,8 +40,8 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       } else if (wasMobile && !mobile && isCollapsed) {
         // 从移动端返回桌面端时自动展开侧边栏
         setIsCollapsed(false)
-      } else if (mobile) {
-        // 移动端时自动收起
+      } else if (!wasMobile && mobile) {
+        // 只在从桌面端切换到移动端时自动收起
         setIsCollapsed(true)
       }
     }
@@ -104,7 +104,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       {/* 移动端收起状态下的触摸提示区域 */}
       {isMobile && isCollapsed && (
         <div 
-          className="fixed top-1/2 -translate-y-1/2 left-0 w-12 h-20 z-50 flex items-center justify-center"
+          className="fixed top-1/2 -translate-y-1/2 left-0 w-16 h-24 z-50 flex items-center justify-start pl-1"
           onTouchStart={() => {
             if (touchTimeout) {
               clearTimeout(touchTimeout)
@@ -112,7 +112,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
             setIsTouching(true)
           }}
         >
-          <div className="w-1 h-8 bg-border/50 rounded-full animate-pulse" />
+          <div className="w-1 h-8 bg-border/70 rounded-full animate-pulse" />
         </div>
       )}
 
@@ -195,8 +195,8 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
           // 移动端使用更大的按钮尺寸以便触摸
           isMobile ? "h-16 w-8 sidebar-toggle-button" : "h-12 w-6",
           isCollapsed 
-            ? "left-0" 
-            : isMobile ? "left-80" : "left-80",
+            ? (isMobile ? "left-2" : "left-0")
+            : "left-80",
           // 移动端始终显示，桌面端悬停时显示
           isMobile ? "opacity-100" : (isHovering || isTouching ? "opacity-100" : "opacity-0 pointer-events-none")
         )}
