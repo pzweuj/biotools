@@ -14,6 +14,7 @@ import { PrimerDimerDetector } from "@/components/tools/primer-dimer-detector"
 import { PCRProductCalculator } from "@/components/tools/pcr-product-calculator"
 import { MolecularWeightCalculator } from "@/components/tools/molecular-weight-calculator"
 import { RestrictionEnzymesTool } from "@/components/tools/restriction-enzymes-tool"
+import { ProteinAnalysisTool } from "@/components/tools/protein-analysis-tool"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -103,6 +104,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "molecular-biology",
         icon: DnaIcon,
         component: RestrictionEnzymesTool,
+      },
+      {
+        id: "protein-analysis",
+        nameKey: "tools.protein-analysis.name",
+        descriptionKey: "tools.protein-analysis.description",
+        category: "molecular-biology",
+        icon: CalculatorIcon,
+        component: ProteinAnalysisTool,
       },
     ],
   },
