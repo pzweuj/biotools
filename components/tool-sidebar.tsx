@@ -144,6 +144,8 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
                         : "text-sidebar-foreground",
                     )}
                     onClick={() => handleToolSelect(tool.id)}
+                    aria-label={t(tool.nameKey)}
+                    title={t(tool.nameKey)}
                   >
                     {t(tool.nameKey)}
                   </Button>
@@ -176,6 +178,8 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
         )}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
+        aria-label={isCollapsed ? t("nav.expandSidebar", "展开侧边栏") : t("nav.collapseSidebar", "收起侧边栏")}
+        title={isCollapsed ? t("nav.expandSidebar", "展开侧边栏") : t("nav.collapseSidebar", "收起侧边栏")}
       >
         {isCollapsed ? (
           <ChevronRight className="h-4 w-4" />

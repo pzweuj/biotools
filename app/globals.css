@@ -123,6 +123,13 @@
   }
   body {
     @apply bg-background text-foreground font-mono;
+    /* 修复 webkit 兼容性问题 */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
   }
 }
 
@@ -156,4 +163,26 @@
 .sidebar-tool-button:hover {
   background: var(--sidebar-accent) !important;
   color: var(--sidebar-accent-foreground) !important;
+}
+
+/* 额外的浏览器兼容性修复 */
+button, input, select, textarea {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 确保按钮和交互元素的用户选择行为 */
+button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 输入框保持可选择 */
+input, textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }

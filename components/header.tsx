@@ -17,6 +17,8 @@ export function Header() {
           <button 
             onClick={() => router.push('/')}
             className="text-xl font-bold text-primary font-mono hover:text-primary/80 transition-colors duration-200 cursor-pointer"
+            aria-label={t("nav.backToHome", "返回首页")}
+            title={t("nav.backToHome", "返回首页")}
           >
             {t("nav.title")}
           </button>
