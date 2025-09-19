@@ -7,15 +7,16 @@ import { ToolDisplay } from "@/components/tool-display"
 import { getToolCategories } from "@/lib/config/tools"
 
 interface ToolPageProps {
-  params: {
+  params: Promise<{
     toolId: string
-  }
+  }>
 }
 
-export default function ToolPage({ params }: ToolPageProps) {
+export default async function ToolPage({ params }: ToolPageProps) {
+  const { toolId } = await params
   const toolCategories = getToolCategories()
   const allTools = toolCategories.flatMap(category => category.tools)
-  const selectedTool = allTools.find(tool => tool.id === params.toolId)
+  const selectedTool = allTools.find(tool => tool.id === toolId)
 
   if (!selectedTool) {
     notFound()
@@ -27,7 +28,7 @@ export default function ToolPage({ params }: ToolPageProps) {
       <div className="flex flex-1 relative">
         <ToolSidebar 
           categories={toolCategories} 
-          selectedToolId={params.toolId}
+          selectedToolId={toolId}
         />
         <div className="flex-1 overflow-auto">
           <ToolDisplay tool={selectedTool} />
