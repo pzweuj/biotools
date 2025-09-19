@@ -9,6 +9,7 @@ import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
 import { SequenceStats } from "@/components/tools/sequence-stats"
 import { OrfFinder } from "@/components/tools/orf-finder"
+import { SequenceTranslation } from "@/components/tools/sequence-translation"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -38,6 +39,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "sequence-analysis",
         icon: DnaIcon,
         component: BaseComplement,
+      },
+      {
+        id: "sequence-translation",
+        nameKey: "tools.sequence-translation.name",
+        descriptionKey: "tools.sequence-translation.description",
+        category: "sequence-analysis",
+        icon: DnaIcon,
+        component: SequenceTranslation,
       },
     ],
   },
