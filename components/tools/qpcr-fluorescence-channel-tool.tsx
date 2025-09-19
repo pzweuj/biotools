@@ -22,6 +22,7 @@ type Fluorophore = {
   stability: 'excellent' | 'good' | 'fair'
   cost: 'low' | 'medium' | 'high'
   applications: string[]
+  color: string // 发射颜色的CSS颜色值
   notes?: string
 }
 
@@ -44,21 +45,21 @@ type SelectedChannel = {
 
 // 荧光基团数据库
 const FLUOROPHORES: Fluorophore[] = [
-  { name: "FAM", excitation: 494, emission: 518, brightness: "high", stability: "good", cost: "low", applications: ["qPCR", "Sequencing", "Genotyping"] },
-  { name: "SYBR Green I", excitation: 494, emission: 521, brightness: "high", stability: "good", cost: "low", applications: ["qPCR", "DNA quantification"] },
-  { name: "VIC", excitation: 538, emission: 554, brightness: "high", stability: "excellent", cost: "medium", applications: ["qPCR", "Genotyping"] },
-  { name: "HEX", excitation: 535, emission: 556, brightness: "medium", stability: "good", cost: "low", applications: ["qPCR", "Multiplex PCR"] },
-  { name: "TET", excitation: 521, emission: 536, brightness: "medium", stability: "fair", cost: "medium", applications: ["qPCR", "Sequencing"] },
-  { name: "ROX", excitation: 580, emission: 623, brightness: "high", stability: "excellent", cost: "medium", applications: ["qPCR", "Reference dye"] },
-  { name: "Texas Red", excitation: 596, emission: 615, brightness: "high", stability: "good", cost: "high", applications: ["qPCR", "Imaging"] },
-  { name: "Cy3", excitation: 550, emission: 570, brightness: "high", stability: "good", cost: "medium", applications: ["qPCR", "Microarray"] },
-  { name: "Cy5", excitation: 649, emission: 670, brightness: "high", stability: "excellent", cost: "medium", applications: ["qPCR", "Multiplex"] },
-  { name: "TAMRA", excitation: 565, emission: 580, brightness: "medium", stability: "good", cost: "medium", applications: ["qPCR", "Sequencing"] },
-  { name: "JOE", excitation: 520, emission: 548, brightness: "medium", stability: "good", cost: "medium", applications: ["qPCR", "Genotyping"] },
-  { name: "NED", excitation: 546, emission: 575, brightness: "medium", stability: "good", cost: "medium", applications: ["qPCR", "Multiplex PCR"] },
-  { name: "Alexa Fluor 488", excitation: 495, emission: 519, brightness: "high", stability: "excellent", cost: "high", applications: ["qPCR", "Flow cytometry"] },
-  { name: "Alexa Fluor 546", excitation: 556, emission: 573, brightness: "high", stability: "excellent", cost: "high", applications: ["qPCR", "Imaging"] },
-  { name: "Alexa Fluor 647", excitation: 650, emission: 668, brightness: "high", stability: "excellent", cost: "high", applications: ["qPCR", "Flow cytometry"] }
+  { name: "FAM", excitation: 494, emission: 518, brightness: "high", stability: "good", cost: "low", applications: ["qPCR", "Sequencing", "Genotyping"], color: "#00FF00" },
+  { name: "SYBR Green I", excitation: 494, emission: 521, brightness: "high", stability: "good", cost: "low", applications: ["qPCR", "DNA quantification"], color: "#00FF00" },
+  { name: "VIC", excitation: 538, emission: 554, brightness: "high", stability: "excellent", cost: "medium", applications: ["qPCR", "Genotyping"], color: "#ADFF2F" },
+  { name: "HEX", excitation: 535, emission: 556, brightness: "medium", stability: "good", cost: "low", applications: ["qPCR", "Multiplex PCR"], color: "#ADFF2F" },
+  { name: "TET", excitation: 521, emission: 536, brightness: "medium", stability: "fair", cost: "medium", applications: ["qPCR", "Sequencing"], color: "#00FF00" },
+  { name: "ROX", excitation: 580, emission: 623, brightness: "high", stability: "excellent", cost: "medium", applications: ["qPCR", "Reference dye"], color: "#FF4500" },
+  { name: "Texas Red", excitation: 596, emission: 615, brightness: "high", stability: "good", cost: "high", applications: ["qPCR", "Imaging"], color: "#FF0000" },
+  { name: "Cy3", excitation: 550, emission: 570, brightness: "high", stability: "good", cost: "medium", applications: ["qPCR", "Microarray"], color: "#FFA500" },
+  { name: "Cy5", excitation: 649, emission: 670, brightness: "high", stability: "excellent", cost: "medium", applications: ["qPCR", "Multiplex"], color: "#FF1493" },
+  { name: "TAMRA", excitation: 565, emission: 580, brightness: "medium", stability: "good", cost: "medium", applications: ["qPCR", "Sequencing"], color: "#FFA500" },
+  { name: "JOE", excitation: 520, emission: 548, brightness: "medium", stability: "good", cost: "medium", applications: ["qPCR", "Genotyping"], color: "#ADFF2F" },
+  { name: "NED", excitation: 546, emission: 575, brightness: "medium", stability: "good", cost: "medium", applications: ["qPCR", "Multiplex PCR"], color: "#FFFF00" },
+  { name: "Alexa Fluor 488", excitation: 495, emission: 519, brightness: "high", stability: "excellent", cost: "high", applications: ["qPCR", "Flow cytometry"], color: "#00FF00" },
+  { name: "Alexa Fluor 546", excitation: 556, emission: 573, brightness: "high", stability: "excellent", cost: "high", applications: ["qPCR", "Imaging"], color: "#FFA500" },
+  { name: "Alexa Fluor 647", excitation: 650, emission: 668, brightness: "high", stability: "excellent", cost: "high", applications: ["qPCR", "Flow cytometry"], color: "#FF1493" }
 ]
 
 // qPCR仪器数据库
@@ -299,7 +300,16 @@ export function QpcrFluorescenceChannelTool() {
                     <TableBody>
                       {filteredFluorophores.map((fluor) => (
                         <TableRow key={fluor.name}>
-                          <TableCell className="font-mono font-bold">{fluor.name}</TableCell>
+                          <TableCell className="font-mono font-bold">
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full border border-gray-300"
+                                style={{ backgroundColor: fluor.color }}
+                                title={`${t("tools.qpcr-fluorescence.emissionColor", "Emission color")}: ${fluor.emission}nm`}
+                              />
+                              {fluor.name}
+                            </div>
+                          </TableCell>
                           <TableCell className="font-mono">{fluor.excitation}</TableCell>
                           <TableCell className="font-mono">{fluor.emission}</TableCell>
                           <TableCell>
@@ -372,7 +382,11 @@ export function QpcrFluorescenceChannelTool() {
                               </div>
                               <div className="flex flex-wrap gap-1">
                                 {getRecommendedFluorophores(channel).slice(0, 3).map(fluor => (
-                                  <Badge key={fluor.name} variant="outline" className="text-xs">
+                                  <Badge key={fluor.name} variant="outline" className="text-xs flex items-center gap-1">
+                                    <div 
+                                      className="w-2 h-2 rounded-full border border-gray-400"
+                                      style={{ backgroundColor: fluor.color }}
+                                    />
                                     {fluor.name}
                                   </Badge>
                                 ))}
@@ -469,7 +483,15 @@ export function QpcrFluorescenceChannelTool() {
                             return (
                               <TableRow key={selection.id}>
                                 <TableCell className="font-mono font-bold">{selection.target}</TableCell>
-                                <TableCell className="font-mono">{selection.fluorophore}</TableCell>
+                                <TableCell className="font-mono">
+                                  <div className="flex items-center gap-2">
+                                    <div 
+                                      className="w-3 h-3 rounded-full border border-gray-300"
+                                      style={{ backgroundColor: fluor?.color || '#gray' }}
+                                    />
+                                    {selection.fluorophore}
+                                  </div>
+                                </TableCell>
                                 <TableCell className="font-mono">{selection.channel}</TableCell>
                                 <TableCell>
                                   <Badge variant={

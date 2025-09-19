@@ -402,6 +402,7 @@ export const zh = {
       channel: "通道",
       compatibility: "兼容性",
       channelConflict: "通道冲突",
+      emissionColor: "发射颜色",
       note: "选择光谱重叠最小的荧光基团。考虑仪器特定的滤光片组和通道间串扰。",
     },
   },

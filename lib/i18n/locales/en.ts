@@ -403,6 +403,7 @@ export const en = {
       channel: "Channel",
       compatibility: "Compatibility",
       channelConflict: "Channel conflict",
+      emissionColor: "Emission color",
       note: "Choose fluorophores with minimal spectral overlap. Consider instrument-specific filter sets and cross-talk between channels.",
     },
   },
