@@ -23,6 +23,8 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
+  const [isTouching, setIsTouching] = useState(false)
+  const [touchTimeout, setTouchTimeout] = useState<NodeJS.Timeout | null>(null)
 
   // 检测屏幕尺寸
   useEffect(() => {
@@ -46,8 +48,13 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
 
     checkScreenSize()
     window.addEventListener('resize', checkScreenSize)
-    return () => window.removeEventListener('resize', checkScreenSize)
-  }, [isMobile, isCollapsed])
+    return () => {
+      window.removeEventListener('resize', checkScreenSize)
+      if (touchTimeout) {
+        clearTimeout(touchTimeout)
+      }
+    }
+  }, [isMobile, isCollapsed, touchTimeout])
 
   const handleToolSelect = (toolId: string) => {
     if (onToolSelect) {
@@ -92,6 +99,21 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         />
+      )}
+
+      {/* 移动端收起状态下的触摸提示区域 */}
+      {isMobile && isCollapsed && (
+        <div 
+          className="fixed top-1/2 -translate-y-1/2 left-0 w-12 h-20 z-50 flex items-center justify-center"
+          onTouchStart={() => {
+            if (touchTimeout) {
+              clearTimeout(touchTimeout)
+            }
+            setIsTouching(true)
+          }}
+        >
+          <div className="w-1 h-8 bg-border/50 rounded-full animate-pulse" />
+        </div>
       )}
 
       {/* 侧边栏容器 - 包含悬停检测 */}
@@ -169,22 +191,35 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
         size="sm"
         onClick={toggleSidebar}
         className={cn(
-          "fixed top-1/2 -translate-y-1/2 z-[60] h-12 w-6 p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-muted cursor-pointer",
+          "fixed top-1/2 -translate-y-1/2 z-[60] p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-muted cursor-pointer",
+          // 移动端使用更大的按钮尺寸以便触摸
+          isMobile ? "h-16 w-8 sidebar-toggle-button" : "h-12 w-6",
           isCollapsed 
             ? "left-0" 
-            : "left-80",
-          // 桌面端只在悬停时显示，移动端始终显示
-          isMobile || isHovering ? "opacity-100" : "opacity-0 pointer-events-none"
+            : isMobile ? "left-80" : "left-80",
+          // 移动端始终显示，桌面端悬停时显示
+          isMobile ? "opacity-100" : (isHovering || isTouching ? "opacity-100" : "opacity-0 pointer-events-none")
         )}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        onMouseEnter={() => !isMobile && setIsHovering(true)}
+        onMouseLeave={() => !isMobile && setIsHovering(false)}
+        onTouchStart={() => {
+          if (touchTimeout) {
+            clearTimeout(touchTimeout)
+          }
+          setIsTouching(true)
+        }}
+        onTouchEnd={() => {
+          // 触摸结束后延迟隐藏，给用户时间完成操作
+          const timeout = setTimeout(() => setIsTouching(false), 2000)
+          setTouchTimeout(timeout)
+        }}
         aria-label={isCollapsed ? t("nav.expandSidebar", "展开侧边栏") : t("nav.collapseSidebar", "收起侧边栏")}
         title={isCollapsed ? t("nav.expandSidebar", "展开侧边栏") : t("nav.collapseSidebar", "收起侧边栏")}
       >
         {isCollapsed ? (
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className={cn("h-4 w-4", isMobile && "h-5 w-5")} />
         ) : (
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className={cn("h-4 w-4", isMobile && "h-5 w-5")} />
         )}
       </Button>
 

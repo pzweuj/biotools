@@ -186,3 +186,30 @@ input, textarea {
   -ms-user-select: text;
   user-select: text;
 }
+
+/* 移动端触摸优化 */
+@media (max-width: 768px) {
+  /* 确保触摸目标足够大 */
+  .sidebar-toggle-button {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* 移动端按钮触摸反馈 */
+  .sidebar-toggle-button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease-in-out;
+  }
+  
+  /* 防止移动端双击缩放 */
+  .sidebar-toggle-button {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
