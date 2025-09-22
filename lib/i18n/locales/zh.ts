@@ -591,5 +591,23 @@ export const zh = {
       },
       note: "纯化倍数 = (该步骤比活性) / (初始比活性)。回收率 = (该步骤总活性) / (初始总活性) × 100%。",
     },
+    maneloca: {
+      name: "ManeLoca",
+      description: "根据基因组坐标查找MANE Select转录本中的对应位置",
+      subtitle: "MANE Select转录本位置查找器",
+      visitSite: "访问ManeLoca",
+      viewSource: "查看源码",
+      note: "点击'访问ManeLoca'使用完整功能的应用程序",
+      features: {
+        genomic: "基因组坐标映射",
+        genomicDesc: "将基因组坐标转换为转录本位置",
+        mane: "MANE Select支持",
+        maneDesc: "来自NCBI和Ensembl的高可信度转录本注释",
+        web: "网页界面",
+        webDesc: "易于使用的React应用程序，界面现代化",
+        accurate: "精确映射",
+        accurateDesc: "基因组分析的精确位置转换",
+      },
+    },
   },
 }

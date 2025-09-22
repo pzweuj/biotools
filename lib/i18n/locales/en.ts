@@ -592,5 +592,23 @@ export const en = {
       },
       note: "Purification fold = (Specific activity at step) / (Initial specific activity). Yield = (Total activity at step) / (Initial total activity) × 100%.",
     },
+    maneloca: {
+      name: "ManeLoca",
+      description: "Find corresponding positions in MANE Select transcripts from genomic coordinates",
+      subtitle: "MANE Select Transcript Position Finder",
+      visitSite: "Visit ManeLoca",
+      viewSource: "View Source",
+      note: "Click 'Visit ManeLoca' to access the full application with all features",
+      features: {
+        genomic: "Genomic Coordinate Mapping",
+        genomicDesc: "Convert genomic coordinates to transcript positions",
+        mane: "MANE Select Support",
+        maneDesc: "High-confidence transcript annotations from NCBI and Ensembl",
+        web: "Web-based Interface",
+        webDesc: "Easy-to-use React application with modern UI",
+        accurate: "Accurate Mapping",
+        accurateDesc: "Precise position conversion for genomic analysis",
+      },
+    },
   },
 }

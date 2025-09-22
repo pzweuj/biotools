@@ -4,6 +4,7 @@ import { CalculatorIcon } from "@/components/icons/calculator-icon"
 import { TableIcon } from "@/components/icons/table-icon"
 import { StatsIcon } from "@/components/icons/stats-icon"
 import { OrfIcon } from "@/components/icons/orf-icon"
+import { ManeLocaIcon } from "@/components/icons/maneloca-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
 import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
@@ -22,6 +23,7 @@ import { GelElectrophoresisAnalyzer } from "@/components/tools/gel-electrophores
 import { BufferCalculator } from "@/components/tools/buffer-calculator"
 import { CellCultureCalculator } from "@/components/tools/cell-culture-calculator"
 import { ProteinPurificationCalculator } from "@/components/tools/protein-purification-calculator"
+import { ManeLoca } from "@/components/tools/maneloca"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -59,6 +61,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "sequence-analysis",
         icon: OrfIcon,
         component: OrfFinder,
+      },
+      {
+        id: "maneloca",
+        nameKey: "tools.maneloca.name",
+        descriptionKey: "tools.maneloca.description",
+        category: "sequence-analysis",
+        icon: ManeLocaIcon,
+        component: ManeLoca,
       },
     ],
   },
