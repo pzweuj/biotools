@@ -44,6 +44,41 @@ export function BaseComplement() {
     }
   }
 
+  // 检测是否为FASTA格式
+  const isFastaFormat = (text: string) => {
+    const lines = text.split(/\r?\n/)
+    return lines.some(line => line.trim().startsWith('>'))
+  }
+
+  // 处理FASTA格式的序列
+  const processFastaSequence = (text: string, operation: (seq: string) => string) => {
+    const lines = text.split(/\r?\n/)
+    const result: string[] = []
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim()
+      
+      // 如果是序列名称行（以>开头），保持原样
+      if (trimmedLine.startsWith('>')) {
+        result.push(line)
+      }
+      // 如果是空行，保持原样
+      else if (trimmedLine === '') {
+        result.push(line)
+      }
+      // 如果是序列行，进行操作
+      else if (trimmedLine) {
+        result.push(operation(trimmedLine))
+      }
+      // 其他情况保持原样
+      else {
+        result.push(line)
+      }
+    }
+    
+    return result.join('\n')
+  }
+
   // 检测分隔符的函数
   const detectDelimiters = (text: string) => {
     const delimiters = ['\t', '\n', '\r\n', ',', ';', ' ']
@@ -52,6 +87,11 @@ export function BaseComplement() {
 
   // 处理带分隔符的序列
   const processSequenceWithDelimiters = (sequence: string, operation: (seq: string) => string) => {
+    // 首先检查是否为FASTA格式
+    if (isFastaFormat(sequence)) {
+      return processFastaSequence(sequence, operation)
+    }
+
     if (!preserveDelimiters) {
       return operation(sequence)
     }

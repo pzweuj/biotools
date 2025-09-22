@@ -42,9 +42,9 @@ export const en = {
     noResults: "No matching tools found",
     "base-complement": {
       name: "Base Complement",
-      description: "Calculate complement, reverse, and reverse complement of DNA sequences with IUPAC base code support",
+      description: "Calculate complement, reverse, and reverse complement of DNA sequences with IUPAC base code support and FASTA format multi-sequence input",
       inputLabel: "Input DNA Sequence",
-      inputPlaceholder: "Enter DNA sequence, supports standard bases (ATCG) and IUPAC codes (like RYSWKM etc.)...",
+      inputPlaceholder: "Enter DNA sequence, supports standard bases (ATCG) and IUPAC codes (like RYSWKM etc.)\n\nSupports FASTA format multi-sequence input:\n>sequence1\nATCGATCG\n>sequence2\nGCTAGCTA...",
       outputLabel: "Output Result",
       outputPlaceholder: "Click buttons above to see results...",
       complement: "Complement",

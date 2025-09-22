@@ -41,9 +41,9 @@ export const zh = {
     noResults: "未找到匹配的工具",
     "base-complement": {
       name: "碱基互补配对",
-      description: "计算DNA序列的互补序列、反向序列和反向互补序列，支持IUPAC碱基代码",
+      description: "计算DNA序列的互补序列、反向序列和反向互补序列，支持IUPAC碱基代码和FASTA格式多序列输入",
       inputLabel: "输入DNA序列",
-      inputPlaceholder: "输入DNA序列，支持标准碱基(ATCG)和IUPAC代码(如RYSWKM等)...",
+      inputPlaceholder: "输入DNA序列，支持标准碱基(ATCG)和IUPAC代码(如RYSWKM等)\n\n支持FASTA格式多序列输入：\n>sequence1\nATCGATCG\n>sequence2\nGCTAGCTA...",
       outputLabel: "输出结果",
       outputPlaceholder: "点击上方按钮查看结果...",
       complement: "互补",
