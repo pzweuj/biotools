@@ -49,7 +49,7 @@ export const zh = {
       complement: "互补",
       reverse: "反向",
       reverseComplement: "反向互补",
-      preserveDelimiters: "保持分隔符格式（适用于Excel复制的数据）",
+      preserveDelimiters: "保持格式结构",
       inputLength: "输入长度",
       outputLength: "输出长度",
       result: "结果",

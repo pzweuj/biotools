@@ -50,7 +50,7 @@ export const en = {
       complement: "Complement",
       reverse: "Reverse",
       reverseComplement: "Reverse Complement",
-      preserveDelimiters: "Preserve delimiter format (for Excel copied data)",
+      preserveDelimiters: "Preserve format structure",
       inputLength: "Input Length",
       outputLength: "Output Length",
       result: "Result",
