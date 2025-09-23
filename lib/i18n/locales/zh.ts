@@ -18,6 +18,9 @@ export const zh = {
     selectTool: "选择工具开始使用",
     welcome: "欢迎使用生物信息工具库",
     welcomeDesc: "从左侧选择一个工具开始使用。所有计算都在您的浏览器中本地进行，确保数据安全。",
+    backToHome: "返回首页",
+    expandSidebar: "展开侧边栏",
+    collapseSidebar: "收起侧边栏",
   },
   intro: {
     subtitle: "生物信息学工具库",

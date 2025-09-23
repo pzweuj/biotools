@@ -19,6 +19,9 @@ export const en = {
     welcome: "Welcome to BioTools",
     welcomeDesc:
       "Select a tool from the sidebar to get started. All calculations are performed locally in your browser for data security.",
+    backToHome: "Back to Home",
+    expandSidebar: "Expand Sidebar",
+    collapseSidebar: "Collapse Sidebar",
   },
   intro: {
     subtitle: "Bioinformatics Tools Library",

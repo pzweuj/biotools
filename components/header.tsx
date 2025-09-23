@@ -11,14 +11,14 @@ export function Header() {
   const router = useRouter()
 
   return (
-    <header className="border-b bg-card/50 backdrop-blur-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-card/50 backdrop-blur-sm">
       <div className="flex h-14 items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => router.push('/')}
             className="text-xl font-bold text-primary font-mono hover:text-primary/80 transition-colors duration-200 cursor-pointer"
-            aria-label={t("nav.backToHome", "返回首页")}
-            title={t("nav.backToHome", "返回首页")}
+            aria-label={t("nav.backToHome")}
+            title={t("nav.backToHome")}
           >
             {t("nav.title")}
           </button>

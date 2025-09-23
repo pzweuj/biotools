@@ -25,12 +25,12 @@ export default async function ToolPage({ params }: ToolPageProps) {
   return (
     <div className="flex flex-col h-screen bg-background">
       <Header />
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1 relative pt-14">
         <ToolSidebar 
           categories={toolCategories} 
           selectedToolId={toolId}
         />
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-y-auto">
           <ToolDisplay tool={selectedTool} />
         </div>
       </div>

@@ -95,7 +95,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       {/* 收起状态下的悬停检测区域 */}
       {!isMobile && isCollapsed && (
         <div 
-          className="fixed top-0 left-0 w-16 h-full z-50"
+          className="fixed top-14 left-0 w-16 h-[calc(100vh-3.5rem)] z-50"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         />
@@ -104,7 +104,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       {/* 移动端收起状态下的触摸提示区域 */}
       {isMobile && isCollapsed && (
         <div 
-          className="fixed top-1/2 -translate-y-1/2 left-0 w-16 h-24 z-50 flex items-center justify-start pl-1"
+          className="fixed top-[calc(50vh+1.75rem)] -translate-y-1/2 left-0 w-16 h-24 z-50 flex items-center justify-start pl-1"
           onTouchStart={() => {
             if (touchTimeout) {
               clearTimeout(touchTimeout)
@@ -119,7 +119,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       {/* 侧边栏容器 - 包含悬停检测 */}
       <div 
         className={cn(
-          "fixed md:relative top-0 left-0 h-full z-40 sidebar-transition overflow-hidden",
+          "fixed md:relative top-14 md:top-0 left-0 h-[calc(100vh-3.5rem)] md:h-full z-40 sidebar-transition overflow-hidden",
           isCollapsed ? "w-0" : "w-80"
         )}
         onMouseEnter={() => !isMobile && setIsHovering(true)}
@@ -151,7 +151,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-10rem)]">
+        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-10rem)]">
           <div className="p-3">
             <div className="space-y-1">
               {filteredTools.map((tool) => {
@@ -191,7 +191,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
         size="sm"
         onClick={toggleSidebar}
         className={cn(
-          "fixed top-1/2 -translate-y-1/2 z-[60] p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-muted cursor-pointer",
+          "fixed top-[calc(50vh+1.75rem)] md:top-1/2 -translate-y-1/2 z-[60] p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-muted cursor-pointer",
           // 移动端使用更大的按钮尺寸以便触摸
           isMobile ? "h-16 w-8 sidebar-toggle-button" : "h-12 w-6",
           isCollapsed 
@@ -213,8 +213,8 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
           const timeout = setTimeout(() => setIsTouching(false), 2000)
           setTouchTimeout(timeout)
         }}
-        aria-label={isCollapsed ? t("nav.expandSidebar", "展开侧边栏") : t("nav.collapseSidebar", "收起侧边栏")}
-        title={isCollapsed ? t("nav.expandSidebar", "展开侧边栏") : t("nav.collapseSidebar", "收起侧边栏")}
+        aria-label={isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
+        title={isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
       >
         {isCollapsed ? (
           <ChevronRight className={cn("h-4 w-4", isMobile && "h-5 w-5")} />
