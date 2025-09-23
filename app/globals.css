@@ -187,8 +187,22 @@ input, textarea {
   user-select: text;
 }
 
-/* 移动端触摸优化 */
+/* 侧边栏响应式布局 */
+.main-content {
+  margin-left: 320px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 0;
+}
+
+/* 移动端适配 */
 @media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+  }
+  
   /* 确保触摸目标足够大 */
   .sidebar-toggle-button {
     min-width: 44px;

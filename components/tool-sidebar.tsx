@@ -119,7 +119,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       {/* 侧边栏容器 - 包含悬停检测 */}
       <div 
         className={cn(
-          "fixed md:relative top-14 md:top-0 left-0 h-[calc(100vh-3.5rem)] md:h-full z-40 sidebar-transition overflow-hidden",
+          "fixed top-14 left-0 h-[calc(100vh-3.5rem)] z-40 sidebar-transition overflow-hidden",
           isCollapsed ? "w-0" : "w-80"
         )}
         onMouseEnter={() => !isMobile && setIsHovering(true)}
@@ -151,7 +151,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-14rem)] md:h-[calc(100vh-10rem)]">
+        <ScrollArea className="h-[calc(100vh-14rem)]">
           <div className="p-3">
             <div className="space-y-1">
               {filteredTools.map((tool) => {
@@ -191,7 +191,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
         size="sm"
         onClick={toggleSidebar}
         className={cn(
-          "fixed top-[calc(50vh+1.75rem)] md:top-1/2 -translate-y-1/2 z-[60] p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-muted cursor-pointer",
+          "fixed top-[calc(50vh+1.75rem)] -translate-y-1/2 z-[60] p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-muted cursor-pointer",
           // 移动端使用更大的按钮尺寸以便触摸
           isMobile ? "h-16 w-8 sidebar-toggle-button" : "h-12 w-6",
           isCollapsed 

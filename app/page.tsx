@@ -16,7 +16,7 @@ export default function HomePage() {
           categories={toolCategories} 
           selectedToolId=""
         />
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto main-content">
           <ProjectIntro />
         </div>
       </div>

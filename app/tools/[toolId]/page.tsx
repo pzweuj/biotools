@@ -30,7 +30,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
           categories={toolCategories} 
           selectedToolId={toolId}
         />
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto main-content">
           <ToolDisplay tool={selectedTool} />
         </div>
       </div>
