@@ -40,9 +40,15 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       } else if (wasMobile && !mobile && isCollapsed) {
         // 从移动端返回桌面端时自动展开侧边栏
         setIsCollapsed(false)
+        if (typeof document !== 'undefined') {
+          document.body.classList.remove('sidebar-collapsed')
+        }
       } else if (!wasMobile && mobile) {
         // 只在从桌面端切换到移动端时自动收起
         setIsCollapsed(true)
+        if (typeof document !== 'undefined') {
+          document.body.classList.add('sidebar-collapsed')
+        }
       }
     }
 
@@ -66,11 +72,26 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
     // 在移动端选择工具后自动收起侧边栏
     if (isMobile) {
       setIsCollapsed(true)
+      // 同步更新body类名
+      if (typeof document !== 'undefined') {
+        document.body.classList.add('sidebar-collapsed')
+      }
     }
   }
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed)
+    const newCollapsedState = !isCollapsed
+    setIsCollapsed(newCollapsedState)
+    
+    // 动态更新body类名来控制主内容区域的布局
+    if (typeof document !== 'undefined') {
+      const body = document.body
+      if (newCollapsedState) {
+        body.classList.add('sidebar-collapsed')
+      } else {
+        body.classList.remove('sidebar-collapsed')
+      }
+    }
   }
 
   // 将所有工具扁平化为一个数组
@@ -89,6 +110,18 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       t(tool.nameKey).toLowerCase().includes(query)
     )
   }, [allTools, searchQuery, t])
+
+  // 同步侧边栏状态到body类名
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const body = document.body
+      if (isCollapsed) {
+        body.classList.add('sidebar-collapsed')
+      } else {
+        body.classList.remove('sidebar-collapsed')
+      }
+    }
+  }, [isCollapsed])
 
   return (
     <>
