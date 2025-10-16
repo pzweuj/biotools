@@ -22,7 +22,7 @@ export function Header() {
           >
             {t("nav.title")}
           </button>
-          <div className="text-sm text-muted-foreground font-mono">v1.0.0</div>
+          <div className="text-sm text-muted-foreground font-mono">v1.1.0</div>
         </div>
 
         <div className="flex items-center gap-3">

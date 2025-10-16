@@ -5,6 +5,7 @@ import { TableIcon } from "@/components/icons/table-icon"
 import { StatsIcon } from "@/components/icons/stats-icon"
 import { OrfIcon } from "@/components/icons/orf-icon"
 import { ManeLocaIcon } from "@/components/icons/maneloca-icon"
+import { IndexCheckerIcon } from "@/components/icons/index-checker-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
 import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
@@ -24,6 +25,7 @@ import { BufferCalculator } from "@/components/tools/buffer-calculator"
 import { CellCultureCalculator } from "@/components/tools/cell-culture-calculator"
 import { ProteinPurificationCalculator } from "@/components/tools/protein-purification-calculator"
 import { ManeLoca } from "@/components/tools/maneloca"
+import { IndexChecker } from "@/components/tools/index-checker"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -136,6 +138,14 @@ export const getToolCategories = (): ToolCategory[] => [
     id: "data-processing",
     nameKey: "categories.data-processing",
     tools: [
+      {
+        id: "index-checker",
+        nameKey: "tools.index-checker.name",
+        descriptionKey: "tools.index-checker.description",
+        category: "data-processing",
+        icon: IndexCheckerIcon,
+        component: IndexChecker,
+      },
       {
         id: "sequence-format-converter",
         nameKey: "tools.sequence-format-converter.name",
