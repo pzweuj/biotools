@@ -614,7 +614,7 @@ export const zh = {
     },
     deephpo: {
       name: "DeepHPO",
-      description: "基于DeepSeek的临床表型HPO术语提取工具，提供便捷的HPO术语查询服务",
+      description: "基于LLM的临床表型HPO术语提取工具，提供便捷的HPO术语查询服务",
       subtitle: "AI驱动的临床表型HPO术语提取",
       visitSite: "访问DeepHPO",
       viewSource: "查看源码",
@@ -622,7 +622,7 @@ export const zh = {
       notice: "由于Vercel的60秒超时机制，可能会无法获取到完整信息导致查询失败。默认使用硅基流动的API，但您也可以通过主页的设置按钮设置其他使用OpenAI格式的服务提供商。",
       features: {
         ai: "AI智能提取",
-        aiDesc: "使用DeepSeek-V3模型进行智能HPO术语提取",
+        aiDesc: "使用LLM模型进行智能HPO术语提取",
         hpo: "HPO本体",
         hpoDesc: "标准化的临床表型术语系统",
         web: "网页界面",

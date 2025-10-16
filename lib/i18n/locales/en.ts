@@ -615,7 +615,7 @@ export const en = {
     },
     deephpo: {
       name: "DeepHPO",
-      description: "DeepSeek-based clinical phenotype HPO term extraction tool, providing convenient HPO term query services",
+      description: "LLM-based clinical phenotype HPO term extraction tool, providing convenient HPO term query services",
       subtitle: "AI-Powered Clinical Phenotype HPO Term Extraction",
       visitSite: "Visit DeepHPO",
       viewSource: "View Source",
@@ -623,7 +623,7 @@ export const en = {
       notice: "Due to Vercel's 60-second timeout mechanism, queries may fail if complete information cannot be retrieved in time. The default API provider is SiliconFlow, but you can configure other OpenAI-compatible service providers through the settings button on the homepage.",
       features: {
         ai: "AI-Powered Extraction",
-        aiDesc: "Utilizes DeepSeek-V3 model for intelligent HPO term extraction",
+        aiDesc: "Utilizes LLM model for intelligent HPO term extraction",
         hpo: "HPO Ontology",
         hpoDesc: "Standardized clinical phenotype terminology system",
         web: "Web-based Interface",
