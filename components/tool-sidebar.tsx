@@ -20,31 +20,55 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
   const { t } = useI18n()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  // 初始化时检测是否为移动端，如果是则默认收起
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768
+    }
+    return false
+  })
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768
+    }
+    return false
+  })
   const [isHovering, setIsHovering] = useState(false)
   const [isTouching, setIsTouching] = useState(false)
   const [touchTimeout, setTouchTimeout] = useState<NodeJS.Timeout | null>(null)
 
-  // 检测屏幕尺寸
+  // 初始化 body 类名
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (isCollapsed) {
+        document.body.classList.add('sidebar-collapsed')
+      } else {
+        document.body.classList.remove('sidebar-collapsed')
+      }
+    }
+  }, []) // 只在挂载时执行一次
+
+  // 检测屏幕尺寸变化
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768
       const wasMobile = isMobile
+      
+      // 只在屏幕尺寸实际发生变化时处理
+      if (wasMobile === mobile) {
+        return
+      }
+      
       setIsMobile(mobile)
       
-      // 首次加载或从移动端返回桌面端时的处理
-      if (!wasMobile && !mobile) {
-        // 首次加载桌面端，保持展开状态
-        return
-      } else if (wasMobile && !mobile && isCollapsed) {
-        // 从移动端返回桌面端时自动展开侧边栏
+      if (wasMobile && !mobile && isCollapsed) {
+        // 从移动端切换到桌面端时自动展开侧边栏
         setIsCollapsed(false)
         if (typeof document !== 'undefined') {
           document.body.classList.remove('sidebar-collapsed')
         }
       } else if (!wasMobile && mobile) {
-        // 只在从桌面端切换到移动端时自动收起
+        // 从桌面端切换到移动端时自动收起
         setIsCollapsed(true)
         if (typeof document !== 'undefined') {
           document.body.classList.add('sidebar-collapsed')
@@ -52,7 +76,6 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       }
     }
 
-    checkScreenSize()
     window.addEventListener('resize', checkScreenSize)
     return () => {
       window.removeEventListener('resize', checkScreenSize)
