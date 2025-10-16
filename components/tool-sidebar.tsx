@@ -111,18 +111,6 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
     )
   }, [allTools, searchQuery, t])
 
-  // 同步侧边栏状态到body类名
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const body = document.body
-      if (isCollapsed) {
-        body.classList.add('sidebar-collapsed')
-      } else {
-        body.classList.remove('sidebar-collapsed')
-      }
-    }
-  }, [isCollapsed])
-
   return (
     <>
       {/* 收起状态下的悬停检测区域 */}
