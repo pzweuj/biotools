@@ -44,7 +44,7 @@ export function DeepHpo() {
             </div>
             
             <div className="flex items-center justify-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="font-mono">DeepSeek-V3</Badge>
+              <Badge variant="secondary" className="font-mono">LLM</Badge>
               <Badge variant="outline" className="font-mono">HPO</Badge>
               <Badge variant="outline" className="font-mono">Clinical Phenotype</Badge>
               <Badge variant="outline" className="font-mono">AI</Badge>
