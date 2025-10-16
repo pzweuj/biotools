@@ -25,7 +25,7 @@ export function DeepHpo() {
           <CardHeader className="text-center space-y-4">
             <div className="flex items-center justify-center">
               <img 
-                src="https://github.com/pzweuj/DeepHPO/raw/refs/heads/main/public/icon.png" 
+                src="https://github.com/pzweuj/DeepHPO/raw/refs/heads/main/src/app/favicon.ico" 
                 alt="DeepHPO Icon"
                 className="w-16 h-16 mr-4"
                 onError={(e) => {
