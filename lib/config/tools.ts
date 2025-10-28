@@ -6,6 +6,7 @@ import { StatsIcon } from "@/components/icons/stats-icon"
 import { OrfIcon } from "@/components/icons/orf-icon"
 import { ManeLocaIcon } from "@/components/icons/maneloca-icon"
 import { DeepHpoIcon } from "@/components/icons/deephpo-icon"
+import { WarfarinIcon } from "@/components/icons/warfarin-icon"
 import { IndexCheckerIcon } from "@/components/icons/index-checker-icon"
 import { AaConverterIcon } from "@/components/icons/aa-converter-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
@@ -28,6 +29,7 @@ import { CellCultureCalculator } from "@/components/tools/cell-culture-calculato
 import { ProteinPurificationCalculator } from "@/components/tools/protein-purification-calculator"
 import { ManeLoca } from "@/components/tools/maneloca"
 import { DeepHpo } from "@/components/tools/deephpo"
+import { WarfarinCalculator } from "@/components/tools/warfarin-calculator"
 import { IndexChecker } from "@/components/tools/index-checker"
 import { AaConverter } from "@/components/tools/aa-converter"
 
@@ -83,6 +85,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "sequence-analysis",
         icon: DeepHpoIcon,
         component: DeepHpo,
+      },
+      {
+        id: "warfarin",
+        nameKey: "tools.warfarin.name",
+        descriptionKey: "tools.warfarin.description",
+        category: "sequence-analysis",
+        icon: WarfarinIcon,
+        component: WarfarinCalculator,
       },
     ],
   },
