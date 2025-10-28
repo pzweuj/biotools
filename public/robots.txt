@@ -1,0 +1,6 @@
+# Allow all robots to access all pages
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://use.biotools.site/sitemap.xml
