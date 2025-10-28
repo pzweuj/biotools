@@ -3,8 +3,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ExternalLink, Github } from "lucide-react"
+import { ExternalLink, Github, Info } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function ManeLoca() {
   const { t } = useI18n()
@@ -58,6 +59,16 @@ export function ManeLoca() {
                 )}
               </p>
             </div>
+
+            {/* Important Notice */}
+            <Alert className="border-blue-500/50 bg-blue-500/10">
+              <Info className="h-4 w-4 text-blue-500" />
+              <AlertDescription className="font-mono text-sm">
+                {t("tools.maneloca.notice", 
+                  "ManeLoca provides accurate genomic coordinate to transcript position mapping based on MANE Select annotations. The web application offers an intuitive interface for researchers and clinicians working with genomic data."
+                )}
+              </AlertDescription>
+            </Alert>
 
             {/* Key Features */}
             <div className="grid md:grid-cols-2 gap-4">

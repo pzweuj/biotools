@@ -602,6 +602,7 @@ export const en = {
       visitSite: "Visit ManeLoca",
       viewSource: "View Source",
       note: "Click 'Visit ManeLoca' to access the full application with all features",
+      notice: "ManeLoca provides accurate genomic coordinate to transcript position mapping based on MANE Select annotations. The web application offers an intuitive interface for researchers and clinicians working with genomic data.",
       features: {
         genomic: "Genomic Coordinate Mapping",
         genomicDesc: "Convert genomic coordinates to transcript positions",

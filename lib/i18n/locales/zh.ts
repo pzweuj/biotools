@@ -601,6 +601,7 @@ export const zh = {
       visitSite: "访问ManeLoca",
       viewSource: "查看源码",
       note: "点击'访问ManeLoca'使用完整功能的应用程序",
+      notice: "ManeLoca基于MANE Select注释提供精确的基因组坐标到转录本位置的映射。该网页应用为研究人员和临床医生处理基因组数据提供了直观的界面。",
       features: {
         genomic: "基因组坐标映射",
         genomicDesc: "将基因组坐标转换为转录本位置",
