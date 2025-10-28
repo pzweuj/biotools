@@ -46,6 +46,8 @@ Object.entries(aminoAcidMap).forEach(([three, { one }]) => {
   oneToThreeMap[one] = three
 })
 
+const MAX_LINES = 1000 // 最大行数限制
+
 export function AaConverter() {
   const { t } = useI18n()
   const [input, setInput] = useState("")
@@ -53,6 +55,10 @@ export function AaConverter() {
   const [conversionMode, setConversionMode] = useState<"toOne" | "toThree">("toOne") // 转换方向
   const [stopCodonFormat, setStopCodonFormat] = useState<"Ter" | "*" | "X">("Ter") // 终止密码子格式
   const [copied, setCopied] = useState(false)
+
+  // 计算当前行数
+  const lineCount = input.trim() ? input.split("\n").length : 0
+  const isOverLimit = lineCount > MAX_LINES
 
   // 转换单个变异
   const convertVariant = (variant: string): string => {
@@ -142,6 +148,8 @@ export function AaConverter() {
 
   // 批量转换
   const handleConvert = () => {
+    if (isOverLimit) return // 超过限制时不执行转换
+    
     const lines = input.split("\n")
     const converted = lines.map(line => convertVariant(line)).join("\n")
     setOutput(converted)
@@ -217,9 +225,27 @@ export function AaConverter() {
                 className="font-mono min-h-[200px] border-0 focus-visible:ring-2 focus-visible:ring-primary bg-background"
               />
             </div>
-            <p className="text-sm text-muted-foreground">
-              {t("tools.aa-converter.formatHint")}
-            </p>
+            <div className="flex items-center justify-between text-sm">
+              <p className="text-muted-foreground">
+                {t("tools.aa-converter.formatHint")}
+              </p>
+              <p className={`font-mono ${
+                isOverLimit 
+                  ? "text-red-500 font-semibold" 
+                  : lineCount > MAX_LINES * 0.8 
+                    ? "text-yellow-600 font-semibold" 
+                    : "text-muted-foreground"
+              }`}>
+                {lineCount} / {MAX_LINES} {t("tools.aa-converter.lines")}
+              </p>
+            </div>
+            {isOverLimit && (
+              <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-md p-3">
+                <p className="text-sm text-red-600 dark:text-red-400 font-semibold">
+                  ⚠️ {t("tools.aa-converter.lineLimitWarning").replace("{max}", MAX_LINES.toString())}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* 终止密码子选项 */}
@@ -271,7 +297,11 @@ export function AaConverter() {
 
           {/* 操作按钮 */}
           <div className="flex gap-2">
-            <Button onClick={handleConvert} className="flex-1">
+            <Button 
+              onClick={handleConvert} 
+              className="flex-1"
+              disabled={isOverLimit || !input.trim()}
+            >
               <ArrowLeftRight className="mr-2 h-4 w-4" />
               {t("tools.aa-converter.convert")}
             </Button>
