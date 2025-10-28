@@ -7,6 +7,7 @@ import { OrfIcon } from "@/components/icons/orf-icon"
 import { ManeLocaIcon } from "@/components/icons/maneloca-icon"
 import { DeepHpoIcon } from "@/components/icons/deephpo-icon"
 import { IndexCheckerIcon } from "@/components/icons/index-checker-icon"
+import { AaConverterIcon } from "@/components/icons/aa-converter-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
 import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
@@ -28,6 +29,7 @@ import { ProteinPurificationCalculator } from "@/components/tools/protein-purifi
 import { ManeLoca } from "@/components/tools/maneloca"
 import { DeepHpo } from "@/components/tools/deephpo"
 import { IndexChecker } from "@/components/tools/index-checker"
+import { AaConverter } from "@/components/tools/aa-converter"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -111,6 +113,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "molecular-biology",
         icon: CalculatorIcon,
         component: ProteinAnalysisTool,
+      },
+      {
+        id: "aa-converter",
+        nameKey: "tools.aa-converter.name",
+        descriptionKey: "tools.aa-converter.description",
+        category: "molecular-biology",
+        icon: AaConverterIcon,
+        component: AaConverter,
       },
     ],
   },
