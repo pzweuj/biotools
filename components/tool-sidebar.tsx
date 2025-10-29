@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import type { ToolCategory } from "@/types/tool"
@@ -20,6 +19,8 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
   const { t } = useI18n()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
+  const scrollPositionRef = useRef<number>(0)
+  const scrollViewportRef = useRef<HTMLDivElement>(null)
   // 初始化时检测是否为移动端，如果是则默认收起
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -47,6 +48,23 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
       }
     }
   }, []) // 只在挂载时执行一次
+
+  // 保存滚动位置
+  useEffect(() => {
+    const viewport = scrollViewportRef.current
+    if (!viewport) return
+
+    const handleScroll = () => {
+      // 保存滚动位置到 sessionStorage
+      sessionStorage.setItem('sidebar-scroll-position', viewport.scrollTop.toString())
+      scrollPositionRef.current = viewport.scrollTop
+    }
+
+    viewport.addEventListener('scroll', handleScroll)
+    return () => {
+      viewport.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   // 检测屏幕尺寸变化
   useEffect(() => {
@@ -134,6 +152,19 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
     )
   }, [allTools, searchQuery, t])
 
+  // 恢复滚动位置（在组件挂载和工具列表更新后）
+  // 使用 useLayoutEffect 在浏览器绘制前同步执行，避免闪烁
+  useLayoutEffect(() => {
+    const viewport = scrollViewportRef.current
+    if (!viewport) return
+
+    // 从 sessionStorage 恢复滚动位置
+    const savedPosition = sessionStorage.getItem('sidebar-scroll-position')
+    if (savedPosition) {
+      viewport.scrollTop = parseInt(savedPosition, 10)
+    }
+  }, [filteredTools.length])
+
   return (
     <>
       {/* 收起状态下的悬停检测区域 */}
@@ -195,7 +226,10 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-14rem)]">
+        <div 
+          ref={scrollViewportRef}
+          className="h-[calc(100vh-14rem)] overflow-y-auto"
+        >
           <div className="p-3">
             <div className="space-y-1">
               {filteredTools.map((tool) => {
@@ -225,7 +259,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
         </div>
       </div>
 
