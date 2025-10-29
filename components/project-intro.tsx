@@ -18,7 +18,7 @@ export function ProjectIntro() {
             {t("intro.subtitle", "生物信息学工具库")}
           </p>
           <div className="flex items-center justify-center gap-2">
-            <Badge variant="secondary" className="font-mono">v1.1.0</Badge>
+            <Badge variant="secondary" className="font-mono">v1.2.0</Badge>
             <Badge variant="outline" className="font-mono">Next.js</Badge>
             <Badge variant="outline" className="font-mono">TypeScript</Badge>
           </div>

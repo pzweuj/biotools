@@ -1,25 +1,33 @@
 "use client"
 
-import { notFound } from "next/navigation"
+import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { ToolSidebar } from "@/components/tool-sidebar"
 import { ToolDisplay } from "@/components/tool-display"
 import { getToolCategories } from "@/lib/config/tools"
+import type { Tool } from "@/types/tool"
 
-interface ToolPageProps {
-  params: Promise<{
-    toolId: string
-  }>
-}
+export default function ToolPage() {
+  const router = useRouter()
+  const params = useParams()
+  const toolId = params.toolId as string
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
+  const [toolCategories] = useState(() => getToolCategories())
 
-export default async function ToolPage({ params }: ToolPageProps) {
-  const { toolId } = await params
-  const toolCategories = getToolCategories()
-  const allTools = toolCategories.flatMap(category => category.tools)
-  const selectedTool = allTools.find(tool => tool.id === toolId)
+  useEffect(() => {
+    const allTools = toolCategories.flatMap(category => category.tools)
+    const tool = allTools.find(tool => tool.id === toolId)
+    
+    if (!tool) {
+      router.push("/")
+    } else {
+      setSelectedTool(tool)
+    }
+  }, [toolId, toolCategories, router])
 
   if (!selectedTool) {
-    notFound()
+    return null
   }
 
   return (

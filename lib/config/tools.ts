@@ -9,6 +9,7 @@ import { DeepHpoIcon } from "@/components/icons/deephpo-icon"
 import { WarfarinIcon } from "@/components/icons/warfarin-icon"
 import { IndexCheckerIcon } from "@/components/icons/index-checker-icon"
 import { AaConverterIcon } from "@/components/icons/aa-converter-icon"
+import { MutalyzerIcon } from "@/components/icons/mutalyzer-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
 import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
@@ -32,6 +33,7 @@ import { DeepHpo } from "@/components/tools/deephpo"
 import { WarfarinCalculator } from "@/components/tools/warfarin-calculator"
 import { IndexChecker } from "@/components/tools/index-checker"
 import { AaConverter } from "@/components/tools/aa-converter"
+import { Mutalyzer } from "@/components/tools/mutalyzer"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -69,30 +71,6 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "sequence-analysis",
         icon: OrfIcon,
         component: OrfFinder,
-      },
-      {
-        id: "maneloca",
-        nameKey: "tools.maneloca.name",
-        descriptionKey: "tools.maneloca.description",
-        category: "sequence-analysis",
-        icon: ManeLocaIcon,
-        component: ManeLoca,
-      },
-      {
-        id: "deephpo",
-        nameKey: "tools.deephpo.name",
-        descriptionKey: "tools.deephpo.description",
-        category: "sequence-analysis",
-        icon: DeepHpoIcon,
-        component: DeepHpo,
-      },
-      {
-        id: "warfarin",
-        nameKey: "tools.warfarin.name",
-        descriptionKey: "tools.warfarin.description",
-        category: "sequence-analysis",
-        icon: WarfarinIcon,
-        component: WarfarinCalculator,
       },
     ],
   },
@@ -251,6 +229,44 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "reference-tables",
         icon: TableIcon,
         component: AminoAcidTable,
+      },
+    ],
+  },
+  {
+    id: "external-tools",
+    nameKey: "categories.external-tools",
+    tools: [
+      {
+        id: "maneloca",
+        nameKey: "tools.maneloca.name",
+        descriptionKey: "tools.maneloca.description",
+        category: "external-tools",
+        icon: ManeLocaIcon,
+        component: ManeLoca,
+      },
+      {
+        id: "deephpo",
+        nameKey: "tools.deephpo.name",
+        descriptionKey: "tools.deephpo.description",
+        category: "external-tools",
+        icon: DeepHpoIcon,
+        component: DeepHpo,
+      },
+      {
+        id: "warfarin",
+        nameKey: "tools.warfarin.name",
+        descriptionKey: "tools.warfarin.description",
+        category: "external-tools",
+        icon: WarfarinIcon,
+        component: WarfarinCalculator,
+      },
+      {
+        id: "mutalyzer",
+        nameKey: "tools.mutalyzer.name",
+        descriptionKey: "tools.mutalyzer.description",
+        category: "external-tools",
+        icon: MutalyzerIcon,
+        component: Mutalyzer,
       },
     ],
   },
