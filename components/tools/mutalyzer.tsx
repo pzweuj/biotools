@@ -11,7 +11,8 @@ import { useI18n } from "@/lib/i18n"
 import { Copy, Send, AlertCircle, ExternalLink } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-const MUTALYZER_API_BASE = "https://mutalyzer.nl/api"
+// 使用本地API代理避免CORS问题
+const MUTALYZER_API_PROXY = "/api/mutalyzer"
 
 interface ApiResult {
   success: boolean
@@ -46,12 +47,14 @@ export function Mutalyzer() {
   const [convertInput, setConvertInput] = useState("")
   const [convertResult, setConvertResult] = useState<ApiResult | null>(null)
 
-  // API call helper
+  // API call helper - 通过本地代理调用Mutalyzer API
   const callMutalyzerApi = async (endpoint: string): Promise<ApiResult> => {
     try {
-      const response = await fetch(`${MUTALYZER_API_BASE}${endpoint}`)
+      // 使用本地API代理，将endpoint作为查询参数传递
+      const response = await fetch(`${MUTALYZER_API_PROXY}?endpoint=${encodeURIComponent(endpoint)}`)
       if (!response.ok) {
-        return { success: false, error: `HTTP ${response.status}: ${response.statusText}` }
+        const errorData = await response.json().catch(() => ({ error: response.statusText }))
+        return { success: false, error: errorData.error || `HTTP ${response.status}: ${response.statusText}` }
       }
       const data = await response.json()
       return { success: true, data }
