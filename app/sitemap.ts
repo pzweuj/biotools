@@ -11,9 +11,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'base-complement',
     'sequence-translation',
     'orf-finder',
-    'maneloca',
-    'deephpo',
-    'warfarin',
     
     // Molecular Biology
     'molecular-weight-calculator',
@@ -40,6 +37,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     
     // Reference Tables
     'amino-acid-table',
+    
+    // External Tools
+    'maneloca',
+    'deephpo',
+    'warfarin',
+    'mutalyzer',
   ]
 
   // Generate tool pages

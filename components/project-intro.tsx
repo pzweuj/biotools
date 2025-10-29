@@ -2,6 +2,7 @@
 
 import { useI18n } from "@/lib/i18n"
 import { Badge } from "./ui/badge"
+import { APP_VERSION } from "@/lib/config/version"
 
 export function ProjectIntro() {
   const { t } = useI18n()
@@ -18,7 +19,7 @@ export function ProjectIntro() {
             {t("intro.subtitle", "生物信息学工具库")}
           </p>
           <div className="flex items-center justify-center gap-2">
-            <Badge variant="secondary" className="font-mono">v1.2.0</Badge>
+            <Badge variant="secondary" className="font-mono">v{APP_VERSION}</Badge>
             <Badge variant="outline" className="font-mono">Next.js</Badge>
             <Badge variant="outline" className="font-mono">TypeScript</Badge>
           </div>

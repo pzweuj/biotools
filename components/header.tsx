@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { LanguageSwitcher } from "./language-switcher"
 import { GitHubIcon } from "./icons/github-icon"
 import { Button } from "./ui/button"
+import { APP_VERSION } from "@/lib/config/version"
 
 export function Header() {
   const { t } = useI18n()
@@ -22,7 +23,7 @@ export function Header() {
           >
             {t("nav.title")}
           </button>
-          <div className="text-sm text-muted-foreground font-mono">v1.2.0</div>
+          <div className="text-sm text-muted-foreground font-mono">v{APP_VERSION}</div>
         </div>
 
         <div className="flex items-center gap-3">
