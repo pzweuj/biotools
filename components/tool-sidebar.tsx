@@ -228,7 +228,7 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
 
         <div 
           ref={scrollViewportRef}
-          className="h-[calc(100vh-14rem)] overflow-y-auto"
+          className="h-[calc(100vh-14rem)] overflow-y-auto sidebar-scroll"
         >
           <div className="p-3">
             <div className="space-y-1">

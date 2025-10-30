@@ -76,6 +76,7 @@
   --sidebar-ring: rgba(255, 255, 255, 0.2);
 }
 
+/* Tailwind v4 theme configuration */
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -121,8 +122,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground font-mono;
+
     /* 修复 webkit 兼容性问题 */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -166,7 +169,10 @@
 }
 
 /* 额外的浏览器兼容性修复 */
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -196,6 +202,53 @@ input, textarea {
 /* 当body有sidebar-collapsed类时，调整主内容区域 */
 body.sidebar-collapsed .main-content {
   margin-left: 0;
+}
+
+/* 侧边栏滚动条样式 - 默认隐藏，悬停时显示 */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+/* 悬停时显示滚动条 */
+.sidebar-scroll:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-scroll:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 暗色主题下的滚动条 */
+.dark .sidebar-scroll:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.dark .sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .sidebar-scroll:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* 移动端适配 */
