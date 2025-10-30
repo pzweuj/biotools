@@ -8,12 +8,44 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useI18n } from '@/lib/i18n';
 
 interface TmbResult {
   panelTmb: number;
   wesTmb: number | null;
+  cancerType?: string;
 }
+
+// TCGA-MC3数据集中不同癌种的TMB参考值（中位数和高TMB阈值）
+interface CancerTypeReference {
+  code: string;
+  nameZh: string;
+  nameEn: string;
+  median: number;
+  highThreshold: number; // 通常为第三四分位数或top 20%
+}
+
+const TCGA_CANCER_TYPES: CancerTypeReference[] = [
+  { code: 'SKCM', nameZh: '皮肤黑色素瘤', nameEn: 'Skin Cutaneous Melanoma', median: 15.8, highThreshold: 30.0 },
+  { code: 'LUAD', nameZh: '肺腺癌', nameEn: 'Lung Adenocarcinoma', median: 8.5, highThreshold: 17.0 },
+  { code: 'LUSC', nameZh: '肺鳞癌', nameEn: 'Lung Squamous Cell Carcinoma', median: 10.5, highThreshold: 20.0 },
+  { code: 'BLCA', nameZh: '膀胱尿路上皮癌', nameEn: 'Bladder Urothelial Carcinoma', median: 7.5, highThreshold: 15.0 },
+  { code: 'UCEC', nameZh: '子宫内膜癌', nameEn: 'Uterine Corpus Endometrial Carcinoma', median: 5.8, highThreshold: 30.0 },
+  { code: 'STAD', nameZh: '胃腺癌', nameEn: 'Stomach Adenocarcinoma', median: 7.2, highThreshold: 15.0 },
+  { code: 'COAD', nameZh: '结肠腺癌', nameEn: 'Colon Adenocarcinoma', median: 6.5, highThreshold: 25.0 },
+  { code: 'HNSC', nameZh: '头颈鳞癌', nameEn: 'Head and Neck Squamous Cell Carcinoma', median: 4.8, highThreshold: 10.0 },
+  { code: 'BRCA', nameZh: '乳腺浸润癌', nameEn: 'Breast Invasive Carcinoma', median: 1.4, highThreshold: 5.0 },
+  { code: 'PRAD', nameZh: '前列腺腺癌', nameEn: 'Prostate Adenocarcinoma', median: 1.0, highThreshold: 3.0 },
+  { code: 'THCA', nameZh: '甲状腺癌', nameEn: 'Thyroid Carcinoma', median: 0.9, highThreshold: 2.5 },
+  { code: 'KIRC', nameZh: '肾透明细胞癌', nameEn: 'Kidney Renal Clear Cell Carcinoma', median: 1.3, highThreshold: 4.0 },
+  { code: 'LIHC', nameZh: '肝细胞癌', nameEn: 'Liver Hepatocellular Carcinoma', median: 3.5, highThreshold: 8.0 },
+  { code: 'GBM', nameZh: '胶质母细胞瘤', nameEn: 'Glioblastoma Multiforme', median: 1.8, highThreshold: 4.5 },
+  { code: 'OV', nameZh: '卵巢浆液性囊腺癌', nameEn: 'Ovarian Serous Cystadenocarcinoma', median: 2.5, highThreshold: 6.0 },
+  { code: 'ESCA', nameZh: '食管癌', nameEn: 'Esophageal Carcinoma', median: 5.5, highThreshold: 12.0 },
+  { code: 'PAAD', nameZh: '胰腺腺癌', nameEn: 'Pancreatic Adenocarcinoma', median: 2.2, highThreshold: 5.5 },
+  { code: 'CESC', nameZh: '宫颈鳞癌和腺癌', nameEn: 'Cervical Squamous Cell Carcinoma', median: 4.0, highThreshold: 9.0 },
+];
 
 export function TmbCalculator() {
   const { t } = useI18n();
@@ -22,6 +54,7 @@ export function TmbCalculator() {
   const [useCorrection, setUseCorrection] = useState<boolean>(false);
   const [kValue, setKValue] = useState<string>('1.0');
   const [bValue, setBValue] = useState<string>('0');
+  const [selectedCancerType, setSelectedCancerType] = useState<string>('');
   const [result, setResult] = useState<TmbResult | null>(null);
 
   const calculate = useCallback(() => {
@@ -54,8 +87,9 @@ export function TmbCalculator() {
     setResult({
       panelTmb,
       wesTmb,
+      cancerType: selectedCancerType,
     });
-  }, [panelSize, mutationCount, useCorrection, kValue, bValue, t]);
+  }, [panelSize, mutationCount, useCorrection, kValue, bValue, selectedCancerType, t]);
 
   const clearAll = useCallback(() => {
     setPanelSize('');
@@ -63,8 +97,22 @@ export function TmbCalculator() {
     setUseCorrection(false);
     setKValue('1.0');
     setBValue('0');
+    setSelectedCancerType('');
     setResult(null);
   }, []);
+
+  const getCancerTypeLevel = (tmb: number, cancerType: string): { level: string; color: string } => {
+    const cancer = TCGA_CANCER_TYPES.find(c => c.code === cancerType);
+    if (!cancer) return { level: '', color: '' };
+
+    if (tmb >= cancer.highThreshold) {
+      return { level: t('tools.tmbCalculator.highTmbLevel'), color: 'text-red-600 dark:text-red-400' };
+    } else if (tmb >= cancer.median) {
+      return { level: t('tools.tmbCalculator.mediumTmbLevel'), color: 'text-yellow-600 dark:text-yellow-400' };
+    } else {
+      return { level: t('tools.tmbCalculator.lowTmbLevel'), color: 'text-green-600 dark:text-green-400' };
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -107,6 +155,28 @@ export function TmbCalculator() {
               />
               <p className="text-sm text-muted-foreground">
                 {t('tools.tmbCalculator.mutationCountHint')}
+              </p>
+            </div>
+
+            {/* Cancer Type Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="cancerType" className="text-base font-semibold">
+                {t('tools.tmbCalculator.cancerType')}
+              </Label>
+              <Select value={selectedCancerType} onValueChange={setSelectedCancerType}>
+                <SelectTrigger className="border-2 bg-muted/30">
+                  <SelectValue placeholder={t('tools.tmbCalculator.selectCancerType')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {TCGA_CANCER_TYPES.map((cancer) => (
+                    <SelectItem key={cancer.code} value={cancer.code}>
+                      {cancer.code} - {t('lang') === 'zh' ? cancer.nameZh : cancer.nameEn}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                {t('tools.tmbCalculator.cancerTypeHint')}
               </p>
             </div>
 
@@ -203,6 +273,20 @@ export function TmbCalculator() {
                       <div className="text-sm text-muted-foreground">
                         {t('tools.tmbCalculator.mutationsPerMb')}
                       </div>
+                      {result.cancerType && (() => {
+                        const { level, color } = getCancerTypeLevel(result.panelTmb, result.cancerType);
+                        const cancer = TCGA_CANCER_TYPES.find(c => c.code === result.cancerType);
+                        return level ? (
+                          <div className="pt-3 border-t space-y-1">
+                            <div className={`text-sm font-semibold ${color}`}>
+                              {level}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {t('tools.tmbCalculator.referenceRange')}: {t('tools.tmbCalculator.median')} {cancer?.median} | {t('tools.tmbCalculator.highThreshold')} {cancer?.highThreshold}
+                            </div>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
@@ -227,6 +311,20 @@ export function TmbCalculator() {
                         <div className="text-xs text-muted-foreground pt-2 border-t">
                           {t('tools.tmbCalculator.correctedValue')}: {kValue} × {result.panelTmb.toFixed(2)} + {bValue}
                         </div>
+                        {result.cancerType && (() => {
+                          const { level, color } = getCancerTypeLevel(result.wesTmb, result.cancerType);
+                          const cancer = TCGA_CANCER_TYPES.find(c => c.code === result.cancerType);
+                          return level ? (
+                            <div className="pt-3 border-t space-y-1">
+                              <div className={`text-sm font-semibold ${color}`}>
+                                {level}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {t('tools.tmbCalculator.referenceRange')}: {t('tools.tmbCalculator.median')} {cancer?.median} | {t('tools.tmbCalculator.highThreshold')} {cancer?.highThreshold}
+                              </div>
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                     </CardContent>
                   </Card>
