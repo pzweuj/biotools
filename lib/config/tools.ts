@@ -10,6 +10,9 @@ import { WarfarinIcon } from "@/components/icons/warfarin-icon"
 import { IndexCheckerIcon } from "@/components/icons/index-checker-icon"
 import { AaConverterIcon } from "@/components/icons/aa-converter-icon"
 import { MutalyzerIcon } from "@/components/icons/mutalyzer-icon"
+import { SequencingDepthIcon } from "@/components/icons/sequencing-depth-icon"
+import { CodonOptimizerIcon } from "@/components/icons/codon-optimizer-icon"
+import { SgRNAIcon } from "@/components/icons/sgrna-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
 import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
@@ -34,6 +37,9 @@ import { WarfarinCalculator } from "@/components/tools/warfarin-calculator"
 import { IndexChecker } from "@/components/tools/index-checker"
 import { AaConverter } from "@/components/tools/aa-converter"
 import { Mutalyzer } from "@/components/tools/mutalyzer"
+import { SequencingDepthCalculator } from "@/components/tools/sequencing-depth-calculator"
+import { CodonOptimizer } from "@/components/tools/codon-optimizer"
+import { SgRNADesigner } from "@/components/tools/sgrna-designer"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -72,6 +78,14 @@ export const getToolCategories = (): ToolCategory[] => [
         icon: OrfIcon,
         component: OrfFinder,
       },
+      {
+        id: "codon-optimizer",
+        nameKey: "tools.codon-optimizer.name",
+        descriptionKey: "tools.codon-optimizer.description",
+        category: "sequence-analysis",
+        icon: CodonOptimizerIcon,
+        component: CodonOptimizer,
+      },
     ],
   },
   {
@@ -109,6 +123,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "molecular-biology",
         icon: AaConverterIcon,
         component: AaConverter,
+      },
+      {
+        id: "sgrna-designer",
+        nameKey: "tools.sgrna-designer.name",
+        descriptionKey: "tools.sgrna-designer.description",
+        category: "molecular-biology",
+        icon: SgRNAIcon,
+        component: SgRNADesigner,
       },
     ],
   },
@@ -185,6 +207,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "data-processing",
         icon: CalculatorIcon,
         component: GelElectrophoresisAnalyzer,
+      },
+      {
+        id: "sequencing-depth-calculator",
+        nameKey: "tools.sequencing-depth.name",
+        descriptionKey: "tools.sequencing-depth.description",
+        category: "data-processing",
+        icon: SequencingDepthIcon,
+        component: SequencingDepthCalculator,
       },
     ],
   },
