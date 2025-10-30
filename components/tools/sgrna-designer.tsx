@@ -259,14 +259,14 @@ export function SgRNADesigner() {
         {/* 输入区域 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <Label className="text-base font-semibold font-mono">
                 {t("tools.sgrna-designer.inputSequence", "Target DNA Sequence")}
               </Label>
               <div className="flex items-center gap-2">
-                <Label className="text-xs font-mono">{t("tools.sgrna-designer.pamType", "PAM Type")}:</Label>
+                <Label className="text-xs font-mono whitespace-nowrap">{t("tools.sgrna-designer.pamType", "PAM Type")}:</Label>
                 <Select value={pamType} onValueChange={(value) => setPamType(value as PAMType)}>
-                  <SelectTrigger className="w-32 font-mono">
+                  <SelectTrigger className="w-[180px] font-mono">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
