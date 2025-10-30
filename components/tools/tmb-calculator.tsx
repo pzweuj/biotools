@@ -20,31 +20,29 @@ interface TmbResult {
 // TCGA-MC3数据集中不同癌种的TMB参考值（中位数和高TMB阈值）
 interface CancerTypeReference {
   code: string;
-  nameZh: string;
-  nameEn: string;
   median: number;
   highThreshold: number; // 通常为第三四分位数或top 20%
 }
 
 const TCGA_CANCER_TYPES: CancerTypeReference[] = [
-  { code: 'SKCM', nameZh: '皮肤黑色素瘤', nameEn: 'Skin Cutaneous Melanoma', median: 15.8, highThreshold: 30.0 },
-  { code: 'LUAD', nameZh: '肺腺癌', nameEn: 'Lung Adenocarcinoma', median: 8.5, highThreshold: 17.0 },
-  { code: 'LUSC', nameZh: '肺鳞癌', nameEn: 'Lung Squamous Cell Carcinoma', median: 10.5, highThreshold: 20.0 },
-  { code: 'BLCA', nameZh: '膀胱尿路上皮癌', nameEn: 'Bladder Urothelial Carcinoma', median: 7.5, highThreshold: 15.0 },
-  { code: 'UCEC', nameZh: '子宫内膜癌', nameEn: 'Uterine Corpus Endometrial Carcinoma', median: 5.8, highThreshold: 30.0 },
-  { code: 'STAD', nameZh: '胃腺癌', nameEn: 'Stomach Adenocarcinoma', median: 7.2, highThreshold: 15.0 },
-  { code: 'COAD', nameZh: '结肠腺癌', nameEn: 'Colon Adenocarcinoma', median: 6.5, highThreshold: 25.0 },
-  { code: 'HNSC', nameZh: '头颈鳞癌', nameEn: 'Head and Neck Squamous Cell Carcinoma', median: 4.8, highThreshold: 10.0 },
-  { code: 'BRCA', nameZh: '乳腺浸润癌', nameEn: 'Breast Invasive Carcinoma', median: 1.4, highThreshold: 5.0 },
-  { code: 'PRAD', nameZh: '前列腺腺癌', nameEn: 'Prostate Adenocarcinoma', median: 1.0, highThreshold: 3.0 },
-  { code: 'THCA', nameZh: '甲状腺癌', nameEn: 'Thyroid Carcinoma', median: 0.9, highThreshold: 2.5 },
-  { code: 'KIRC', nameZh: '肾透明细胞癌', nameEn: 'Kidney Renal Clear Cell Carcinoma', median: 1.3, highThreshold: 4.0 },
-  { code: 'LIHC', nameZh: '肝细胞癌', nameEn: 'Liver Hepatocellular Carcinoma', median: 3.5, highThreshold: 8.0 },
-  { code: 'GBM', nameZh: '胶质母细胞瘤', nameEn: 'Glioblastoma Multiforme', median: 1.8, highThreshold: 4.5 },
-  { code: 'OV', nameZh: '卵巢浆液性囊腺癌', nameEn: 'Ovarian Serous Cystadenocarcinoma', median: 2.5, highThreshold: 6.0 },
-  { code: 'ESCA', nameZh: '食管癌', nameEn: 'Esophageal Carcinoma', median: 5.5, highThreshold: 12.0 },
-  { code: 'PAAD', nameZh: '胰腺腺癌', nameEn: 'Pancreatic Adenocarcinoma', median: 2.2, highThreshold: 5.5 },
-  { code: 'CESC', nameZh: '宫颈鳞癌和腺癌', nameEn: 'Cervical Squamous Cell Carcinoma', median: 4.0, highThreshold: 9.0 },
+  { code: 'SKCM', median: 15.8, highThreshold: 30.0 },
+  { code: 'LUAD', median: 8.5, highThreshold: 17.0 },
+  { code: 'LUSC', median: 10.5, highThreshold: 20.0 },
+  { code: 'BLCA', median: 7.5, highThreshold: 15.0 },
+  { code: 'UCEC', median: 5.8, highThreshold: 30.0 },
+  { code: 'STAD', median: 7.2, highThreshold: 15.0 },
+  { code: 'COAD', median: 6.5, highThreshold: 25.0 },
+  { code: 'HNSC', median: 4.8, highThreshold: 10.0 },
+  { code: 'BRCA', median: 1.4, highThreshold: 5.0 },
+  { code: 'PRAD', median: 1.0, highThreshold: 3.0 },
+  { code: 'THCA', median: 0.9, highThreshold: 2.5 },
+  { code: 'KIRC', median: 1.3, highThreshold: 4.0 },
+  { code: 'LIHC', median: 3.5, highThreshold: 8.0 },
+  { code: 'GBM', median: 1.8, highThreshold: 4.5 },
+  { code: 'OV', median: 2.5, highThreshold: 6.0 },
+  { code: 'ESCA', median: 5.5, highThreshold: 12.0 },
+  { code: 'PAAD', median: 2.2, highThreshold: 5.5 },
+  { code: 'CESC', median: 4.0, highThreshold: 9.0 },
 ];
 
 export function TmbCalculator() {
@@ -170,7 +168,7 @@ export function TmbCalculator() {
                 <SelectContent>
                   {TCGA_CANCER_TYPES.map((cancer) => (
                     <SelectItem key={cancer.code} value={cancer.code}>
-                      {cancer.code} - {t('lang') === 'zh' ? cancer.nameZh : cancer.nameEn}
+                      {cancer.code} - {t(`tools.tmbCalculator.cancerTypes.${cancer.code}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -352,6 +350,13 @@ export function TmbCalculator() {
             <h4 className="font-semibold mb-2">{t('tools.tmbCalculator.whyCorrection')}</h4>
             <p className="text-muted-foreground">
               {t('tools.tmbCalculator.correctionDescription')}
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">{t('tools.tmbCalculator.aboutMC3')}</h4>
+            <p className="text-muted-foreground">
+              {t('tools.tmbCalculator.mc3Description')}
             </p>
           </div>
 
