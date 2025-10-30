@@ -111,7 +111,11 @@ export function SequencingDepthCalculator() {
   }
 
   // 切换数据大小单位
-  const toggleDataSizeUnit = useCallback(() => {
+  const toggleDataSizeUnit = useCallback((e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     const units: Array<"bp" | "Kb" | "Mb" | "Gb"> = ["bp", "Kb", "Mb", "Gb"]
     const currentIndex = units.indexOf(dataSizeUnit)
     const nextIndex = (currentIndex + 1) % units.length
@@ -469,9 +473,11 @@ export function SequencingDepthCalculator() {
                       </span>
                       <Badge 
                         variant="default" 
-                        className="text-base font-mono px-3 py-1 cursor-pointer hover:bg-primary/90 transition-colors"
-                        onClick={toggleDataSizeUnit}
+                        className="text-base font-mono px-3 py-1 cursor-pointer hover:bg-primary/90 transition-colors select-none"
+                        onClick={(e) => toggleDataSizeUnit(e)}
                         title="点击切换单位"
+                        role="button"
+                        tabIndex={0}
                       >
                         {convertDataSize(result.dataSize!, dataSizeUnit).toFixed(2)} {dataSizeUnit}
                       </Badge>
