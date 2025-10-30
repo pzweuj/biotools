@@ -38,28 +38,28 @@ export function SequencingDepthCalculator() {
   // 模式切换处理函数
   const handleModeChange = useCallback((newMode: CalculationMode) => {
     setMode(newMode)
-    // 切换模式时清空输入数据和结果
-    setTargetDepth("")
-    setInputDataSize("")
+    // 切换模式时恢复默认值和清空结果
+    setTargetDepth("1000")
+    setInputDataSize("10")
     setResult(null)
   }, [])
   
   // 通用参数
-  const [targetSize, setTargetSize] = useState("")
+  const [targetSize, setTargetSize] = useState("1000000")
   const [targetSizeUnit, setTargetSizeUnit] = useState("bp")
   const [readLength, setReadLength] = useState("150")
   const [readLengthUnit, setReadLengthUnit] = useState("bp")
   const [captureEfficiency, setCaptureEfficiency] = useState("80")
   
   // 数据大小显示单位
-  const [dataSizeUnit, setDataSizeUnit] = useState<"bp" | "KB" | "MB" | "GB">("GB")
+  const [dataSizeUnit, setDataSizeUnit] = useState<"bp" | "Kb" | "Mb" | "Gb">("Gb")
   
   // 目标区域→数据量 模式
-  const [targetDepth, setTargetDepth] = useState("")
+  const [targetDepth, setTargetDepth] = useState("1000")
   
   // 数据量→深度 模式
-  const [inputDataSize, setInputDataSize] = useState("")
-  const [inputDataSizeUnit, setInputDataSizeUnit] = useState<string>("GB")
+  const [inputDataSize, setInputDataSize] = useState("10")
+  const [inputDataSizeUnit, setInputDataSizeUnit] = useState<string>("Gb")
   
   // 结果
   const [result, setResult] = useState<CalculationResult | null>(null)
@@ -95,24 +95,24 @@ export function SequencingDepthCalculator() {
   }
 
   // 转换数据大小单位
-  const convertDataSize = (bytes: number, unit: "bp" | "KB" | "MB" | "GB"): number => {
+  const convertDataSize = (bases: number, unit: "bp" | "Kb" | "Mb" | "Gb"): number => {
     switch (unit) {
       case "bp":
-        return bytes
-      case "KB":
-        return bytes / 1e3
-      case "MB":
-        return bytes / 1e6
-      case "GB":
-        return bytes / 1e9
+        return bases
+      case "Kb":
+        return bases / 1e3
+      case "Mb":
+        return bases / 1e6
+      case "Gb":
+        return bases / 1e9
       default:
-        return bytes
+        return bases
     }
   }
 
   // 切换数据大小单位
   const toggleDataSizeUnit = useCallback(() => {
-    const units: Array<"bp" | "KB" | "MB" | "GB"> = ["bp", "KB", "MB", "GB"]
+    const units: Array<"bp" | "Kb" | "Mb" | "Gb"> = ["bp", "Kb", "Mb", "Gb"]
     const currentIndex = units.indexOf(dataSizeUnit)
     const nextIndex = (currentIndex + 1) % units.length
     setDataSizeUnit(units[nextIndex])
@@ -147,10 +147,10 @@ export function SequencingDepthCalculator() {
       const totalBasesCount = targetBasesNeeded / efficiencyRatio
       // 需要的reads数
       const totalReadsCount = totalBasesCount / readLengthBp
-      // 数据大小（FASTQ约0.5字节/碱基）
-      const dataSizeBytes = totalBasesCount * 0.5
+      // 数据大小（总碱基数）
+      const dataSizeBytes = totalBasesCount
       // 原始数据量（未考虑捕获效率）
-      const rawDataSizeBytes = targetBasesNeeded * 0.5
+      const rawDataSizeBytes = targetBasesNeeded
 
       setResult({
         mode,
@@ -170,13 +170,13 @@ export function SequencingDepthCalculator() {
       const inputDataSizeValue = parseFloat(inputDataSize)
       if (isNaN(inputDataSizeValue)) return
 
-      // 将输入的数据大小转换为字节
+      // 将输入的数据大小转换为bp
       let dataSizeBytes = inputDataSizeValue
-      if (inputDataSizeUnit === "KB") dataSizeBytes = inputDataSizeValue * 1e3
-      else if (inputDataSizeUnit === "MB") dataSizeBytes = inputDataSizeValue * 1e6
-      else if (inputDataSizeUnit === "GB") dataSizeBytes = inputDataSizeValue * 1e9
-      // 从数据大小计算总碱基数（FASTQ约0.5字节/碱基）
-      const totalBasesCount = dataSizeBytes / 0.5
+      if (inputDataSizeUnit === "Kb") dataSizeBytes = inputDataSizeValue * 1e3
+      else if (inputDataSizeUnit === "Mb") dataSizeBytes = inputDataSizeValue * 1e6
+      else if (inputDataSizeUnit === "Gb") dataSizeBytes = inputDataSizeValue * 1e9
+      // 数据大小即为总碱基数
+      const totalBasesCount = dataSizeBytes
       // 计算总reads数
       const totalReadsCount = totalBasesCount / readLengthBp
       // 有效碱基数（考虑捕获效率）
@@ -200,13 +200,13 @@ export function SequencingDepthCalculator() {
   }, [targetSize, targetSizeUnit, readLength, readLengthUnit, captureEfficiency, mode, targetDepth, inputDataSize, inputDataSizeUnit])
 
   const clearAll = useCallback(() => {
-    setTargetSize("")
+    setTargetSize("1000000")
     setReadLength("150")
     setReadLengthUnit("bp")
     setCaptureEfficiency("80")
-    setTargetDepth("")
-    setInputDataSize("")
-    setDataSizeUnit("GB")
+    setTargetDepth("1000")
+    setInputDataSize("10")
+    setDataSizeUnit("Gb")
     setResult(null)
   }, [])
 
@@ -355,7 +355,7 @@ export function SequencingDepthCalculator() {
                 </Label>
                 <Input
                   type="number"
-                  placeholder="100"
+                  placeholder="1000"
                   value={targetDepth}
                   onChange={(e) => setTargetDepth(e.target.value)}
                   onWheel={(e) => (e.target as HTMLElement).blur()}
@@ -373,7 +373,7 @@ export function SequencingDepthCalculator() {
                 <div className="flex gap-2">
                   <Input
                     type="number"
-                    placeholder="5"
+                    placeholder="10"
                     value={inputDataSize}
                     onChange={(e) => setInputDataSize(e.target.value)}
                     onWheel={(e) => (e.target as HTMLElement).blur()}
@@ -381,18 +381,18 @@ export function SequencingDepthCalculator() {
                   />
                   <Select value={inputDataSizeUnit} onValueChange={setInputDataSizeUnit}>
                     <SelectTrigger className="w-24 font-mono">
-                      <SelectValue placeholder="GB" />
+                      <SelectValue placeholder="Gb" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="B" className="font-mono">B</SelectItem>
-                      <SelectItem value="KB" className="font-mono">KB</SelectItem>
-                      <SelectItem value="MB" className="font-mono">MB</SelectItem>
-                      <SelectItem value="GB" className="font-mono">GB</SelectItem>
+                      <SelectItem value="bp" className="font-mono">bp</SelectItem>
+                      <SelectItem value="Kb" className="font-mono">Kb</SelectItem>
+                      <SelectItem value="Mb" className="font-mono">Mb</SelectItem>
+                      <SelectItem value="Gb" className="font-mono">Gb</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="text-xs text-muted-foreground font-mono">
-                  {t("tools.sequencing-depth.inputDataSizeHint", "输入实际测序产生的数据量（FASTQ文件大小）")}
+                  {t("tools.sequencing-depth.inputDataSizeHint", "输入实际测序产生的总碱基数")}
                 </div>
               </div>
             )}
@@ -476,15 +476,6 @@ export function SequencingDepthCalculator() {
                         {convertDataSize(result.dataSize!, dataSizeUnit).toFixed(2)} {dataSizeUnit}
                       </Badge>
                     </div>
-
-                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <span className="font-mono font-semibold">
-                        {t("tools.sequencing-depth.totalBases", "总碱基数")}
-                      </span>
-                      <Badge variant="outline" className="text-base font-mono px-3 py-1">
-                        {formatNumber(result.totalBases!)} bp
-                      </Badge>
-                    </div>
                   </>
                 ) : (
                   <>
@@ -505,29 +496,6 @@ export function SequencingDepthCalculator() {
                         {formatNumber(result.totalReads!)}
                       </Badge>
                     </div>
-
-                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <span className="font-mono font-semibold">
-                        {t("tools.sequencing-depth.totalBases", "总碱基数")}
-                      </span>
-                      <Badge variant="outline" className="text-base font-mono px-3 py-1">
-                        {formatNumber(result.totalBases!)} bp
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <span className="font-mono font-semibold">
-                        {t("tools.sequencing-depth.estimatedDataSize", "数据大小")}
-                      </span>
-                      <Badge 
-                        variant="outline" 
-                        className="text-base font-mono px-3 py-1 cursor-pointer hover:bg-muted transition-colors"
-                        onClick={toggleDataSizeUnit}
-                        title="点击切换单位"
-                      >
-                        {convertDataSize(result.dataSize!, dataSizeUnit).toFixed(2)} {dataSizeUnit}
-                      </Badge>
-                    </div>
                   </>
                 )}
               </div>
@@ -541,7 +509,7 @@ export function SequencingDepthCalculator() {
           <AlertDescription className="font-mono text-sm">
             {t(
               "tools.sequencing-depth.formula",
-              "公式：有效深度 = (总Reads数 × 读长 × 捕获效率) / 目标区域大小。数据大小按FASTQ格式估算。"
+              "公式：数据量 = (目标区域大小 × 目标深度) / 捕获效率。有效深度 = (数据量 × 捕获效率) / 目标区域大小。"
             )}
           </AlertDescription>
         </Alert>
