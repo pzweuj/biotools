@@ -59,7 +59,7 @@ export function SequencingDepthCalculator() {
   
   // 数据量→深度 模式
   const [inputDataSize, setInputDataSize] = useState("")
-  const [inputDataSizeUnit, setInputDataSizeUnit] = useState<string>("Gb")
+  const [inputDataSizeUnit, setInputDataSizeUnit] = useState<string>("GB")
   
   // 结果
   const [result, setResult] = useState<CalculationResult | null>(null)
@@ -172,9 +172,9 @@ export function SequencingDepthCalculator() {
 
       // 将输入的数据大小转换为字节
       let dataSizeBytes = inputDataSizeValue
-      if (inputDataSizeUnit === "Kb") dataSizeBytes = inputDataSizeValue * 1e3
-      else if (inputDataSizeUnit === "Mb") dataSizeBytes = inputDataSizeValue * 1e6
-      else if (inputDataSizeUnit === "Gb") dataSizeBytes = inputDataSizeValue * 1e9
+      if (inputDataSizeUnit === "KB") dataSizeBytes = inputDataSizeValue * 1e3
+      else if (inputDataSizeUnit === "MB") dataSizeBytes = inputDataSizeValue * 1e6
+      else if (inputDataSizeUnit === "GB") dataSizeBytes = inputDataSizeValue * 1e9
       // 从数据大小计算总碱基数（FASTQ约0.5字节/碱基）
       const totalBasesCount = dataSizeBytes / 0.5
       // 计算总reads数
@@ -278,7 +278,7 @@ export function SequencingDepthCalculator() {
                   placeholder={mode === "target-to-data" ? "1.5 (例如：外显子组)" : "1.5"}
                   value={targetSize}
                   onChange={(e) => setTargetSize(e.target.value)}
-                  onWheel={(e) => e.preventDefault()}
+                  onWheel={(e) => (e.target as HTMLElement).blur()}
                   className="flex-1 font-mono"
                 />
                 <Select value={targetSizeUnit} onValueChange={setTargetSizeUnit}>
@@ -309,7 +309,7 @@ export function SequencingDepthCalculator() {
                   placeholder="150"
                   value={readLength}
                   onChange={(e) => setReadLength(e.target.value)}
-                  onWheel={(e) => e.preventDefault()}
+                  onWheel={(e) => (e.target as HTMLElement).blur()}
                   className="flex-1 font-mono"
                 />
                 <Select value={readLengthUnit} onValueChange={setReadLengthUnit}>
@@ -337,7 +337,7 @@ export function SequencingDepthCalculator() {
                 placeholder="80"
                 value={captureEfficiency}
                 onChange={(e) => setCaptureEfficiency(e.target.value)}
-                onWheel={(e) => e.preventDefault()}
+                onWheel={(e) => (e.target as HTMLElement).blur()}
                 className="font-mono"
                 min="0"
                 max="100"
@@ -358,7 +358,7 @@ export function SequencingDepthCalculator() {
                   placeholder="100"
                   value={targetDepth}
                   onChange={(e) => setTargetDepth(e.target.value)}
-                  onWheel={(e) => e.preventDefault()}
+                  onWheel={(e) => (e.target as HTMLElement).blur()}
                   className="font-mono"
                 />
                 <div className="text-xs text-muted-foreground font-mono">
@@ -376,18 +376,18 @@ export function SequencingDepthCalculator() {
                     placeholder="5"
                     value={inputDataSize}
                     onChange={(e) => setInputDataSize(e.target.value)}
-                    onWheel={(e) => e.preventDefault()}
+                    onWheel={(e) => (e.target as HTMLElement).blur()}
                     className="flex-1 font-mono"
                   />
                   <Select value={inputDataSizeUnit} onValueChange={setInputDataSizeUnit}>
                     <SelectTrigger className="w-24 font-mono">
-                      <SelectValue placeholder="Gb" />
+                      <SelectValue placeholder="GB" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="bp" className="font-mono">bp</SelectItem>
-                      <SelectItem value="Kb" className="font-mono">Kb</SelectItem>
-                      <SelectItem value="Mb" className="font-mono">Mb</SelectItem>
-                      <SelectItem value="Gb" className="font-mono">Gb</SelectItem>
+                      <SelectItem value="B" className="font-mono">B</SelectItem>
+                      <SelectItem value="KB" className="font-mono">KB</SelectItem>
+                      <SelectItem value="MB" className="font-mono">MB</SelectItem>
+                      <SelectItem value="GB" className="font-mono">GB</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
