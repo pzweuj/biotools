@@ -13,6 +13,7 @@ import { MutalyzerIcon } from "@/components/icons/mutalyzer-icon"
 import { SequencingDepthIcon } from "@/components/icons/sequencing-depth-icon"
 import { CodonOptimizerIcon } from "@/components/icons/codon-optimizer-icon"
 import { SgRNAIcon } from "@/components/icons/sgrna-icon"
+import { TmbCalculatorIcon } from "@/components/icons/tmb-calculator-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
 import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
@@ -40,6 +41,7 @@ import { Mutalyzer } from "@/components/tools/mutalyzer"
 import { SequencingDepthCalculator } from "@/components/tools/sequencing-depth-calculator"
 import { CodonOptimizer } from "@/components/tools/codon-optimizer"
 import { SgRNADesigner } from "@/components/tools/sgrna-designer"
+import { TmbCalculator } from "@/components/tools/tmb-calculator"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -215,6 +217,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "data-processing",
         icon: SequencingDepthIcon,
         component: SequencingDepthCalculator,
+      },
+      {
+        id: "tmb-calculator",
+        nameKey: "tools.tmbCalculator.name",
+        descriptionKey: "tools.tmbCalculator.description",
+        category: "data-processing",
+        icon: TmbCalculatorIcon,
+        component: TmbCalculator,
       },
     ],
   },
