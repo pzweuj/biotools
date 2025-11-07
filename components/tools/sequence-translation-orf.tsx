@@ -292,7 +292,7 @@ export function SequenceTranslationOrf() {
     }
 
     const sortedOrfs = allOrfs.sort((a, b) => b.length - a.length)
-    setOrfResults([{ name: 'Input Sequence', sequence: cleanSeq, orfs: sortedOrfs }])
+    setOrfResults([{ name: t("tools.orf-finder.inputSequence", "Input Sequence"), sequence: cleanSeq, orfs: sortedOrfs }])
     setIsAnalyzing(false)
   }
 
@@ -343,13 +343,13 @@ export function SequenceTranslationOrf() {
         <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="simple" className="font-mono text-xs">
-              {t("tools.sequence-translation.simpleMode", "Simple Translation")}
+              {t("tools.sequence-translation-orf.simpleMode", "Simple Translation")}
             </TabsTrigger>
             <TabsTrigger value="six-frame" className="font-mono text-xs">
-              {t("tools.sequence-translation.sixFrame", "Six-Frame Translation")}
+              {t("tools.sequence-translation-orf.sixFrame", "Six-Frame Translation")}
             </TabsTrigger>
             <TabsTrigger value="orf" className="font-mono text-xs">
-              {t("tools.orf-finder.name", "ORF Finder")}
+              {t("tools.sequence-translation-orf.orfMode", "ORF Finder")}
             </TabsTrigger>
           </TabsList>
 
@@ -491,11 +491,11 @@ export function SequenceTranslationOrf() {
 
             <div className="space-y-2">
               <Label htmlFor="six-frame-input" className="font-mono">
-                {t("tools.sequence-translation.inputLabel", "DNA Sequence")}
+                {t("tools.sequence-translation-orf.inputLabel", "Input DNA Sequence")}
               </Label>
               <Textarea
                 id="six-frame-input"
-                placeholder="Enter DNA sequence for six-frame translation"
+                placeholder={t("tools.sequence-translation-orf.sixFramePlaceholder", "Enter DNA sequence for six-frame translation")}
                 value={sixFrameInput}
                 onChange={(e) => setSixFrameInput(e.target.value)}
                 className="terminal-input min-h-[120px] font-mono"
@@ -505,7 +505,7 @@ export function SequenceTranslationOrf() {
 
             <div className="flex gap-2">
               <Button onClick={handleSixFrameTranslation} className="font-mono flex-1">
-                Translate (6 Frames)
+                {t("tools.sequence-translation-orf.translateSixFrames", "Translate (6 Frames)")}
               </Button>
               <Button onClick={clearAll} variant="outline" className="font-mono">
                 {t("common.clear")}
@@ -517,8 +517,8 @@ export function SequenceTranslationOrf() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="font-mono font-bold w-24">Frame</TableHead>
-                      <TableHead className="font-mono font-bold">Protein Sequence</TableHead>
+                      <TableHead className="font-mono font-bold w-24">{t("tools.orf-finder.frame", "Frame")}</TableHead>
+                      <TableHead className="font-mono font-bold">{t("tools.orf-finder.proteinSequence", "Protein Sequence")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -618,12 +618,12 @@ export function SequenceTranslationOrf() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="font-mono font-bold text-center">Frame</TableHead>
-                        <TableHead className="font-mono font-bold text-center">Strand</TableHead>
-                        <TableHead className="font-mono font-bold text-center">Start</TableHead>
-                        <TableHead className="font-mono font-bold text-center">End</TableHead>
-                        <TableHead className="font-mono font-bold text-center">Length</TableHead>
-                        <TableHead className="font-mono font-bold text-center">MW (Da)</TableHead>
+                        <TableHead className="font-mono font-bold text-center">{t("tools.orf-finder.frame", "Frame")}</TableHead>
+                        <TableHead className="font-mono font-bold text-center">{t("tools.orf-finder.strand", "Strand")}</TableHead>
+                        <TableHead className="font-mono font-bold text-center">{t("tools.orf-finder.start", "Start")}</TableHead>
+                        <TableHead className="font-mono font-bold text-center">{t("tools.orf-finder.end", "End")}</TableHead>
+                        <TableHead className="font-mono font-bold text-center">{t("tools.orf-finder.length", "Length")}</TableHead>
+                        <TableHead className="font-mono font-bold text-center">{t("tools.orf-finder.molecularWeight", "MW (Da)")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

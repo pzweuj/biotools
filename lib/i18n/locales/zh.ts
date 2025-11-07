@@ -131,6 +131,7 @@ export const zh = {
     "orf-finder": {
       name: "开放阅读框查找器",
       description: "查找DNA序列中的开放阅读框，支持6个阅读框分析",
+      inputSequence: "输入序列",
       sequenceLabel: "输入DNA序列",
       sequencePlaceholder: "输入DNA序列，支持FASTA格式\n例如:\n>Gene 1\nATGGCTAGCTAGCTAGCTAG\n>Gene 2\nATGAAACCCGGGTTTAAA",
       formatHint: "💡 支持FASTA格式和纯序列格式",
@@ -163,6 +164,10 @@ export const zh = {
       description: "DNA/RNA翻译、六框翻译、开放阅读框检测集成工具",
       simpleMode: "简单翻译",
       sixFrame: "六框翻译",
+      orfMode: "ORF查找",
+      inputLabel: "输入DNA序列",
+      sixFramePlaceholder: "输入DNA序列进行六框翻译",
+      translateSixFrames: "六框翻译",
     },
     "sequence-translation": {
       name: "序列翻译工具",

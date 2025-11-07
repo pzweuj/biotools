@@ -132,6 +132,7 @@ export const en = {
     "orf-finder": {
       name: "ORF Finder",
       description: "Find open reading frames in DNA sequences with 6-frame analysis",
+      inputSequence: "Input Sequence",
       sequenceLabel: "Input DNA Sequences",
       sequencePlaceholder: "Enter DNA sequences, supports FASTA format\nExample:\n>Gene 1\nATGGCTAGCTAGCTAGCTAG\n>Gene 2\nATGAAACCCGGGTTTAAA",
       formatHint: "💡 Supports FASTA format and plain sequences",
@@ -164,6 +165,10 @@ export const en = {
       description: "Integrated tool for DNA/RNA translation, six-frame translation, and ORF detection",
       simpleMode: "Simple Translation",
       sixFrame: "Six-Frame Translation",
+      orfMode: "ORF Finder",
+      inputLabel: "Input DNA Sequence",
+      sixFramePlaceholder: "Enter DNA sequence for six-frame translation",
+      translateSixFrames: "Translate (6 Frames)",
     },
     "sequence-translation": {
       name: "Sequence Translation",
