@@ -1,0 +1,472 @@
+"use client"
+
+import { useState, useMemo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Calculator, Beaker, Info, Plus, Minus } from "lucide-react"
+import { useI18n } from "@/lib/i18n"
+
+interface ReactionComponent {
+  name: string
+  stockConcentration: string
+  finalConcentration: string
+  volumePerReaction: number
+  stockUnit: string
+  finalUnit: string
+}
+
+interface PresetReaction {
+  name: string
+  components: ReactionComponent[]
+}
+
+const PRESET_REACTIONS: Record<string, PresetReaction> = {
+  standard: {
+    name: "Standard PCR",
+    components: [
+      { name: "PCR Buffer", stockConcentration: "10", finalConcentration: "1", volumePerReaction: 0, stockUnit: "×", finalUnit: "×" },
+      { name: "dNTPs", stockConcentration: "10", finalConcentration: "0.2", volumePerReaction: 0, stockUnit: "mM", finalUnit: "mM" },
+      { name: "Forward Primer", stockConcentration: "10", finalConcentration: "0.5", volumePerReaction: 0, stockUnit: "μM", finalUnit: "μM" },
+      { name: "Reverse Primer", stockConcentration: "10", finalConcentration: "0.5", volumePerReaction: 0, stockUnit: "μM", finalUnit: "μM" },
+      { name: "DNA Polymerase", stockConcentration: "5", finalConcentration: "0.025", volumePerReaction: 0, stockUnit: "U/μL", finalUnit: "U/μL" },
+      { name: "Template DNA", stockConcentration: "100", finalConcentration: "10", volumePerReaction: 0, stockUnit: "ng/μL", finalUnit: "ng" },
+    ]
+  },
+  qpcr: {
+    name: "qPCR/Real-Time PCR",
+    components: [
+      { name: "qPCR Master Mix", stockConcentration: "2", finalConcentration: "1", volumePerReaction: 0, stockUnit: "×", finalUnit: "×" },
+      { name: "Forward Primer", stockConcentration: "10", finalConcentration: "0.3", volumePerReaction: 0, stockUnit: "μM", finalUnit: "μM" },
+      { name: "Reverse Primer", stockConcentration: "10", finalConcentration: "0.3", volumePerReaction: 0, stockUnit: "μM", finalUnit: "μM" },
+      { name: "Probe (optional)", stockConcentration: "10", finalConcentration: "0.2", volumePerReaction: 0, stockUnit: "μM", finalUnit: "μM" },
+      { name: "Template DNA", stockConcentration: "100", finalConcentration: "5", volumePerReaction: 0, stockUnit: "ng/μL", finalUnit: "ng" },
+    ]
+  },
+  gradient: {
+    name: "Gradient PCR",
+    components: [
+      { name: "PCR Buffer", stockConcentration: "10", finalConcentration: "1", volumePerReaction: 0, stockUnit: "×", finalUnit: "×" },
+      { name: "dNTPs", stockConcentration: "10", finalConcentration: "0.2", volumePerReaction: 0, stockUnit: "mM", finalUnit: "mM" },
+      { name: "MgCl2", stockConcentration: "25", finalConcentration: "1.5", volumePerReaction: 0, stockUnit: "mM", finalUnit: "mM" },
+      { name: "Forward Primer", stockConcentration: "10", finalConcentration: "0.5", volumePerReaction: 0, stockUnit: "μM", finalUnit: "μM" },
+      { name: "Reverse Primer", stockConcentration: "10", finalConcentration: "0.5", volumePerReaction: 0, stockUnit: "μM", finalUnit: "μM" },
+      { name: "DNA Polymerase", stockConcentration: "5", finalConcentration: "0.025", volumePerReaction: 0, stockUnit: "U/μL", finalUnit: "U/μL" },
+      { name: "Template DNA", stockConcentration: "100", finalConcentration: "10", volumePerReaction: 0, stockUnit: "ng/μL", finalUnit: "ng" },
+    ]
+  }
+}
+
+export function PcrMasterMixCalculator() {
+  const { t } = useI18n()
+  
+  const [presetType, setPresetType] = useState("standard")
+  const [numberOfReactions, setNumberOfReactions] = useState("8")
+  const [reactionVolume, setReactionVolume] = useState("25")
+  const [extraPercent, setExtraPercent] = useState("10")
+  const [includeWater, setIncludeWater] = useState(true)
+  const [components, setComponents] = useState<ReactionComponent[]>(PRESET_REACTIONS.standard.components)
+  
+  // 加载预设配置
+  const loadPreset = (type: string) => {
+    setPresetType(type)
+    setComponents([...PRESET_REACTIONS[type].components])
+  }
+  
+  // 添加组分
+  const addComponent = () => {
+    setComponents([...components, {
+      name: "New Component",
+      stockConcentration: "1",
+      finalConcentration: "0.1",
+      volumePerReaction: 0,
+      stockUnit: "×",
+      finalUnit: "×"
+    }])
+  }
+  
+  // 删除组分
+  const removeComponent = (index: number) => {
+    setComponents(components.filter((_, i) => i !== index))
+  }
+  
+  // 更新组分
+  const updateComponent = (index: number, field: keyof ReactionComponent, value: string | number) => {
+    const newComponents = [...components]
+    newComponents[index] = { ...newComponents[index], [field]: value }
+    setComponents(newComponents)
+  }
+  
+  // 计算体积
+  const calculations = useMemo(() => {
+    const reactions = parseFloat(numberOfReactions) || 0
+    const volume = parseFloat(reactionVolume) || 0
+    const extra = parseFloat(extraPercent) || 0
+    
+    if (reactions <= 0 || volume <= 0) return null
+    
+    const totalReactions = reactions * (1 + extra / 100)
+    
+    const calculatedComponents = components.map(comp => {
+      const stock = parseFloat(comp.stockConcentration) || 0
+      const final = parseFloat(comp.finalConcentration) || 0
+      
+      let volumePerReaction = 0
+      
+      // 对于浓度单位，使用稀释公式 C1V1 = C2V2
+      if (comp.stockUnit === comp.finalUnit && stock > 0) {
+        volumePerReaction = (final * volume) / stock
+      } else if (comp.finalUnit === "ng" && comp.stockUnit === "ng/μL") {
+        // 总量计算（如模板DNA）
+        volumePerReaction = final / stock
+      } else if (stock > 0) {
+        // 通用稀释
+        volumePerReaction = (final * volume) / stock
+      }
+      
+      return {
+        ...comp,
+        volumePerReaction,
+        totalVolume: volumePerReaction * totalReactions
+      }
+    })
+    
+    const usedVolume = calculatedComponents.reduce((sum, comp) => sum + comp.volumePerReaction, 0)
+    const waterVolume = includeWater ? volume - usedVolume : 0
+    const totalWater = waterVolume * totalReactions
+    
+    return {
+      components: calculatedComponents,
+      waterVolume,
+      totalWater,
+      usedVolume,
+      totalReactions: Math.ceil(totalReactions),
+      extraReactions: Math.ceil(totalReactions - reactions)
+    }
+  }, [components, numberOfReactions, reactionVolume, extraPercent, includeWater])
+  
+  const clearAll = () => {
+    setNumberOfReactions("8")
+    setReactionVolume("25")
+    setExtraPercent("10")
+    loadPreset("standard")
+  }
+
+  return (
+    <Card className="w-full geek-card">
+      <CardHeader>
+        <CardTitle className="text-balance font-mono text-card-foreground flex items-center gap-2">
+          <Beaker className="w-5 h-5" />
+          {t("tools.pcr-master-mix.name", "PCR Master Mix Calculator")}
+        </CardTitle>
+        <CardDescription className="font-mono">
+          {t("tools.pcr-master-mix.description", "Calculate volumes for PCR master mix preparation - supports standard PCR, qPCR, and custom protocols")}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <Tabs value="setup" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="setup" className="font-mono text-xs">
+              {t("tools.pcr-master-mix.setupTab", "Setup")}
+            </TabsTrigger>
+            <TabsTrigger value="components" className="font-mono text-xs">
+              {t("tools.pcr-master-mix.componentsTab", "Components")}
+            </TabsTrigger>
+          </TabsList>
+          
+          {/* 基本设置 */}
+          <TabsContent value="setup" className="space-y-4 mt-4">
+            <Card className="border-2 border-dashed border-border/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-mono flex items-center">
+                  <Calculator className="w-4 h-4 mr-2" />
+                  {t("tools.pcr-master-mix.basicSettings", "Basic Settings")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* 预设选择 */}
+                <div className="space-y-2">
+                  <Label className="font-mono">{t("tools.pcr-master-mix.preset", "Preset Protocol")}</Label>
+                  <Select value={presetType} onValueChange={loadPreset}>
+                    <SelectTrigger className="font-mono">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard" className="font-mono">
+                        {t("tools.pcr-master-mix.standardPCR", "Standard PCR")}
+                      </SelectItem>
+                      <SelectItem value="qpcr" className="font-mono">
+                        {t("tools.pcr-master-mix.qPCR", "qPCR/Real-Time PCR")}
+                      </SelectItem>
+                      <SelectItem value="gradient" className="font-mono">
+                        {t("tools.pcr-master-mix.gradientPCR", "Gradient PCR")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="num-reactions" className="font-mono">
+                      {t("tools.pcr-master-mix.numberOfReactions", "Number of Reactions")}
+                    </Label>
+                    <Input
+                      id="num-reactions"
+                      type="number"
+                      value={numberOfReactions}
+                      onChange={(e) => setNumberOfReactions(e.target.value)}
+                      className="terminal-input"
+                      min="1"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reaction-volume" className="font-mono">
+                      {t("tools.pcr-master-mix.reactionVolume", "Reaction Volume (μL)")}
+                    </Label>
+                    <Input
+                      id="reaction-volume"
+                      type="number"
+                      value={reactionVolume}
+                      onChange={(e) => setReactionVolume(e.target.value)}
+                      className="terminal-input"
+                      min="1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="extra-percent" className="font-mono">
+                    {t("tools.pcr-master-mix.extraVolume", "Extra Volume (%)")}
+                  </Label>
+                  <Input
+                    id="extra-percent"
+                    type="number"
+                    value={extraPercent}
+                    onChange={(e) => setExtraPercent(e.target.value)}
+                    className="terminal-input"
+                    min="0"
+                    max="50"
+                  />
+                  <div className="text-xs text-muted-foreground font-mono">
+                    {t("tools.pcr-master-mix.extraVolumeHint", "Recommended 10-20% to compensate for pipetting errors")}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 rounded-md border border-border bg-card/40 px-3 py-3">
+                  <Checkbox
+                    id="include-water"
+                    checked={includeWater}
+                    onCheckedChange={(checked) => setIncludeWater(checked as boolean)}
+                    className="border-2 border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-0.5"
+                  />
+                  <Label htmlFor="include-water" className="font-mono text-sm cursor-pointer">
+                    {t("tools.pcr-master-mix.includeWater", "Include water/ddH2O in calculations")}
+                  </Label>
+                </div>
+
+                <Button onClick={clearAll} variant="outline" className="font-mono w-full">
+                  {t("common.clear", "Clear")}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 组分编辑 */}
+          <TabsContent value="components" className="space-y-4 mt-4">
+            <Card className="border-2 border-dashed border-border/50">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-sm font-mono">
+                    {t("tools.pcr-master-mix.editComponents", "Edit Components")}
+                  </CardTitle>
+                  <Button onClick={addComponent} size="sm" variant="outline" className="font-mono">
+                    <Plus className="w-4 h-4 mr-1" />
+                    {t("tools.pcr-master-mix.addComponent", "Add")}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {components.map((comp, index) => (
+                  <div key={index} className="p-3 border rounded-lg space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Input
+                        value={comp.name}
+                        onChange={(e) => updateComponent(index, 'name', e.target.value)}
+                        className="terminal-input flex-1 mr-2"
+                        placeholder="Component name"
+                      />
+                      <Button
+                        onClick={() => removeComponent(index)}
+                        size="sm"
+                        variant="ghost"
+                        className="font-mono"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="font-mono text-xs">
+                          {t("tools.pcr-master-mix.stockConc", "Stock")}
+                        </Label>
+                        <div className="flex gap-1">
+                          <Input
+                            type="number"
+                            value={comp.stockConcentration}
+                            onChange={(e) => updateComponent(index, 'stockConcentration', e.target.value)}
+                            className="terminal-input text-xs"
+                          />
+                          <Input
+                            value={comp.stockUnit}
+                            onChange={(e) => updateComponent(index, 'stockUnit', e.target.value)}
+                            className="terminal-input text-xs w-16"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="font-mono text-xs">
+                          {t("tools.pcr-master-mix.finalConc", "Final")}
+                        </Label>
+                        <div className="flex gap-1">
+                          <Input
+                            type="number"
+                            value={comp.finalConcentration}
+                            onChange={(e) => updateComponent(index, 'finalConcentration', e.target.value)}
+                            className="terminal-input text-xs"
+                          />
+                          <Input
+                            value={comp.finalUnit}
+                            onChange={(e) => updateComponent(index, 'finalUnit', e.target.value)}
+                            className="terminal-input text-xs w-16"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* 结果展示 */}
+        {calculations && (
+          <>
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription className="font-mono text-sm">
+                {t("tools.pcr-master-mix.protocol", "Protocol")}: 
+                {t("tools.pcr-master-mix.protocolDesc", " Mix all components except template DNA in master mix. Aliquot master mix to tubes, then add template DNA individually.")}
+              </AlertDescription>
+            </Alert>
+
+            <Card className="border-2 border-dashed border-border/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-mono">
+                  {t("tools.pcr-master-mix.masterMixRecipe", "Master Mix Recipe")}
+                </CardTitle>
+                <div className="text-xs text-muted-foreground font-mono">
+                  {t("tools.pcr-master-mix.totalReactions", "Total reactions")}: {calculations.totalReactions} 
+                  ({numberOfReactions} + {calculations.extraReactions} {t("tools.pcr-master-mix.extra", "extra")})
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-mono font-bold">
+                          {t("tools.pcr-master-mix.component", "Component")}
+                        </TableHead>
+                        <TableHead className="font-mono font-bold text-center">
+                          {t("tools.pcr-master-mix.stockConc", "Stock Conc.")}
+                        </TableHead>
+                        <TableHead className="font-mono font-bold text-center">
+                          {t("tools.pcr-master-mix.finalConc", "Final Conc.")}
+                        </TableHead>
+                        <TableHead className="font-mono font-bold text-center">
+                          {t("tools.pcr-master-mix.perReaction", "Per Rxn (μL)")}
+                        </TableHead>
+                        <TableHead className="font-mono font-bold text-center">
+                          {t("tools.pcr-master-mix.masterMix", "Master Mix (μL)")}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {calculations.components.map((comp, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-mono font-bold">{comp.name}</TableCell>
+                          <TableCell className="text-center font-mono text-sm">
+                            {comp.stockConcentration} {comp.stockUnit}
+                          </TableCell>
+                          <TableCell className="text-center font-mono text-sm">
+                            {comp.finalConcentration} {comp.finalUnit}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="font-mono">
+                              {comp.volumePerReaction.toFixed(2)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary" className="font-mono">
+                              {comp.totalVolume.toFixed(2)}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {includeWater && (
+                        <TableRow className="bg-muted/30">
+                          <TableCell className="font-mono font-bold">
+                            {t("tools.pcr-master-mix.water", "ddH2O/Water")}
+                          </TableCell>
+                          <TableCell className="text-center text-muted-foreground">-</TableCell>
+                          <TableCell className="text-center text-muted-foreground">-</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="font-mono">
+                              {calculations.waterVolume.toFixed(2)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary" className="font-mono">
+                              {calculations.totalWater.toFixed(2)}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      <TableRow className="bg-primary/10 font-bold">
+                        <TableCell className="font-mono">
+                          {t("tools.pcr-master-mix.total", "Total")}
+                        </TableCell>
+                        <TableCell colSpan={2}></TableCell>
+                        <TableCell className="text-center">
+                          <Badge className="font-mono">
+                            {reactionVolume} μL
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge className="font-mono">
+                            {(calculations.components.reduce((sum, c) => sum + c.totalVolume, 0) + calculations.totalWater).toFixed(2)} μL
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+export default PcrMasterMixCalculator

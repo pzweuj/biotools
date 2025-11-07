@@ -43,6 +43,12 @@ import { SgRNADesigner } from "@/components/tools/sgrna-designer"
 import { TmbCalculator } from "@/components/tools/tmb-calculator"
 import { SerialDilutionCalculator } from "@/components/tools/serial-dilution-calculator"
 import { SerialDilutionIcon } from "@/components/icons/serial-dilution-icon"
+import { PcrMasterMixCalculator } from "@/components/tools/pcr-master-mix-calculator"
+import { PcrIcon } from "@/components/icons/pcr-icon"
+import { StandardCurveFitting } from "@/components/tools/standard-curve-fitting"
+import { CurveIcon } from "@/components/icons/curve-icon"
+import { GcSkewAnalyzer } from "@/components/tools/gc-skew-analyzer"
+import { GcSkewIcon } from "@/components/icons/gc-skew-icon"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -80,6 +86,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "sequence-analysis",
         icon: CodonOptimizerIcon,
         component: CodonOptimizer,
+      },
+      {
+        id: "gc-skew-analyzer",
+        nameKey: "tools.gc-skew.name",
+        descriptionKey: "tools.gc-skew.description",
+        category: "sequence-analysis",
+        icon: GcSkewIcon,
+        component: GcSkewAnalyzer,
       },
     ],
   },
@@ -157,6 +171,14 @@ export const getToolCategories = (): ToolCategory[] => [
         icon: CalculatorIcon,
         component: PCRProductCalculator,
       },
+      {
+        id: "pcr-master-mix-calculator",
+        nameKey: "tools.pcr-master-mix.name",
+        descriptionKey: "tools.pcr-master-mix.description",
+        category: "primer-design",
+        icon: PcrIcon,
+        component: PcrMasterMixCalculator,
+      },
     ],
   },
   {
@@ -218,6 +240,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "data-processing",
         icon: TmbCalculatorIcon,
         component: TmbCalculator,
+      },
+      {
+        id: "standard-curve-fitting",
+        nameKey: "tools.standard-curve.name",
+        descriptionKey: "tools.standard-curve.description",
+        category: "data-processing",
+        icon: CurveIcon,
+        component: StandardCurveFitting,
       },
     ],
   },
