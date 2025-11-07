@@ -28,6 +28,14 @@ const HYDROPHOBICITY: Record<string, number> = {
   T: -0.7, W: -0.9, Y: -1.3, V: 4.2
 }
 
+// 氨基酸分子量表 (Da)
+const AMINO_ACID_WEIGHTS: Record<string, number> = {
+  A: 89.09, R: 174.20, N: 132.12, D: 133.10, C: 121.15,
+  E: 147.13, Q: 146.15, G: 75.07, H: 155.16, I: 131.17,
+  L: 131.17, K: 146.19, M: 149.21, F: 165.19, P: 115.13,
+  S: 105.09, T: 119.12, W: 204.23, Y: 181.19, V: 117.15
+}
+
 // 氨基酸分类
 const AA_CATEGORIES = {
   hydrophobic: ['A', 'V', 'I', 'L', 'M', 'F', 'Y', 'W'],
@@ -41,6 +49,23 @@ export function ProteinAnalysisTool() {
   const [sequence, setSequence] = useState("")
 
   const cleanSeq = useMemo(() => sequence.toUpperCase().replace(/[^ACDEFGHIKLMNPQRSTVWY]/g, ""), [sequence])
+
+  // 分子量计算
+  const molecularWeight = useMemo(() => {
+    if (!cleanSeq) return 0
+    
+    let weight = 18.015 // 水分子 (H2O)
+    for (const aa of cleanSeq) {
+      weight += AMINO_ACID_WEIGHTS[aa] || 0
+    }
+    
+    // 减去肽键形成过程中失去的水分子
+    if (cleanSeq.length > 1) {
+      weight -= (cleanSeq.length - 1) * 18.015
+    }
+    
+    return weight
+  }, [cleanSeq])
 
   // 等电点计算
   const calculatePI = (seq: string): number => {
@@ -123,7 +148,7 @@ export function ProteinAnalysisTool() {
           {t("tools.protein-analysis.name", "Protein Analysis Tool")}
         </CardTitle>
         <CardDescription className="font-mono">
-          {t("tools.protein-analysis.description", "Calculate isoelectric point (pI), hydrophobicity analysis, and amino acid composition")}
+          {t("tools.protein-analysis.description", "Calculate molecular weight, isoelectric point (pI), hydrophobicity, and amino acid composition")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -160,8 +185,30 @@ export function ProteinAnalysisTool() {
 
         {cleanSeq && (
           <>
-            {/* 等电点和疏水性 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 基本属性 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="border-2 border-dashed border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-mono flex items-center">
+                    <Calculator className="w-4 h-4 mr-2" />
+                    {t("tools.protein-analysis.molecularWeight", "Molecular Weight")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-3xl font-mono font-bold text-primary">
+                      {molecularWeight.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-muted-foreground font-mono mt-1">
+                      {t("tools.protein-analysis.daltons", "Daltons (Da)")}
+                    </div>
+                    <div className="text-xs text-muted-foreground font-mono">
+                      {(molecularWeight / 1000).toFixed(2)} kDa
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="border-2 border-dashed border-border/50">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-mono flex items-center">
@@ -269,7 +316,7 @@ export function ProteinAnalysisTool() {
             <Alert>
               <Calculator className="h-4 w-4" />
               <AlertDescription className="font-mono text-sm">
-                {t("tools.protein-analysis.note", "pI calculated using Henderson-Hasselbalch equation. Hydrophobicity based on Kyte-Doolittle scale.")}
+                {t("tools.protein-analysis.note", "Molecular weight calculated including peptide bonds. pI calculated using Henderson-Hasselbalch equation. Hydrophobicity based on Kyte-Doolittle scale.")}
               </AlertDescription>
             </Alert>
           </>

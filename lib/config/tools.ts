@@ -42,6 +42,8 @@ import { SequencingDepthCalculator } from "@/components/tools/sequencing-depth-c
 import { CodonOptimizer } from "@/components/tools/codon-optimizer"
 import { SgRNADesigner } from "@/components/tools/sgrna-designer"
 import { TmbCalculator } from "@/components/tools/tmb-calculator"
+import { SerialDilutionCalculator } from "@/components/tools/serial-dilution-calculator"
+import { SerialDilutionIcon } from "@/components/icons/serial-dilution-icon"
 
 export const getToolCategories = (): ToolCategory[] => [
   {
@@ -247,6 +249,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "laboratory-calculations",
         icon: CalculatorIcon,
         component: ProteinPurificationCalculator,
+      },
+      {
+        id: "serial-dilution-calculator",
+        nameKey: "tools.serial-dilution.name",
+        descriptionKey: "tools.serial-dilution.description",
+        category: "laboratory-calculations",
+        icon: SerialDilutionIcon,
+        component: SerialDilutionCalculator,
       },
     ],
   },
