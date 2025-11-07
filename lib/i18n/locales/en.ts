@@ -159,6 +159,12 @@ export const en = {
       dnaSequence: "DNA Sequence",
       proteinSequence: "Protein Sequence",
     },
+    "sequence-translation-orf": {
+      name: "Sequence Translation & ORF Finder",
+      description: "Integrated tool for DNA/RNA translation, six-frame translation, and ORF detection",
+      simpleMode: "Simple Translation",
+      sixFrame: "Six-Frame Translation",
+    },
     "sequence-translation": {
       name: "Sequence Translation",
       description: "DNA→RNA transcription, RNA→protein translation, genetic code selection, reverse complement",

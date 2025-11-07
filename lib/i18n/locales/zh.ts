@@ -158,6 +158,12 @@ export const zh = {
       dnaSequence: "DNA序列",
       proteinSequence: "蛋白质序列",
     },
+    "sequence-translation-orf": {
+      name: "序列翻译与ORF查找",
+      description: "DNA/RNA翻译、六框翻译、开放阅读框检测集成工具",
+      simpleMode: "简单翻译",
+      sixFrame: "六框翻译",
+    },
     "sequence-translation": {
       name: "序列翻译工具",
       description: "DNA到RNA转录、RNA到蛋白质翻译、可选遗传密码表、反向互补",

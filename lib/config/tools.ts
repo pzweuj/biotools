@@ -19,7 +19,7 @@ import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
 import { SequenceStats } from "@/components/tools/sequence-stats"
 import { OrfFinder } from "@/components/tools/orf-finder"
-import { SequenceTranslation } from "@/components/tools/sequence-translation"
+import { SequenceTranslationOrf } from "@/components/tools/sequence-translation-orf"
 import { PrimerDimerDetector } from "@/components/tools/primer-dimer-detector"
 import { PCRProductCalculator } from "@/components/tools/pcr-product-calculator"
 import { MolecularWeightCalculator } from "@/components/tools/molecular-weight-calculator"
@@ -65,20 +65,12 @@ export const getToolCategories = (): ToolCategory[] => [
         component: BaseComplement,
       },
       {
-        id: "sequence-translation",
-        nameKey: "tools.sequence-translation.name",
-        descriptionKey: "tools.sequence-translation.description",
+        id: "sequence-translation-orf",
+        nameKey: "tools.sequence-translation-orf.name",
+        descriptionKey: "tools.sequence-translation-orf.description",
         category: "sequence-analysis",
         icon: DnaIcon,
-        component: SequenceTranslation,
-      },
-      {
-        id: "orf-finder",
-        nameKey: "tools.orf-finder.name",
-        descriptionKey: "tools.orf-finder.description",
-        category: "sequence-analysis",
-        icon: OrfIcon,
-        component: OrfFinder,
+        component: SequenceTranslationOrf,
       },
       {
         id: "codon-optimizer",
