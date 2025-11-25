@@ -37,6 +37,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     
     // Reference Tables
     'amino-acid-table',
+    'blosum-matrix',
     
     // External Tools
     'maneloca',

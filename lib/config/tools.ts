@@ -17,6 +17,7 @@ import { TmbCalculatorIcon } from "@/components/icons/tmb-calculator-icon"
 import { BaseComplement } from "@/components/tools/base-complement"
 import { TmCalculator } from "@/components/tools/tm-calculator"
 import { AminoAcidTable } from "@/components/tools/amino-acid-table"
+import { BlosumMatrix } from "@/components/tools/blosum-matrix"
 import { SequenceStats } from "@/components/tools/sequence-stats"
 import { SequenceTranslationOrf } from "@/components/tools/sequence-translation-orf"
 import { PrimerDimerDetector } from "@/components/tools/primer-dimer-detector"
@@ -300,6 +301,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "reference-tables",
         icon: TableIcon,
         component: AminoAcidTable,
+      },
+      {
+        id: "blosum-matrix",
+        nameKey: "tools.blosum-matrix.name",
+        descriptionKey: "tools.blosum-matrix.description",
+        category: "reference-tables",
+        icon: TableIcon,
+        component: BlosumMatrix,
       },
     ],
   },
