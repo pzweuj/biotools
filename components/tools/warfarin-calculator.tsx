@@ -1,4 +1,4 @@
-"use client"
+"use client"ite
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ export function WarfarinCalculator() {
   const { t } = useI18n()
 
   const handleVisitSite = () => {
-    window.open("https://warfarin.biotools.site/", "_blank", "noopener,noreferrer")
+    window.open("https://warfarin.biotools.space/", "_blank", "noopener,noreferrer")
   }
 
   const handleViewSource = () => {

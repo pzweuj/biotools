@@ -11,7 +11,7 @@ export function ManeLoca() {
   const { t } = useI18n()
 
   const handleVisitSite = () => {
-    window.open("https://maneloca.biotools.site", "_blank", "noopener,noreferrer")
+    window.open("https://maneloca.biotools.space", "_blank", "noopener,noreferrer")
   }
 
   const handleViewSource = () => {

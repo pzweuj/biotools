@@ -11,7 +11,7 @@ export function DeepHpo() {
   const { t } = useI18n()
 
   const handleVisitSite = () => {
-    window.open("https://deephpo.biotools.site", "_blank", "noopener,noreferrer")
+    window.open("https://deephpo.biotools.space", "_blank", "noopener,noreferrer")
   }
 
   const handleViewSource = () => {
