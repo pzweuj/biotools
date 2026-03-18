@@ -106,12 +106,24 @@ export function PageAgentPlugin() {
     }
 
     try {
-      // 创建新的 PageAgent 实例
+      // 创建新的 PageAgent 实例，使用 API 路由代理
       const agent = new PageAgent({
         model: config.model,
-        baseURL: config.baseURL,
+        baseURL: "/api/agent",
         apiKey: config.apiKey,
         language: locale === "zh" ? "zh-CN" : "en-US",
+        fetch: async (url: string, options: any) => {
+          return fetch("/api/agent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              baseURL: config.baseURL,
+              apiKey: config.apiKey,
+              model: config.model,
+              messages: JSON.parse(options.body).messages,
+            }),
+          })
+        },
       })
 
       agentRef.current = agent
