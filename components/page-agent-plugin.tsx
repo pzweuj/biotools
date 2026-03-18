@@ -54,6 +54,15 @@ export function PageAgentPlugin() {
     })
   }, [])
 
+  // 控制 body 类名以调整主内容区域
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("agent-panel-open")
+    } else {
+      document.body.classList.remove("agent-panel-open")
+    }
+  }, [isOpen])
+
   // 自动滚动到底部
   useEffect(() => {
     if (scrollRef.current) {

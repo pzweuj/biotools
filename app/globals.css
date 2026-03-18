@@ -196,12 +196,17 @@ input, textarea {
 /* 侧边栏响应式布局 */
 .main-content {
   margin-left: 320px;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 当body有sidebar-collapsed类时，调整主内容区域 */
 body.sidebar-collapsed .main-content {
   margin-left: 0;
+}
+
+/* 当右侧 Agent 面板展开时，调整主内容区域 */
+body.agent-panel-open .main-content {
+  margin-right: 400px;
 }
 
 /* 侧边栏滚动条样式 - 默认隐藏，悬停时显示 */
