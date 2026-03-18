@@ -49,6 +49,7 @@
     "lucide-react": "^0.454.0",
     "next": "14.2.26",
     "next-themes": "latest",
+    "page-agent": "^1.5.9",
     "react": "^18",
     "react-day-picker": "9.8.0",
     "react-dom": "^18",

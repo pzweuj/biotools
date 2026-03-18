@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Providers } from "@/components/providers"
+import { PageAgentPlugin } from "@/components/page-agent-plugin"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -64,6 +65,7 @@ export default function RootLayout({
         <Providers>
           <Suspense fallback={<div className="flex items-center justify-center h-screen font-mono">Loading...</div>}>
             {children}
+            <PageAgentPlugin />
             <Analytics />
           </Suspense>
         </Providers>
