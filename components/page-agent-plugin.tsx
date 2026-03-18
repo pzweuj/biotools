@@ -124,6 +124,12 @@ export function PageAgentPlugin() {
 
       agentRef.current = agent
 
+      // 监听错误
+      agent.addEventListener("error", (error: any) => {
+        console.error("PageAgent error:", error)
+        addMessage("system", `错误: ${error.message || JSON.stringify(error)}`)
+      })
+
       // 强制隐藏 panel - 通过覆盖 panel.show 方法
       const originalShow = agent.panel.show.bind(agent.panel)
       agent.panel.show = () => {
