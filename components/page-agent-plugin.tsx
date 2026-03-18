@@ -106,24 +106,29 @@ export function PageAgentPlugin() {
     }
 
     try {
-      // 创建新的 PageAgent 实例，使用 API 路由代理
+      // 创建自定义 fetch 函数
+      const customFetch = async (url: string, options: any) => {
+        const body = JSON.parse(options.body)
+        const response = await fetch("/api/agent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            baseURL: config.baseURL,
+            apiKey: config.apiKey,
+            model: config.model,
+            messages: body.messages,
+          }),
+        })
+        return response
+      }
+
+      // 创建新的 PageAgent 实例
       const agent = new PageAgent({
         model: config.model,
-        baseURL: "/api/agent",
+        baseURL: config.baseURL,
         apiKey: config.apiKey,
         language: locale === "zh" ? "zh-CN" : "en-US",
-        fetch: async (url: string, options: any) => {
-          return fetch("/api/agent", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              baseURL: config.baseURL,
-              apiKey: config.apiKey,
-              model: config.model,
-              messages: JSON.parse(options.body).messages,
-            }),
-          })
-        },
+        fetch: customFetch,
       })
 
       agentRef.current = agent
@@ -343,8 +348,8 @@ export function PageAgentPlugin() {
           </CardHeader>
 
           {/* 消息区域 */}
-          <ScrollArea className="flex-1 px-4 py-2">
-            <div className="space-y-3" ref={scrollRef}>
+          <div className="flex-1 overflow-y-auto px-4 py-2" ref={scrollRef}>
+            <div className="space-y-3">
               {!isAgentRunning ? (
                 <div className="text-center space-y-4 py-8">
                   <Bot className="w-12 h-12 mx-auto text-muted-foreground" />
@@ -390,7 +395,7 @@ export function PageAgentPlugin() {
                 </>
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* 输入区域 */}
           {isAgentRunning && (
