@@ -52,6 +52,11 @@ export function PageAgentPlugin() {
     import("page-agent").then((module) => {
       PageAgent = module.PageAgent
     })
+    // 从 localStorage 加载配置
+    const saved = localStorage.getItem("page-agent-config")
+    if (saved) {
+      setConfig(JSON.parse(saved))
+    }
   }, [])
 
   // 控制 body 类名以调整主内容区域
@@ -106,21 +111,8 @@ export function PageAgentPlugin() {
     }
 
     try {
-      // 创建自定义 fetch 函数
-      const customFetch = async (url: string, options: any) => {
-        const body = JSON.parse(options.body)
-        const response = await fetch("/api/agent", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            baseURL: config.baseURL,
-            apiKey: config.apiKey,
-            model: config.model,
-            messages: body.messages,
-          }),
-        })
-        return response
-      }
+      // 保存配置到 localStorage
+      localStorage.setItem("page-agent-config", JSON.stringify(config))
 
       // 创建新的 PageAgent 实例
       const agent = new PageAgent({
@@ -128,7 +120,6 @@ export function PageAgentPlugin() {
         baseURL: config.baseURL,
         apiKey: config.apiKey,
         language: locale === "zh" ? "zh-CN" : "en-US",
-        fetch: customFetch,
       })
 
       agentRef.current = agent
