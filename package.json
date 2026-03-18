@@ -1,6 +1,6 @@
 {
   "name": "biotools",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -47,12 +47,12 @@
     "geist": "latest",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "14.2.26",
+    "next": "16.1.7",
     "next-themes": "latest",
     "page-agent": "^1.5.9",
-    "react": "^18",
+    "react": "^19.2.4",
     "react-day-picker": "9.8.0",
-    "react-dom": "^18",
+    "react-dom": "^19.2.4",
     "react-hook-form": "^7.60.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.4",
