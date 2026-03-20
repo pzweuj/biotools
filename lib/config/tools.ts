@@ -10,6 +10,7 @@ import { WarfarinIcon } from "@/components/icons/warfarin-icon"
 import { IndexCheckerIcon } from "@/components/icons/index-checker-icon"
 import { AaConverterIcon } from "@/components/icons/aa-converter-icon"
 import { MutalyzerIcon } from "@/components/icons/mutalyzer-icon"
+import { SpliceAIIcon } from "@/components/icons/spliceai-icon"
 import { SequencingDepthIcon } from "@/components/icons/sequencing-depth-icon"
 import { CodonOptimizerIcon } from "@/components/icons/codon-optimizer-icon"
 import { SgRNAIcon } from "@/components/icons/sgrna-icon"
@@ -38,6 +39,7 @@ import { WarfarinCalculator } from "@/components/tools/warfarin-calculator"
 import { IndexChecker } from "@/components/tools/index-checker"
 import { AaConverter } from "@/components/tools/aa-converter"
 import { Mutalyzer } from "@/components/tools/mutalyzer"
+import { SpliceAI } from "@/components/tools/spliceai"
 import { SequencingDepthCalculator } from "@/components/tools/sequencing-depth-calculator"
 import { CodonOptimizer } from "@/components/tools/codon-optimizer"
 import { SgRNADesigner } from "@/components/tools/sgrna-designer"
@@ -347,6 +349,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "external-tools",
         icon: MutalyzerIcon,
         component: Mutalyzer,
+      },
+      {
+        id: "spliceai",
+        nameKey: "tools.spliceai.name",
+        descriptionKey: "tools.spliceai.description",
+        category: "external-tools",
+        icon: SpliceAIIcon,
+        component: SpliceAI,
       },
     ],
   },

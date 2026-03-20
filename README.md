@@ -30,7 +30,7 @@ pnpm start
 
 ## 🛠️ 技术栈
 
-- **框架**: Next.js 14
+- **框架**: Next.js 16
 - **语言**: TypeScript
 - **样式**: Tailwind CSS
 - **UI组件**: Radix UI
