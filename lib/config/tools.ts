@@ -11,6 +11,7 @@ import { IndexCheckerIcon } from "@/components/icons/index-checker-icon"
 import { AaConverterIcon } from "@/components/icons/aa-converter-icon"
 import { MutalyzerIcon } from "@/components/icons/mutalyzer-icon"
 import { SpliceAIIcon } from "@/components/icons/spliceai-icon"
+import { TransVarIcon } from "@/components/icons/transvar-icon"
 import { SequencingDepthIcon } from "@/components/icons/sequencing-depth-icon"
 import { CodonOptimizerIcon } from "@/components/icons/codon-optimizer-icon"
 import { SgRNAIcon } from "@/components/icons/sgrna-icon"
@@ -40,6 +41,7 @@ import { IndexChecker } from "@/components/tools/index-checker"
 import { AaConverter } from "@/components/tools/aa-converter"
 import { Mutalyzer } from "@/components/tools/mutalyzer"
 import { SpliceAI } from "@/components/tools/spliceai"
+import { TransVar } from "@/components/tools/transvar"
 import { SequencingDepthCalculator } from "@/components/tools/sequencing-depth-calculator"
 import { CodonOptimizer } from "@/components/tools/codon-optimizer"
 import { SgRNADesigner } from "@/components/tools/sgrna-designer"
@@ -357,6 +359,14 @@ export const getToolCategories = (): ToolCategory[] => [
         category: "external-tools",
         icon: SpliceAIIcon,
         component: SpliceAI,
+      },
+      {
+        id: "transvar",
+        nameKey: "tools.transvar.name",
+        descriptionKey: "tools.transvar.description",
+        category: "external-tools",
+        icon: TransVarIcon,
+        component: TransVar,
       },
     ],
   },
