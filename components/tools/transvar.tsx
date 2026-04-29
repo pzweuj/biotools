@@ -12,7 +12,6 @@ import { useI18n } from "@/lib/i18n"
 import { Copy, Send, AlertCircle, ExternalLink, Dna, Database } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
 
 // Local API proxy
@@ -42,52 +41,62 @@ interface ParsedResult {
   info: Record<string, string>
 }
 
-function parseTransvarResult(resultStr: string): ParsedResult | null {
+function parseSingleLine(header: string[], values: string[]): ParsedResult {
+  // Map header to values
+  const data: Record<string, string> = {}
+  header.forEach((h, i) => {
+    data[h] = values[i] || ""
+  })
+
+  // Parse coordinates (format: chr3:g.178936091G>A/c.1633G>A/p.E545K)
+  const coordStr = data["coordinates(gDNA/cDNA/protein)"] || ""
+  const coordParts = coordStr.split("/")
+  const gCoord = coordParts.find(p => p.includes("g.")) || ""
+  const cCoord = coordParts.find(p => p.includes("c.")) || ""
+  const pCoord = coordParts.find(p => p.includes("p.")) || ""
+
+  // Parse info (format: CSQN=Missense;reference_codon=GAG;...)
+  const infoStr = data["info"] || ""
+  const info: Record<string, string> = {}
+  infoStr.split(";").forEach(item => {
+    const [key, value] = item.split("=")
+    if (key && value) {
+      info[key] = value
+    }
+  })
+
+  return {
+    input: data["input"] || "",
+    transcript: data["transcript"] || "",
+    gene: data["gene"] || "",
+    strand: data["strand"] || "",
+    coordinates: coordStr,
+    gCoord,
+    cCoord,
+    pCoord,
+    region: data["region"] || "",
+    info,
+  }
+}
+
+function parseTransvarResults(resultStr: string): ParsedResult[] {
   try {
-    const lines = resultStr.split("\n")
-    if (lines.length < 2) return null
+    const lines = resultStr.split("\n").filter(line => line.trim() !== "")
+    if (lines.length < 2) return []
 
     const header = lines[0].split("\t")
-    const values = lines[1].split("\t")
+    const results: ParsedResult[] = []
 
-    // Map header to values
-    const data: Record<string, string> = {}
-    header.forEach((h, i) => {
-      data[h] = values[i] || ""
-    })
-
-    // Parse coordinates (format: chr3:g.178936091G>A/c.1633G>A/p.E545K)
-    const coordStr = data["coordinates(gDNA/cDNA/protein)"] || ""
-    const coordParts = coordStr.split("/")
-    const gCoord = coordParts.find(p => p.includes("g.")) || ""
-    const cCoord = coordParts.find(p => p.includes("c.")) || ""
-    const pCoord = coordParts.find(p => p.includes("p.")) || ""
-
-    // Parse info (format: CSQN=Missense;reference_codon=GAG;...)
-    const infoStr = data["info"] || ""
-    const info: Record<string, string> = {}
-    infoStr.split(";").forEach(item => {
-      const [key, value] = item.split("=")
-      if (key && value) {
-        info[key] = value
-      }
-    })
-
-    return {
-      input: data["input"] || "",
-      transcript: data["transcript"] || "",
-      gene: data["gene"] || "",
-      strand: data["strand"] || "",
-      coordinates: coordStr,
-      gCoord,
-      cCoord,
-      pCoord,
-      region: data["region"] || "",
-      info,
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split("\t")
+      if (values.length < header.length) continue
+      results.push(parseSingleLine(header, values))
     }
+
+    return results
   } catch (e) {
     console.error("Failed to parse TransVar result:", e)
-    return null
+    return []
   }
 }
 
@@ -179,9 +188,8 @@ export function TransVar() {
     }
   }
 
-  // Render single annotation result
+  // Render annotation result for one database as a table
   const renderAnnotationResult = (item: any, idx: number) => {
-    // Check if item has the expected structure
     if (!item.result) {
       return (
         <Card key={idx} className="border-muted">
@@ -195,9 +203,9 @@ export function TransVar() {
       )
     }
 
-    const parsed = parseTransvarResult(item.result)
+    const allParsed = parseTransvarResults(item.result)
 
-    if (!parsed) {
+    if (allParsed.length === 0) {
       return (
         <Card key={idx} className="border-muted">
           <CardContent className="pt-4 space-y-3">
@@ -215,103 +223,50 @@ export function TransVar() {
     }
 
     return (
-      <Card key={idx} className="border-muted">
-        <CardContent className="pt-4 space-y-3">
-          {/* Database and Status */}
-          <div className="flex items-center gap-2 mb-2">
-            <Database className="h-4 w-4 text-muted-foreground" />
-            <Badge variant="secondary">{item.database}</Badge>
-            {item.success ? (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
-                {t("common.success")}
-              </Badge>
-            ) : (
-              <Badge variant="destructive">{t("common.error")}</Badge>
-            )}
-          </div>
-
-          {/* Gene and Transcript Info */}
-          <div className="flex flex-wrap gap-2 items-center">
-            {parsed.gene && (
-              <Badge variant="secondary" className="text-sm">
-                {parsed.gene}
-              </Badge>
-            )}
-            {parsed.transcript && (
-              <Badge variant="outline" className="text-xs font-mono">
-                {parsed.transcript}
-              </Badge>
-            )}
-            {parsed.strand && (
-              <Badge variant="outline" className="text-xs">
-                {parsed.strand === "-" ? t("tools.transvar.negativeStrand") : t("tools.transvar.positiveStrand")}
-              </Badge>
-            )}
-          </div>
-
-          {/* Coordinates */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            {/* Genomic */}
-            {parsed.gCoord && (
-              <div className="space-y-1">
-                <div className="font-semibold text-muted-foreground">{t("tools.transvar.genomicCoord")}</div>
-                <code className="block bg-muted p-2 rounded text-xs font-mono break-all">
-                  {parsed.gCoord}
-                </code>
-              </div>
-            )}
-
-            {/* Transcript */}
-            {parsed.cCoord && (
-              <div className="space-y-1">
-                <div className="font-semibold text-muted-foreground">{t("tools.transvar.transcriptCoord")}</div>
-                <code className="block bg-muted p-2 rounded text-xs font-mono break-all">
-                  {parsed.cCoord}
-                </code>
-              </div>
-            )}
-
-            {/* Protein */}
-            {parsed.pCoord && (
-              <div className="space-y-1">
-                <div className="font-semibold text-muted-foreground">{t("tools.transvar.proteinCoord")}</div>
-                <code className="block bg-muted p-2 rounded text-xs font-mono break-all">
-                  {parsed.pCoord}
-                </code>
-              </div>
-            )}
-          </div>
-
-          {/* Region */}
-          {parsed.region && (
-            <div className="space-y-1">
-              <div className="font-semibold text-muted-foreground">{t("tools.transvar.region")}</div>
-              <code className="block bg-muted p-2 rounded text-xs font-mono">
-                {parsed.region}
-              </code>
-            </div>
+      <Card key={idx} className="border-muted overflow-hidden">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-muted bg-muted/30">
+          <Database className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold">{item.database}</span>
+          {item.success ? (
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
+              {t("common.success")} ({allParsed.length})
+            </Badge>
+          ) : (
+            <Badge variant="destructive">{t("common.error")}</Badge>
           )}
-
-          {/* Additional Info */}
-          {Object.keys(parsed.info).length > 0 && (
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("tools.transvar.additionalInfo")}</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                {Object.entries(parsed.info).slice(0, 12).map(([key, value]: [string, string]) => (
-                  <div key={key} className="bg-muted/50 p-2 rounded">
-                    <span className="text-muted-foreground">{key}: </span>
-                    <span className="font-mono break-all">{value}</span>
-                  </div>
-                ))}
-                {Object.keys(parsed.info).length > 12 && (
-                  <div className="bg-muted/50 p-2 rounded text-muted-foreground">
-                    +{Object.keys(parsed.info).length - 12} more...
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </CardContent>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-muted/20 text-left">
+                <th className="border border-muted px-3 py-1.5 font-semibold text-muted-foreground whitespace-nowrap">#</th>
+                <th className="border border-muted px-3 py-1.5 font-semibold text-muted-foreground whitespace-nowrap">{t("tools.transvar.transcript")}</th>
+                <th className="border border-muted px-3 py-1.5 font-semibold text-muted-foreground whitespace-nowrap">{t("tools.transvar.gene")}</th>
+                <th className="border border-muted px-3 py-1.5 font-semibold text-muted-foreground whitespace-nowrap">{t("tools.transvar.strand")}</th>
+                <th className="border border-muted px-3 py-1.5 font-semibold text-muted-foreground whitespace-nowrap">{t("tools.transvar.genomicCoord")}</th>
+                <th className="border border-muted px-3 py-1.5 font-semibold text-muted-foreground whitespace-nowrap">{t("tools.transvar.transcriptCoord")}</th>
+                <th className="border border-muted px-3 py-1.5 font-semibold text-muted-foreground whitespace-nowrap">{t("tools.transvar.proteinCoord")}</th>
+                <th className="border border-muted px-3 py-1.5 font-semibold text-muted-foreground whitespace-nowrap">{t("tools.transvar.region")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allParsed.map((parsed, i) => (
+                <tr key={i} className="hover:bg-muted/30 transition-colors">
+                  <td className="border border-muted px-3 py-1 text-muted-foreground">{i + 1}</td>
+                  <td className="border border-muted px-3 py-1 font-mono text-xs whitespace-nowrap">{parsed.transcript}</td>
+                  <td className="border border-muted px-3 py-1">
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0">{parsed.gene}</Badge>
+                  </td>
+                  <td className="border border-muted px-3 py-1 text-xs">{parsed.strand}</td>
+                  <td className="border border-muted px-3 py-1 font-mono text-xs whitespace-nowrap">{parsed.gCoord}</td>
+                  <td className="border border-muted px-3 py-1 font-mono text-xs whitespace-nowrap">{parsed.cCoord}</td>
+                  <td className="border border-muted px-3 py-1 font-mono text-xs whitespace-nowrap">{parsed.pCoord}</td>
+                  <td className="border border-muted px-3 py-1 font-mono text-xs whitespace-nowrap">{parsed.region}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     )
   }
@@ -350,11 +305,9 @@ export function TransVar() {
           <Label className="text-base font-semibold">
             {t("tools.transvar.annotationResults")} ({data.results.length})
           </Label>
-          <ScrollArea className="h-[500px]">
-            <div className="space-y-4 pr-4">
-              {data.results.map((item: any, idx: number) => renderAnnotationResult(item, idx))}
-            </div>
-          </ScrollArea>
+          <div className="space-y-4">
+            {data.results.map((item: any, idx: number) => renderAnnotationResult(item, idx))}
+          </div>
         </div>
       </div>
     )

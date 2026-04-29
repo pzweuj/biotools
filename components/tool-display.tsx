@@ -26,7 +26,7 @@ export function ToolDisplay({ tool }: ToolDisplayProps) {
 
   return (
     <div className="w-full min-h-full p-6 bg-background">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <ToolComponent />
       </div>
     </div>
