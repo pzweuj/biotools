@@ -10,6 +10,11 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useI18n } from "@/lib/i18n"
+import { useToolStorage } from "@/hooks/use-tool-storage"
+import { TryExample } from "@/components/try-example"
+import { ResultActions } from "@/components/result-actions"
+import { findRepeats } from "@/lib/bio"
+import type { RepeatInfo } from "@/lib/bio"
 
 interface BaseStats {
   A: number
@@ -35,16 +40,9 @@ interface SequenceResult {
   dinucleotideFreq: { [key: string]: number }
 }
 
-interface RepeatInfo {
-  sequence: string
-  count: number
-  positions: number[]
-  length: number
-}
-
 export function SequenceStats() {
   const { t } = useI18n()
-  const [sequences, setSequences] = useState("")
+  const [sequences, setSequences] = useToolStorage("sequence-stats:input", "")
   const [results, setResults] = useState<SequenceResult[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
@@ -67,42 +65,7 @@ export function SequenceStats() {
     return Math.round((entropy / 2) * 100)
   }
 
-  // 检测重复序列
-  const findRepeats = (sequence: string, minLength: number = 3, minCount: number = 2): RepeatInfo[] => {
-    const repeats: { [key: string]: RepeatInfo } = {}
-    const maxLength = Math.min(20, Math.floor(sequence.length / 2)) // 限制最大重复长度
-
-    for (let len = minLength; len <= maxLength; len++) {
-      for (let i = 0; i <= sequence.length - len; i++) {
-        const subseq = sequence.substring(i, i + len)
-        
-        // 跳过全是相同碱基的序列
-        if (new Set(subseq).size === 1) continue
-
-        if (!repeats[subseq]) {
-          repeats[subseq] = {
-            sequence: subseq,
-            count: 0,
-            positions: [],
-            length: len
-          }
-        }
-        
-        repeats[subseq].count++
-        repeats[subseq].positions.push(i + 1) // 1-based position
-      }
-    }
-
-    // 过滤并排序
-    return Object.values(repeats)
-      .filter(repeat => repeat.count >= minCount)
-      .sort((a, b) => {
-        // 按重要性排序：先按出现次数，再按长度
-        if (b.count !== a.count) return b.count - a.count
-        return b.length - a.length
-      })
-      .slice(0, 10) // 只保留前10个最重要的重复
-  }
+  // 检测重复序列 — 使用 lib/bio 集中实现
 
   // 计算二核苷酸频率
   const calculateDinucleotideFreq = (sequence: string): { [key: string]: number } => {
@@ -238,16 +201,20 @@ export function SequenceStats() {
         </div>
 
         <div className="flex gap-2">
-          <Button 
-            onClick={analyzeSequences} 
+          <Button
+            onClick={analyzeSequences}
             className="flex-1 font-mono"
             disabled={isAnalyzing || !sequences.trim()}
           >
             {isAnalyzing ? t("common.loading") : t("tools.sequence-stats.analyze")}
           </Button>
-          <Button 
-            onClick={clearResults} 
-            variant="outline" 
+          <TryExample
+            example={{ sequences: `>seq1 test\nATCGTACGTTAGCATCGATCGATCGATCGATCGTAGCTAGCTAGCATCG\n>seq2 control\nTAGCTAGCTAGCTAGCTGCTAGCTAGCTAGCTAGCTGCTGCTGCTAGC\n>seq3\nCGTACGATCGTAGCTAGCTACGTACGATCGTAGCTAGCTA` }}
+            onApply={(data) => setSequences(String(data.sequences ?? ""))}
+          />
+          <Button
+            onClick={clearResults}
+            variant="outline"
             className="font-mono"
             disabled={!sequences.trim() && results.length === 0}
           >
@@ -452,6 +419,12 @@ export function SequenceStats() {
                 ))}
               </TabsContent>
             </Tabs>
+
+            <ResultActions
+              rows={results}
+              fasta={results.map((r: SequenceResult) => ({ id: r.name || `seq_${r.id}`, sequence: r.cleanSequence }))}
+              filename="sequence-stats-results"
+            />
           </div>
         )}
       </CardContent>

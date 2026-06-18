@@ -6,14 +6,16 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, Download } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { useToolStorage } from "@/hooks/use-tool-storage"
+import { TryExample } from "@/components/try-example"
 
 export function BaseComplement() {
   const { t } = useI18n()
-  const [input, setInput] = useState("")
+  const [input, setInput] = useToolStorage("base-complement:input", "")
   const [output, setOutput] = useState("")
-  const [preserveDelimiters, setPreserveDelimiters] = useState(true)
+  const [preserveDelimiters, setPreserveDelimiters] = useToolStorage("base-complement:preserveDelimiters", true)
   const [copied, setCopied] = useState(false)
 
   // 完整的IUPAC碱基互补映射表
@@ -153,7 +155,7 @@ export function BaseComplement() {
 
   const copyToClipboard = async () => {
     if (!output) return
-    
+
     try {
       await navigator.clipboard.writeText(output)
       setCopied(true)
@@ -161,6 +163,21 @@ export function BaseComplement() {
     } catch (err) {
       console.error('Failed to copy text: ', err)
     }
+  }
+
+  const downloadOutput = () => {
+    if (!output) return
+    const blob = new Blob([output], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url; a.download = "base-complement-output.txt"
+    document.body.appendChild(a); a.click()
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 0)
+  }
+
+  const handleTryExample = (example: Record<string, unknown>) => {
+    if (typeof example.input === "string") setInput(example.input)
+    if (typeof example.preserveDelimiters === "boolean") setPreserveDelimiters(example.preserveDelimiters)
   }
 
   return (
@@ -224,6 +241,10 @@ export function BaseComplement() {
           <Button onClick={clearAll} variant="outline" className="font-mono">
             {t("common.clear")}
           </Button>
+          <TryExample
+            example={{ input: "ATCGTACGTTAGCATCGATCG\nTAGCTAGCTAGCTAGCTGCTA", preserveDelimiters: true }}
+            onApply={handleTryExample}
+          />
         </div>
 
         {/* 输出框 */}
@@ -233,25 +254,37 @@ export function BaseComplement() {
               {t("tools.base-complement.outputLabel")}
             </Label>
             {output && (
-              <Button
-                onClick={copyToClipboard}
-                variant="ghost"
-                size="sm"
-                className="font-mono h-8 px-2"
-                disabled={!output}
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 mr-1" />
-                    {t("common.copied")}
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 mr-1" />
-                    {t("common.copy")}
-                  </>
-                )}
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  onClick={copyToClipboard}
+                  variant="ghost"
+                  size="sm"
+                  className="font-mono h-8 px-2"
+                  disabled={!output}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-4 h-4 mr-1" />
+                      {t("common.copied")}
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-1" />
+                      {t("common.copy")}
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={downloadOutput}
+                  variant="ghost"
+                  size="sm"
+                  className="font-mono h-8 px-2"
+                  disabled={!output}
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  {t("common.download", "Download")}
+                </Button>
+              </div>
             )}
           </div>
           <Textarea

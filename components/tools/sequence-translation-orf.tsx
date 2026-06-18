@@ -1,6 +1,9 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useToolStorage } from "@/hooks/use-tool-storage"
+import { TryExample } from "@/components/try-example"
+import { ResultActions } from "@/components/result-actions"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
@@ -88,6 +91,11 @@ interface ORF {
   strand: '+' | '-'
 }
 
+const TRANSLATION_EXAMPLE: Record<string, unknown> = {
+  sequence: "ATGGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAG",
+  geneticCode: "standard",
+}
+
 function reverseString(s: string) {
   return s.split("").reverse().join("")
 }
@@ -136,26 +144,26 @@ export function SequenceTranslationOrf() {
   const { t } = useI18n()
   
   // 工具模式：simple（简单翻译）或 orf（ORF查找）
-  const [mode, setMode] = useState<"simple" | "orf" | "six-frame">("simple")
+  const [mode, setMode] = useToolStorage<"simple" | "orf" | "six-frame">("sequence-translation-orf:mode", "simple")
   
   // 简单翻译模式
-  const [input, setInput] = useState("")
+  const [input, setInput] = useToolStorage("sequence-translation-orf:input", "")
   const [output, setOutput] = useState("")
   const [copied, setCopied] = useState(false)
-  const [inputType, setInputType] = useState<"DNA" | "RNA">("DNA")
-  const [geneticCode, setGeneticCode] = useState<string>("standard")
-  const [frame, setFrame] = useState<1 | 2 | 3>(1)
-  const [stopMode, setStopMode] = useState<"asterisk" | "stop" | "truncate">("asterisk")
+  const [inputType, setInputType] = useToolStorage<"DNA" | "RNA">("sequence-translation-orf:input-type", "DNA")
+  const [geneticCode, setGeneticCode] = useToolStorage("sequence-translation-orf:genetic-code", "standard")
+  const [frame, setFrame] = useToolStorage<1 | 2 | 3>("sequence-translation-orf:frame", 1)
+  const [stopMode, setStopMode] = useToolStorage<"asterisk" | "stop" | "truncate">("sequence-translation-orf:stop-mode", "asterisk")
   
   // ORF查找模式
-  const [orfSequence, setOrfSequence] = useState("")
-  const [minLength, setMinLength] = useState("30")
-  const [startCodons, setStartCodons] = useState("ATG")
+  const [orfSequence, setOrfSequence] = useToolStorage("sequence-translation-orf:orf-sequence", "")
+  const [minLength, setMinLength] = useToolStorage("sequence-translation-orf:min-length", "30")
+  const [startCodons, setStartCodons] = useToolStorage("sequence-translation-orf:start-codons", "ATG")
   const [orfResults, setOrfResults] = useState<{ name: string; sequence: string; orfs: ORF[] }[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  
+
   // 六框翻译模式
-  const [sixFrameInput, setSixFrameInput] = useState("")
+  const [sixFrameInput, setSixFrameInput] = useToolStorage("sequence-translation-orf:six-frame-input", "")
   const [sixFrameResults, setSixFrameResults] = useState<{ frame: string; sequence: string }[]>([])
 
   const codeOptions = useMemo(() => Object.entries(GENETIC_CODES).map(([key, v]) => ({ key, name: v.name })), [])
@@ -436,6 +444,13 @@ export function SequenceTranslationOrf() {
               <Button onClick={handleReverseComplement} variant="outline" className="font-mono">
                 {t("tools.sequence-translation.reverseComplement", "Reverse Complement")}
               </Button>
+              <TryExample
+                example={TRANSLATION_EXAMPLE}
+                onApply={(example) => {
+                  if (typeof example.sequence === "string") setInput(example.sequence)
+                  if (typeof example.geneticCode === "string") setGeneticCode(example.geneticCode)
+                }}
+              />
               <Button onClick={clearAll} variant="outline" className="font-mono">
                 {t("common.clear")}
               </Button>
@@ -513,30 +528,37 @@ export function SequenceTranslationOrf() {
             </div>
 
             {sixFrameResults.length > 0 && (
-              <div className="border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="font-mono font-bold w-24">{t("tools.orf-finder.frame", "Frame")}</TableHead>
-                      <TableHead className="font-mono font-bold">{t("tools.orf-finder.proteinSequence", "Protein Sequence")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sixFrameResults.map((result, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell>
-                          <Badge variant="outline" className={`font-mono ${getFrameColor(parseInt(result.frame))}`}>
-                            {result.frame}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs break-all">
-                          {result.sequence}
-                        </TableCell>
+              <>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-mono font-bold w-24">{t("tools.orf-finder.frame", "Frame")}</TableHead>
+                        <TableHead className="font-mono font-bold">{t("tools.orf-finder.proteinSequence", "Protein Sequence")}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {sixFrameResults.map((result, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell>
+                            <Badge variant="outline" className={`font-mono ${getFrameColor(parseInt(result.frame))}`}>
+                              {result.frame}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs break-all">
+                            {result.sequence}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <ResultActions
+                  rows={sixFrameResults}
+                  fasta={sixFrameResults.map((r) => ({ id: `frame_${r.frame}`, sequence: r.sequence }))}
+                  filename="six-frame-translation"
+                />
+              </>
             )}
           </TabsContent>
 
@@ -650,6 +672,16 @@ export function SequenceTranslationOrf() {
                     </TableBody>
                   </Table>
                 </div>
+
+                <ResultActions
+                  rows={orfResults[0].orfs}
+                  fasta={orfResults[0].orfs.map((orf, i) => ({
+                    id: `ORF_${i + 1}_${orf.frame > 0 ? "+" : ""}${orf.frame}_${orf.start}-${orf.end}`,
+                    description: `${orf.length}bp, MW=${orf.molecularWeight}Da, ${orf.strand} strand`,
+                    sequence: orf.dnaSequence,
+                  }))}
+                  filename="orf-finder-results"
+                />
               </div>
             )}
           </TabsContent>

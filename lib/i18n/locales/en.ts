@@ -12,6 +12,9 @@ export const en = {
     enabled: "Enabled",
     disabled: "Disabled",
     calculate: "Calculate",
+    tryExample: "Try example",
+    export: "Export",
+    reset: "Reset",
   },
   nav: {
     title: "BioTools",
