@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, Globe } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import type { ToolCategory } from "@/types/tool"
+import type { Tool, ToolCategory } from "@/types/tool"
 
 interface ToolSidebarProps {
   categories: ToolCategory[]
@@ -19,157 +19,153 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
   const { t } = useI18n()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
-  const scrollPositionRef = useRef<number>(0)
   const scrollViewportRef = useRef<HTMLDivElement>(null)
-  // 初始化时检测是否为移动端，如果是则默认收起
+  const scrollWriteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isCollapsed, setIsCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       return window.innerWidth < 768
     }
     return false
   })
   const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       return window.innerWidth < 768
     }
     return false
   })
   const [isHovering, setIsHovering] = useState(false)
   const [isTouching, setIsTouching] = useState(false)
-  const [touchTimeout, setTouchTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [touchTimeout, setTouchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null)
 
   // 初始化 body 类名
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      if (isCollapsed) {
-        document.body.classList.add('sidebar-collapsed')
-      } else {
-        document.body.classList.remove('sidebar-collapsed')
-      }
+    if (typeof document !== "undefined") {
+      if (isCollapsed) document.body.classList.add("sidebar-collapsed")
+      else document.body.classList.remove("sidebar-collapsed")
     }
-  }, []) // 只在挂载时执行一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  // 保存滚动位置
+  // 滚动位置：节流写入 sessionStorage（200 ms 防抖）
   useEffect(() => {
     const viewport = scrollViewportRef.current
     if (!viewport) return
 
     const handleScroll = () => {
-      // 保存滚动位置到 sessionStorage
-      sessionStorage.setItem('sidebar-scroll-position', viewport.scrollTop.toString())
-      scrollPositionRef.current = viewport.scrollTop
+      if (scrollWriteTimerRef.current) clearTimeout(scrollWriteTimerRef.current)
+      scrollWriteTimerRef.current = setTimeout(() => {
+        try {
+          sessionStorage.setItem("sidebar-scroll-position", String(viewport.scrollTop))
+        } catch {}
+      }, 200)
     }
 
-    viewport.addEventListener('scroll', handleScroll)
+    viewport.addEventListener("scroll", handleScroll, { passive: true })
     return () => {
-      viewport.removeEventListener('scroll', handleScroll)
+      viewport.removeEventListener("scroll", handleScroll)
+      if (scrollWriteTimerRef.current) clearTimeout(scrollWriteTimerRef.current)
     }
   }, [])
 
-  // 检测屏幕尺寸变化
+  // 屏幕尺寸变化
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768
-      const wasMobile = isMobile
-      
-      // 只在屏幕尺寸实际发生变化时处理
-      if (wasMobile === mobile) {
-        return
-      }
-      
+      if (isMobile === mobile) return
       setIsMobile(mobile)
-      
-      if (wasMobile && !mobile && isCollapsed) {
-        // 从移动端切换到桌面端时自动展开侧边栏
+      if (isMobile && !mobile && isCollapsed) {
         setIsCollapsed(false)
-        if (typeof document !== 'undefined') {
-          document.body.classList.remove('sidebar-collapsed')
-        }
-      } else if (!wasMobile && mobile) {
-        // 从桌面端切换到移动端时自动收起
+        document.body.classList.remove("sidebar-collapsed")
+      } else if (!isMobile && mobile) {
         setIsCollapsed(true)
-        if (typeof document !== 'undefined') {
-          document.body.classList.add('sidebar-collapsed')
-        }
+        document.body.classList.add("sidebar-collapsed")
       }
     }
 
-    window.addEventListener('resize', checkScreenSize)
+    window.addEventListener("resize", checkScreenSize)
     return () => {
-      window.removeEventListener('resize', checkScreenSize)
-      if (touchTimeout) {
-        clearTimeout(touchTimeout)
-      }
+      window.removeEventListener("resize", checkScreenSize)
+      if (touchTimeout) clearTimeout(touchTimeout)
     }
   }, [isMobile, isCollapsed, touchTimeout])
 
   const handleToolSelect = (toolId: string) => {
-    if (onToolSelect) {
-      onToolSelect(toolId)
-    } else {
-      router.push(`/tools/${toolId}`)
-    }
-    
-    // 在移动端选择工具后自动收起侧边栏
+    if (onToolSelect) onToolSelect(toolId)
+    else router.push(`/tools/${toolId}`)
     if (isMobile) {
       setIsCollapsed(true)
-      // 同步更新body类名
-      if (typeof document !== 'undefined') {
-        document.body.classList.add('sidebar-collapsed')
-      }
+      document.body.classList.add("sidebar-collapsed")
     }
   }
 
   const toggleSidebar = () => {
-    const newCollapsedState = !isCollapsed
-    setIsCollapsed(newCollapsedState)
-    
-    // 动态更新body类名来控制主内容区域的布局
-    if (typeof document !== 'undefined') {
-      const body = document.body
-      if (newCollapsedState) {
-        body.classList.add('sidebar-collapsed')
-      } else {
-        body.classList.remove('sidebar-collapsed')
-      }
-    }
+    const next = !isCollapsed
+    setIsCollapsed(next)
+    if (next) document.body.classList.add("sidebar-collapsed")
+    else document.body.classList.remove("sidebar-collapsed")
   }
 
-  // 将所有工具扁平化为一个数组
-  const allTools = useMemo(() => {
-    return categories.flatMap(category => category.tools)
-  }, [categories])
+  // 扁平的搜索结果（搜索模式下使用）
+  const flatTools = useMemo(() => categories.flatMap((c) => c.tools), [categories])
+  const filteredFlat = useMemo(() => {
+    if (!searchQuery.trim()) return flatTools
+    const q = searchQuery.toLowerCase()
+    return flatTools.filter((tool) => {
+      const name = t(tool.nameKey).toLowerCase()
+      const desc = t(tool.descriptionKey).toLowerCase()
+      return name.includes(q) || desc.includes(q) || tool.id.includes(q)
+    })
+  }, [flatTools, searchQuery, t])
 
-  // 根据搜索查询过滤工具
-  const filteredTools = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return allTools
-    }
-    
-    const query = searchQuery.toLowerCase()
-    return allTools.filter(tool => 
-      t(tool.nameKey).toLowerCase().includes(query)
-    )
-  }, [allTools, searchQuery, t])
+  const isSearching = searchQuery.trim().length > 0
 
-  // 恢复滚动位置（在组件挂载和工具列表更新后）
-  // 使用 useLayoutEffect 在浏览器绘制前同步执行，避免闪烁
+  // 恢复滚动位置
   useLayoutEffect(() => {
     const viewport = scrollViewportRef.current
     if (!viewport) return
+    try {
+      const saved = sessionStorage.getItem("sidebar-scroll-position")
+      if (saved) viewport.scrollTop = parseInt(saved, 10)
+    } catch {}
+  }, [filteredFlat.length, isSearching])
 
-    // 从 sessionStorage 恢复滚动位置
-    const savedPosition = sessionStorage.getItem('sidebar-scroll-position')
-    if (savedPosition) {
-      viewport.scrollTop = parseInt(savedPosition, 10)
-    }
-  }, [filteredTools.length])
+  const renderToolButton = (tool: Tool) => (
+    <Button
+      key={tool.id}
+      variant="ghost"
+      className={cn(
+        "sidebar-tool-button w-full justify-between h-auto min-h-10 py-3 px-4 font-mono text-sm whitespace-normal text-left cursor-pointer transition-colors duration-200 ease-in-out rounded-md",
+        selectedToolId === tool.id
+          ? "!bg-black !text-white dark:!bg-white dark:!text-black"
+          : "text-sidebar-foreground",
+      )}
+      onClick={() => handleToolSelect(tool.id)}
+      aria-label={t(tool.nameKey)}
+      title={t(tool.descriptionKey, t(tool.nameKey))}
+    >
+      <span className="flex-1 text-left">{t(tool.nameKey)}</span>
+      {tool.external && (
+        <span
+          className={cn(
+            "ml-2 flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border",
+            selectedToolId === tool.id
+              ? "border-white/40 text-white/90 dark:border-black/40 dark:text-black/80"
+              : "border-border text-muted-foreground",
+          )}
+          title={t("nav.externalTool", "Online")}
+        >
+          <Globe className="w-3 h-3" />
+          {t("nav.externalTool", "Online")}
+        </span>
+      )}
+    </Button>
+  )
 
   return (
     <>
       {/* 收起状态下的悬停检测区域 */}
       {!isMobile && isCollapsed && (
-        <div 
+        <div
           className="fixed top-14 left-0 w-16 h-[calc(100vh-3.5rem)] z-50"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
@@ -178,12 +174,10 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
 
       {/* 移动端收起状态下的触摸提示区域 */}
       {isMobile && isCollapsed && (
-        <div 
+        <div
           className="fixed top-[calc(50vh+1.75rem)] -translate-y-1/2 left-0 w-16 h-24 z-50 flex items-center justify-start pl-1"
           onTouchStart={() => {
-            if (touchTimeout) {
-              clearTimeout(touchTimeout)
-            }
+            if (touchTimeout) clearTimeout(touchTimeout)
             setIsTouching(true)
           }}
         >
@@ -191,103 +185,95 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
         </div>
       )}
 
-      {/* 侧边栏容器 - 包含悬停检测 */}
-      <div 
+      {/* 侧边栏容器 */}
+      <div
         className={cn(
           "fixed top-14 left-0 h-[calc(100vh-3.5rem)] z-40 sidebar-transition overflow-hidden",
-          isCollapsed ? "w-0" : "w-80"
+          isCollapsed ? "w-0" : "w-80",
         )}
         onMouseEnter={() => !isMobile && setIsHovering(true)}
         onMouseLeave={() => !isMobile && setIsHovering(false)}
       >
-        {/* 实际侧边栏内容 */}
-        <div className={cn(
-          "h-full w-80 bg-sidebar/95 backdrop-blur-sm border-r sidebar-transition",
-          isCollapsed ? "opacity-0 -translate-x-4" : "opacity-100 translate-x-0",
-          isMobile && !isCollapsed && "shadow-lg"
-        )}>
-        <div className="p-4 border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-sidebar-foreground font-mono">{t("nav.subtitle")}</h2>
-              <p className="text-sm text-sidebar-foreground/70 font-mono mt-1">{t("nav.selectTool")}</p>
-            </div>
-          </div>
-          
-          {/* 搜索栏 */}
-          <div className="relative mt-3">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-sidebar-foreground/50" />
-            <Input
-              placeholder={t("common.search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 font-mono text-sm bg-sidebar border-sidebar-border"
-            />
-          </div>
-        </div>
-
-        <div 
-          ref={scrollViewportRef}
-          className="h-[calc(100vh-14rem)] overflow-y-auto sidebar-scroll"
+        <div
+          className={cn(
+            "h-full w-80 bg-sidebar/95 backdrop-blur-sm border-r sidebar-transition",
+            isCollapsed ? "opacity-0 -translate-x-4" : "opacity-100 translate-x-0",
+            isMobile && !isCollapsed && "shadow-lg",
+          )}
         >
-          <div className="p-3">
-            <div className="space-y-1">
-              {filteredTools.map((tool) => {
-                return (
-                  <Button
-                    key={tool.id}
-                    variant="ghost"
-                    className={cn(
-                      "sidebar-tool-button w-full justify-center h-auto min-h-10 py-3 px-4 font-mono text-sm whitespace-normal text-center cursor-pointer transition-colors duration-200 ease-in-out rounded-md",
-                      selectedToolId === tool.id
-                        ? "!bg-black !text-white"
-                        : "text-sidebar-foreground",
-                    )}
-                    onClick={() => handleToolSelect(tool.id)}
-                    aria-label={t(tool.nameKey)}
-                    title={t(tool.nameKey)}
-                  >
-                    {t(tool.nameKey)}
-                  </Button>
-                )
-              })}
-            </div>
-            
-            {filteredTools.length === 0 && searchQuery && (
-              <div className="text-center py-8 text-sidebar-foreground/50 font-mono text-sm">
-                {t("tools.noResults", "未找到匹配的工具")}
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-sidebar-foreground font-mono">
+                  {t("nav.subtitle")}
+                </h2>
+                <p className="text-sm text-sidebar-foreground/70 font-mono mt-1">
+                  {t("nav.selectTool")}
+                </p>
               </div>
-            )}
+            </div>
+
+            <div className="relative mt-3">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-sidebar-foreground/50" />
+              <Input
+                placeholder={t("common.search")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 font-mono text-sm bg-sidebar border-sidebar-border"
+                aria-label={t("common.search")}
+              />
+            </div>
           </div>
-        </div>
+
+          <div
+            ref={scrollViewportRef}
+            className="h-[calc(100vh-14rem)] overflow-y-auto sidebar-scroll"
+          >
+            <div className="p-3">
+              {isSearching ? (
+                <div className="space-y-1">
+                  {filteredFlat.map(renderToolButton)}
+                  {filteredFlat.length === 0 && (
+                    <div className="text-center py-8 text-sidebar-foreground/50 font-mono text-sm">
+                      {t("tools.noResults", "No matching tools")}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {categories.map((cat) => (
+                    <div key={cat.id} className="space-y-1">
+                      <div className="px-2 pt-1 pb-2 text-[11px] uppercase tracking-wide font-mono text-sidebar-foreground/50">
+                        {t(cat.nameKey)}
+                      </div>
+                      {cat.tools.map(renderToolButton)}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 侧边栏切换按钮 - 位于侧边栏边缘中部 */}
+      {/* 切换按钮 */}
       <Button
         variant="ghost"
         size="sm"
         onClick={toggleSidebar}
         className={cn(
           "fixed top-[calc(50vh+1.75rem)] -translate-y-1/2 z-[60] p-0 bg-background/90 backdrop-blur-sm border border-border shadow-md rounded-r-md rounded-l-none sidebar-transition hover:bg-muted cursor-pointer",
-          // 移动端使用更大的按钮尺寸以便触摸
           isMobile ? "h-16 w-8 sidebar-toggle-button" : "h-12 w-6",
-          isCollapsed 
-            ? (isMobile ? "left-2" : "left-0")
-            : "left-80",
-          // 移动端始终显示，桌面端悬停时显示
-          isMobile ? "opacity-100" : (isHovering || isTouching ? "opacity-100" : "opacity-0 pointer-events-none")
+          isCollapsed ? (isMobile ? "left-2" : "left-0") : "left-80",
+          isMobile ? "opacity-100" : isHovering || isTouching ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onMouseEnter={() => !isMobile && setIsHovering(true)}
         onMouseLeave={() => !isMobile && setIsHovering(false)}
         onTouchStart={() => {
-          if (touchTimeout) {
-            clearTimeout(touchTimeout)
-          }
+          if (touchTimeout) clearTimeout(touchTimeout)
           setIsTouching(true)
         }}
         onTouchEnd={() => {
-          // 触摸结束后延迟隐藏，给用户时间完成操作
           const timeout = setTimeout(() => setIsTouching(false), 2000)
           setTouchTimeout(timeout)
         }}
@@ -301,9 +287,9 @@ export function ToolSidebar({ categories, selectedToolId, onToolSelect }: ToolSi
         )}
       </Button>
 
-      {/* 遮罩层 - 移动端展开时显示 */}
+      {/* 移动端遮罩 */}
       {isMobile && !isCollapsed && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/20 z-30 md:hidden sidebar-overlay"
           onClick={() => setIsCollapsed(true)}
         />

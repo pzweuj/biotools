@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// SpliceAI API base URLs for different genome versions
 const SPLICEAI_BASE_37 = 'https://spliceai-37-xwkwwwxdwq-uc.a.run.app/spliceai/'
 const SPLICEAI_BASE_38 = 'https://spliceai-38-xwkwwwxdwq-uc.a.run.app/spliceai/'
-
-// Pangolin API base URLs for different genome versions
 const PANGOLIN_BASE_37 = 'https://pangolin-37-xwkwwwxdwq-uc.a.run.app/pangolin/'
 const PANGOLIN_BASE_38 = 'https://pangolin-38-xwkwwwxdwq-uc.a.run.app/pangolin/'
+
+const REQUEST_TIMEOUT_MS = 30_000
+const MAX_VARIANT_LEN = 256
+
+export async function POST() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const model = searchParams.get('model') // 'spliceai' or 'pangolin'
-    const hg = searchParams.get('hg') // '37' or '38'
+    const model = searchParams.get('model')
+    const hg = searchParams.get('hg')
     const variant = searchParams.get('variant')
     const distance = searchParams.get('distance') || '50'
     const mask = searchParams.get('mask') || '0'
@@ -20,6 +24,13 @@ export async function GET(request: NextRequest) {
     if (!model || !hg || !variant) {
       return NextResponse.json(
         { error: 'Missing required parameters: model, hg, variant' },
+        { status: 400 }
+      )
+    }
+
+    if (variant.length > MAX_VARIANT_LEN) {
+      return NextResponse.json(
+        { error: `variant too long (max ${MAX_VARIANT_LEN})` },
         { status: 400 }
       )
     }
@@ -38,7 +49,18 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Construct the appropriate base URL
+    // distance 必须是 1-1000 范围的整数；mask 必须是 0/1
+    const distanceNum = Number(distance)
+    if (!Number.isInteger(distanceNum) || distanceNum < 1 || distanceNum > 1000) {
+      return NextResponse.json(
+        { error: 'Invalid distance parameter (must be integer 1-1000)' },
+        { status: 400 }
+      )
+    }
+    if (mask !== '0' && mask !== '1') {
+      return NextResponse.json({ error: 'Invalid mask parameter (must be 0 or 1)' }, { status: 400 })
+    }
+
     let baseUrl: string
     if (model === 'spliceai') {
       baseUrl = hg === '37' ? SPLICEAI_BASE_37 : SPLICEAI_BASE_38
@@ -46,28 +68,18 @@ export async function GET(request: NextRequest) {
       baseUrl = hg === '37' ? PANGOLIN_BASE_37 : PANGOLIN_BASE_38
     }
 
-    // Build the full URL with query parameters
-    const params = new URLSearchParams({
-      hg,
-      variant,
-      distance,
-      mask,
-    })
-
+    const params = new URLSearchParams({ hg, variant, distance, mask })
     const apiUrl = `${baseUrl}?${params.toString()}`
 
-    // Forward request to the appropriate API
     const response = await fetch(apiUrl, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
       return NextResponse.json(
-        { error: `${model.toUpperCase()} API error: ${response.status} ${response.statusText}`, details: errorText },
+        { error: `Upstream API error: ${response.status}` },
         { status: response.status }
       )
     }
@@ -81,10 +93,10 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      return NextResponse.json({ error: 'Upstream timeout' }, { status: 504 })
+    }
     console.error('SpliceAI/Pangolin proxy error:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Proxy error' }, { status: 502 })
   }
 }
