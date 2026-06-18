@@ -5,6 +5,8 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Providers } from "@/components/providers"
+import { CommandPalette } from "@/components/command-palette"
+import { SwRegister } from "@/components/sw-register"
 import "./globals.css"
 
 const siteUrl = "https://use.biotools.site"
@@ -91,6 +93,8 @@ export default function RootLayout({
         <Providers>
           <Suspense fallback={<div className="flex items-center justify-center h-screen font-mono">Loading...</div>}>
             {children}
+            <CommandPalette />
+            <SwRegister />
             <Analytics />
           </Suspense>
         </Providers>

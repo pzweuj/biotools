@@ -12,6 +12,9 @@ export const zh = {
     enabled: "已启用",
     disabled: "已禁用",
     calculate: "计算",
+    tryExample: "试用示例",
+    export: "导出",
+    reset: "重置",
   },
   nav: {
     title: "BioTools",

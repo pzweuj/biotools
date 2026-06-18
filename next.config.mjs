@@ -2,9 +2,6 @@
 const isProd = process.env.NODE_ENV === 'production'
 
 // 生产环境 CSP：仅允许必要的来源
-// - script-src 仍需 'unsafe-inline' 以兼容 Next.js 注入的 hydration script；后续可改 nonce
-// - connect-src 'self' 已足够：所有外部 API（mutalyzer / spliceai / transvar）都走 /api/* 代理
-//   Vercel Analytics 走 va.vercel-scripts.com / vitals.vercel-insights.com
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live",
@@ -28,17 +25,12 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
-  // TypeScript / ESLint 错误必须阻断构建（CI gate）
-  // 如确需绕过，请在本地修复后再合并
   reactStrictMode: true,
   poweredByHeader: false,
   images: {
-    // 当前没有动态图片资产，保留 unoptimized 以便静态部署
-    // 后续如引入截图请把它打开
     unoptimized: true,
   },
   compiler: {
-    // 生产构建剥离 console.* 调用，但保留 console.error 用于异常追踪
     removeConsole: isProd ? { exclude: ['error'] } : false,
   },
   async headers() {

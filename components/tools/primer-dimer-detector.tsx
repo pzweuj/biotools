@@ -1,6 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { useToolStorage } from "@/hooks/use-tool-storage"
+import { TryExample } from "@/components/try-example"
+import { ResultActions } from "@/components/result-actions"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
@@ -57,7 +60,7 @@ interface DimerResult {
 
 export function PrimerDimerDetector() {
   const { t } = useI18n()
-  const [primers, setPrimers] = useState("")
+  const [primers, setPrimers] = useToolStorage("primer-dimer-detector:input", "")
   const [results, setResults] = useState<DimerResult[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -319,6 +322,10 @@ export function PrimerDimerDetector() {
     }
   }
 
+  const handleTryExample = (example: Record<string, unknown>) => {
+    if (typeof example.primers === "string") setPrimers(example.primers)
+  }
+
   return (
     <Card className="w-full geek-card">
       <CardHeader>
@@ -355,14 +362,18 @@ export function PrimerDimerDetector() {
           >
             {isAnalyzing ? t("common.loading") : t("tools.primer-dimer-detector.analyze", "Analyze Dimers")}
           </Button>
-          <Button 
-            onClick={clearResults} 
-            variant="outline" 
+          <Button
+            onClick={clearResults}
+            variant="outline"
             className="font-mono"
             disabled={!primers.trim() && results.length === 0}
           >
             {t("common.clear")}
           </Button>
+          <TryExample
+            example={{ primers: ">Forward_Primer\nATCGTACGTTAGCATCG\n>Reverse_Primer\nCGATGCTAACGTACGAT\n>Probe\nTAGCTAGCTAGCTAGCT" }}
+            onApply={handleTryExample}
+          />
         </div>
 
         {results.length > 0 && (
@@ -509,6 +520,11 @@ export function PrimerDimerDetector() {
                 ))}
               </TabsContent>
             </Tabs>
+
+            <ResultActions
+              rows={results}
+              filename="primer-dimer-results"
+            />
           </div>
         )}
 

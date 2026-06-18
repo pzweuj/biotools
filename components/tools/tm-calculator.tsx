@@ -1,6 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { useToolStorage } from "@/hooks/use-tool-storage"
+import { TryExample } from "@/components/try-example"
+import { ResultActions } from "@/components/result-actions"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -21,9 +24,9 @@ interface PrimerResult {
 
 export function TmCalculator() {
   const { t } = useI18n()
-  const [sequences, setSequences] = useState("")
-  const [saltConc, setSaltConc] = useState("50")
-  const [method, setMethod] = useState("wallace")
+  const [sequences, setSequences] = useToolStorage("tm-calculator:sequences", "")
+  const [saltConc, setSaltConc] = useToolStorage("tm-calculator:saltConc", "50")
+  const [method, setMethod] = useToolStorage("tm-calculator:method", "wallace")
   const [results, setResults] = useState<PrimerResult[]>([])
 
   const calculateSingleTm = (cleanSeq: string, salt: number): number => {
@@ -191,6 +194,15 @@ export function TmCalculator() {
           {t("tools.tm-calculator.calculate")}
         </Button>
 
+        <TryExample
+          example={{ sequences: "ATCGTACGTTAGCATCGATCG\nTAGCTAGCTAGCTAGCTGCTA\nCGTACGATCGTAGCTAGCTA", saltConc: "50", method: "salt-adjusted" }}
+          onApply={(example) => {
+            setSequences(example.sequences as string)
+            setSaltConc(example.saltConc as string)
+            setMethod(example.method as string)
+          }}
+        />
+
         {results.length > 0 && (
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -262,6 +274,11 @@ export function TmCalculator() {
                 </TableBody>
               </Table>
             </div>
+            <ResultActions
+              rows={results}
+              fasta={results.map((r, idx) => ({ id: `primer_${idx + 1}`, sequence: r.cleanSequence }))}
+              filename="tm-calculator-results"
+            />
           </div>
         )}
       </CardContent>

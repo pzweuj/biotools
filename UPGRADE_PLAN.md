@@ -8,86 +8,85 @@
 
 ## ✅ 已完成（2026‑06‑18）
 
-下列工作已经直接落地到代码（37 个单元测试通过；TypeScript 严格模式通过；`pnpm build` 通过；41 个静态页面预渲染成功）：
+下列工作已经直接落地到代码（**50 个单元测试**通过；TypeScript 严格模式通过；`pnpm build` 通过；41 个静态页面预渲染成功）：
 
 ### 决策变更
-- **PageAgent 实验功能整体下线** — 用户决定该方向暂不推进。删除 `components/page-agent-plugin.tsx`、`app/api/agent/`、`page-agent` 依赖、相关 CSS 与 `<html>` 注入。这同时把"零服务端处理用户输入"做扎实，作为隐私叙事的硬保证。
+- **PageAgent 实验功能整体下线** — 用户决定该方向暂不推进。删除 `components/page-agent-plugin.tsx`、`app/api/agent/`、`page-agent` 依赖、相关 CSS 与 `<html>` 注入。这同时把"零服务端处理用户输入"做扎实。
 
 ### M1 安全闭环
 - ✅ 删除 `/api/agent` 开放代理（与 PageAgent 一并下线）
 - ✅ `header.tsx` GitHub 跳转加 `noopener,noreferrer`
 - ✅ `vercel.json` 删除（headers 唯一来源 = `next.config.mjs`）
-- ✅ CSP 收紧：默认 `default-src 'self'`，`connect-src` 不再放任意 `https:`，外部 API 全部经 `/api/*` 自代理
-- ✅ 安全头：HSTS、Permissions-Policy（含 interest-cohort）、X-Content-Type-Options、X-Frame-Options、Referrer-Policy
+- ✅ CSP 收紧；安全头完整（HSTS、Permissions-Policy 含 interest-cohort、X-Content-Type-Options、X-Frame-Options、Referrer-Policy）
 - ✅ `@types/react`/`@types/react-dom` 升到 `^19`，移除 `typescript.ignoreBuildErrors`
 - ✅ 生产构建剥离 `console.log/warn`（保留 `console.error`）
-- ✅ 删除 `app/tools/[toolId]/tool-page-client.tsx`（死代码）
-- ✅ 三条外部代理（mutalyzer / spliceai / transvar）：加 30s/60s `AbortSignal.timeout`、严格输入校验、输入长度上限、不回显上游错误体、显式拒绝错误 HTTP 方法（405）、超时返回 504、其他错误返回 502
+- ✅ 删除死代码 `tool-page-client.tsx`、`calendar.tsx`
+- ✅ 三条外部代理（mutalyzer / spliceai / transvar）：加 AbortSignal.timeout、严格输入校验与长度上限、不回显上游错误体、显式 405 拒绝、504/502 区分
 
 ### M2 打包瘦身 + SSR
-- ✅ `lib/config/tools.meta.ts` ↔ `lib/config/tools.loaders.ts` 拆分；`tools.ts` 改为聚合层
-- ✅ 33 个工具组件全部 `next/dynamic` 懒加载（每工具独立 chunk）
-- ✅ `app/tools/[toolId]/page.tsx` 改回 server component + `generateStaticParams`（41 页全静态生成）+ `generateMetadata`（含 OG / Twitter card）
-- ✅ `app/page.tsx` 中 `useMemo(getToolCategories)`
-- ✅ `app/sitemap.ts` 改为从 `TOOL_IDS` 单一源派生
+- ✅ `lib/config/tools.meta.ts` ↔ `lib/config/tools.loaders.ts` 拆分；33 个工具组件 `next/dynamic` 懒加载
+- ✅ `app/tools/[toolId]/page.tsx` server component + `generateStaticParams` + `generateMetadata`（OG / Twitter card）
+- ✅ `app/page.tsx` 中 `useMemo(getToolCategories)`；`app/sitemap.ts` 从 `TOOL_IDS` 单源派生
 
 ### M2 i18n + 主题
-- ✅ `en` locale 改 `dynamic import`（中文用户首屏不再下载 ~60KB 英文字典）
-- ✅ `<html lang>` 在切换语言时同步更新
-- ✅ `next-themes` 真正接通 + `<ThemeToggle>` 加入 header
-- ✅ `globals.css` 已有的 `.dark` 变量起作用
-- ✅ 增加 `nav.toggleTheme`、`nav.localTool`、`nav.externalTool` 文案
+- ✅ `en` locale 改 `dynamic import`（中文用户首屏不下载 ~60KB 英文字典）
+- ✅ `<html lang>` 同步切换语言；`next-themes` 接通 + `<ThemeToggle>`
+- ✅ 新增 `nav.toggleTheme`、`common.tryExample`、`common.export`、`common.reset` 文案
 
-### UX & 治理
+### UX & 治理（首轮）
 - ✅ `app/error.tsx` 与 `app/tools/[toolId]/error.tsx` ErrorBoundary
 - ✅ `app/tools/[toolId]/not-found.tsx` 双语
-- ✅ 侧边栏：滚动写入节流（200ms）、按分类折叠（默认）/ 搜索时展开扁平、🌐 Online 徽章标识外部工具、搜索按 name + description + id 多字段匹配
-- ✅ `lib/bio/`：`alphabet.ts` / `sequence.ts` / `tm.ts` / `codons.ts` 抽取共享生信工具函数（含完整 README）
-- ✅ `vitest` + `vitest.config.ts` + 37 个单测覆盖 sequence/tm/codons
-- ✅ `.github/workflows/ci.yml`：typecheck + test + build 三段 gate
-- ✅ `package.json` 新增 `typecheck`、`test`、`test:watch`、`test:coverage` 脚本
-- ✅ `app/layout.tsx`：完整 `metadata`（含 metadataBase、template、OG、Twitter、keywords）+ `viewport.themeColor`（响应系统暗色）+ 移除多余 `<head>` 内 `<link>`（已由 metadata.icons 输出）
-- ✅ `public/site.webmanifest` 完整化（scope、categories、maskable icon）
+- ✅ 侧边栏：滚动节流、分类折叠、🌐 Online 徽章、多字段模糊搜索
+
+### 第二轮（输入持久化 + 导出 + 示例 + Cmd+K + PWA）
+- ✅ `hooks/use-tool-storage.ts` — sessionStorage 自动同步 + 防抖写入 + 重置
+- ✅ `components/result-actions.tsx` — 统一 CSV / TSV / JSON / FASTA / Markdown 导出 + 复制
+- ✅ `components/try-example.tsx` — 一键载入示例数据
+- ✅ 5 个代表性工具已集成：tm-calculator、base-complement、sequence-stats、sequence-translation-orf、primer-dimer-detector（useToolStorage + TryExample + ResultActions）
+- ✅ `components/command-palette.tsx` — Cmd/Ctrl+K 全局搜索 + 收藏（⭐ localStorage）+ 最近使用（🕐 localStorage）+ 键盘导航
+- ✅ `public/sw.js` — 手动 Service Worker：install precache + NetworkFirst 缓存 + 后台更新 + skipWaiting/clientsClaim
+- ✅ `components/sw-register.tsx` — 生产环境 SW 注册
+- ✅ `components/header.tsx` — Offline 就绪绿色 ● 指示灯 + ⌘K 快捷提示
+
+### 算法 + lib/bio
+- ✅ `lib/bio/` 扩展：`alphabet.ts`、`sequence.ts`、`tm.ts`、`codons.ts`、`export.ts`、`repeats.ts`
+- ✅ `lib/bio/repeats.ts` — 重写 `findRepeats`：哈希索引 + 非重叠贪心选择 + 极大重复过滤 + 串联检测；修正原始实现 O(n²) 卡死与重叠计数 bug
+- ✅ `sequence-stats.tsx` 改用集中 `findRepeats`（`@/lib/bio`）
+- ✅ `vitest` + 50 个单测（sequence 24、tm 7、codons 6、repeats 13）
+- ✅ `.github/workflows/ci.yml`：typecheck → test → build 三段 gate
+- ✅ `package.json` 新增 `typecheck`、`test`、`test:watch`、`test:coverage`
+
+### 依赖清理
+- ✅ 移除 `page-agent`（Fable 2.0，~500 KB）
+- ✅ 移除 `react-day-picker`（~100 KB，无引用）
+- ✅ 移除 `date-fns`（~80 KB，无引用）
+- ✅ 移除 `@serwist/next` + `serwist`（用不上；改为手动 SW）
 
 ### 验证（实测）
-- `pnpm test` → **37/37 通过**（sequence 24、tm 7、codons 6）
-- `pnpm typecheck` → **0 错误**（已剥离 `ignoreBuildErrors`，真正 strict）
-- `pnpm build` → **成功**，41 个静态页面（含 34 个工具页 + home + sitemap + not-found + 4 路由）；总 chunks ~2.9 MB（未压缩），最大单 chunk 224 KB —— 工具组件已按 chunk 拆分，首屏不再加载未访问的工具
+- `pnpm test` → **50/50 通过**（sequence 24、tm 7、codons 6、repeats 13）
+- `pnpm typecheck` → **0 错误**（strict mode，无 `ignoreBuildErrors`）
+- `pnpm build` → **成功**，41 个静态页面（34 工具 + home + not-found + sitemap + 4 API 路由）
 
 ---
 
 ## 🚧 剩余待办（按建议顺序）
 
-> 下列内容仍在原始计划中保留，但需要更大改动 / 需要决策。
-
-### M3 — Web Worker + 算法准确性
+### M3 — Web Worker + 跨工具迁移
 - [ ] 把 `findRepeats` / `alignSequences` / `gcSkew` / `restriction-enzymes` 等重型算法搬入 `lib/workers/bio.worker.ts`
-- [ ] 把 33 个 tool 组件中各自重复实现的 `reverseComplement` / `cleanSequence` / `parseFasta` 替换为 `@/lib/bio` 的实现（任务量大但可分批；可一边用一边迁移）
-- [ ] `findRepeats` 修正子串重叠重复计数 bug
-- [ ] `tm-calculator` 实现真正的 SantaLucia 1998 双链热力学（dinucleotide ΔH/ΔS 已经在 `primer-dimer-detector` 里抄一份就行）
+- [ ] 把其余 28 个 tool 组件中各自重复实现的 `reverseComplement` / `cleanSequence` / `parseFasta` 替换为 `@/lib/bio` 的实现
+- [ ] `tm-calculator` 实现真正的 SantaLucia 1998 双链热力学（dinucleotide ΔH/ΔS 已经在 `primer-dimer-detector` 里可用）
 - [ ] 给每个工具补 5+ 单测（NCBI / EBI 给定的"金标"序列）
 
-### M4 — Service Worker（剩余部分）
-- [ ] `pnpm add @serwist/next serwist`
-- [ ] `app/sw.ts` 配置：precache 框架壳；运行时缓存 tool chunks（StaleWhileRevalidate）；外部 API 走 NetworkOnly
-- [ ] `next.config.mjs` 用 `withSerwist` 包装
-- [ ] header 加"离线就绪 ●"指示灯（监听 `navigator.serviceWorker.controller`）
-
-### M5 — UX 大升级（剩余部分）
-- [ ] 输入持久化（每个工具的输入自动写 sessionStorage，加"清空"按钮）
+### M5 — UX（剩余）
 - [ ] 拖放上传 + `FileReader` 流式读
-- [ ] 统一 `ResultActions` 组件（CSV / TSV / JSON / FASTA / Markdown copy）
-- [ ] 每个工具的 "Try example" 按钮
-- [ ] `Ctrl+K` 命令面板（`cmdk` 已经在 deps 中）
-- [ ] 收藏夹 + 最近使用
-- [ ] 分享链接（hash + LZ-string，不出网）
+- [ ] 分享链接（hash + LZ-string 压缩，不出网）
+- [ ] 其余 28 个工具接入 useToolStorage + TryExample + ResultActions（可按需分批）
 
-### M6 — 治理（剩余部分）
+### M6 — 治理
 - [ ] Playwright E2E（5 个核心路径 + 移动端视口）
 - [ ] Lighthouse-CI gate
 - [ ] Issue / PR 模板 + CONTRIBUTING.md
 - [ ] OG image 自动生成（`@vercel/og` 或 `next/og`）
-- [ ] 评估删除 `react-day-picker`（无 calendar UI 在用）
 
 ---
 
