@@ -204,11 +204,6 @@ body.sidebar-collapsed .main-content {
   margin-left: 0;
 }
 
-/* 当右侧 Agent 面板展开时，调整主内容区域 */
-body.agent-panel-open .main-content {
-  margin-right: 400px;
-}
-
 /* 侧边栏滚动条样式 - 默认隐藏，悬停时显示 */
 .sidebar-scroll {
   scrollbar-width: thin;
@@ -287,24 +282,3 @@ body.agent-panel-open .main-content {
   }
 }
 
-/* 隐藏 PageAgent 内置面板 */
-page-agent-panel,
-.pa-panel,
-[class*="page-agent"],
-[id*="page-agent"] {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-/* PageAgent 右侧面板占位元素 */
-.page-agent-spacer {
-  position: fixed;
-  right: 0;
-  top: 3.5rem;
-  width: 400px;
-  height: calc(100vh - 3.5rem);
-  z-index: 35;
-  pointer-events: none;
-}

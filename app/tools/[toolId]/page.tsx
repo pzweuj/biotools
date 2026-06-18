@@ -1,47 +1,71 @@
-"use client"
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { ALL_TOOL_META, TOOL_IDS } from "@/lib/config/tools.meta"
+import { ToolView } from "./tool-view"
+import { zh } from "@/lib/i18n/locales/zh"
+import { en } from "@/lib/i18n/locales/en"
 
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Header } from "@/components/header"
-import { ToolSidebar } from "@/components/tool-sidebar"
-import { ToolDisplay } from "@/components/tool-display"
-import { getToolCategories } from "@/lib/config/tools"
-import type { Tool } from "@/types/tool"
+// 静态生成所有已知工具页面（+ 编译期固定路径，提高 TTFB）
+export const dynamicParams = false
 
-export default function ToolPage() {
-  const router = useRouter()
-  const params = useParams()
-  const toolId = params.toolId as string
-  const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
-  const [toolCategories] = useState(() => getToolCategories())
+export function generateStaticParams() {
+  return TOOL_IDS.map((toolId) => ({ toolId }))
+}
 
-  useEffect(() => {
-    const allTools = toolCategories.flatMap(category => category.tools)
-    const tool = allTools.find(tool => tool.id === toolId)
-    
-    if (!tool) {
-      router.push("/")
-    } else {
-      setSelectedTool(tool)
-    }
-  }, [toolId, toolCategories, router])
-
-  if (!selectedTool) {
-    return null
+// 通过点分隔 key 取嵌套字段
+function lookup(obj: Record<string, unknown>, key: string): string | null {
+  const parts = key.split(".")
+  let cur: unknown = obj
+  for (const p of parts) {
+    if (cur && typeof cur === "object" && p in (cur as Record<string, unknown>)) {
+      cur = (cur as Record<string, unknown>)[p]
+    } else return null
   }
+  return typeof cur === "string" ? cur : null
+}
 
-  return (
-    <div className="flex flex-col h-screen bg-background">
-      <Header />
-      <div className="flex flex-1 relative pt-14">
-        <ToolSidebar 
-          categories={toolCategories} 
-          selectedToolId={toolId}
-        />
-        <div className="flex-1 overflow-y-auto main-content">
-          <ToolDisplay tool={selectedTool} />
-        </div>
-      </div>
-    </div>
-  )
+export async function generateMetadata(
+  { params }: { params: Promise<{ toolId: string }> },
+): Promise<Metadata> {
+  const { toolId } = await params
+  const meta = ALL_TOOL_META.find((t) => t.id === toolId)
+  if (!meta) return { title: "Tool Not Found - BioTools" }
+
+  const nameZh = lookup(zh as unknown as Record<string, unknown>, meta.nameKey) ?? meta.id
+  const nameEn = lookup(en as unknown as Record<string, unknown>, meta.nameKey) ?? meta.id
+  const descZh = lookup(zh as unknown as Record<string, unknown>, meta.descriptionKey) ?? ""
+  const descEn = lookup(en as unknown as Record<string, unknown>, meta.descriptionKey) ?? ""
+
+  const title = `${nameZh} | ${nameEn} - BioTools`
+  const description = descEn || descZh
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/tools/${toolId}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/tools/${toolId}`,
+      type: "website",
+      siteName: "BioTools",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+  }
+}
+
+export default async function ToolPage(
+  { params }: { params: Promise<{ toolId: string }> },
+) {
+  const { toolId } = await params
+  const meta = ALL_TOOL_META.find((t) => t.id === toolId)
+  if (!meta) notFound()
+
+  return <ToolView toolId={toolId} />
 }

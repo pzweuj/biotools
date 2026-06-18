@@ -23,6 +23,9 @@ export const en = {
     backToHome: "Back to Home",
     expandSidebar: "Expand Sidebar",
     collapseSidebar: "Collapse Sidebar",
+    toggleTheme: "Toggle Theme",
+    localTool: "Local",
+    externalTool: "Online",
   },
   intro: {
     subtitle: "Bioinformatics Tools Library",

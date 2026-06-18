@@ -3,23 +3,26 @@
 import { useMemo } from "react"
 import { Header } from "@/components/header"
 import { ToolSidebar } from "@/components/tool-sidebar"
-import { ProjectIntro } from "../components/project-intro"
-import { getToolCategories } from "@/lib/config/tools"
+import { ToolDisplay } from "@/components/tool-display"
+import { getToolCategories, getToolById } from "@/lib/config/tools"
 
-export default function HomePage() {
-  // 只在首次渲染时构建一次，避免每次重新创建工具组件引用
+interface ToolViewProps {
+  toolId: string
+}
+
+export function ToolView({ toolId }: ToolViewProps) {
   const toolCategories = useMemo(() => getToolCategories(), [])
+  const selectedTool = useMemo(() => getToolById(toolId), [toolId])
+
+  if (!selectedTool) return null
 
   return (
     <div className="flex flex-col h-screen bg-background">
       <Header />
       <div className="flex flex-1 relative pt-14">
-        <ToolSidebar
-          categories={toolCategories}
-          selectedToolId=""
-        />
+        <ToolSidebar categories={toolCategories} selectedToolId={toolId} />
         <div className="flex-1 overflow-y-auto main-content">
-          <ProjectIntro />
+          <ToolDisplay tool={selectedTool} />
         </div>
       </div>
     </div>

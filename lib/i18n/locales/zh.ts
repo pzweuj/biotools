@@ -22,6 +22,9 @@ export const zh = {
     backToHome: "返回首页",
     expandSidebar: "展开侧边栏",
     collapseSidebar: "收起侧边栏",
+    toggleTheme: "切换主题",
+    localTool: "本地",
+    externalTool: "联网",
   },
   intro: {
     subtitle: "生物信息学工具库",
