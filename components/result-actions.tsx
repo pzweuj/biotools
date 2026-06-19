@@ -78,12 +78,12 @@ export function ResultActions<T>({
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" className="font-mono gap-1.5">
             <Download className="w-3.5 h-3.5" />
-            Export
+            {t("common.export")}
             <ChevronDown className="w-3 h-3 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="font-mono text-xs">
-          <DropdownMenuLabel>Export / 导出</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("common.export")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {hasRows && !hidden.has("csv") && (
             <DropdownMenuItem onClick={exportCsv}>
@@ -123,7 +123,7 @@ export function ResultActions<T>({
               ) : (
                 <Copy className="w-3.5 h-3.5 mr-2" />
               )}
-              {copied ? "Copied / 已复制" : "Copy TSV / 复制制表符"}
+              {copied ? t("common.copied") : t("common.copyTsv")}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

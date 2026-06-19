@@ -14,6 +14,8 @@ export const en = {
     calculate: "Calculate",
     tryExample: "Try example",
     export: "Export",
+    download: "Download",
+    copyTsv: "Copy TSV",
     reset: "Reset",
   },
   nav: {

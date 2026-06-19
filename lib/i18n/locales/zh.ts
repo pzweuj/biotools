@@ -14,6 +14,8 @@ export const zh = {
     calculate: "计算",
     tryExample: "试用示例",
     export: "导出",
+    download: "下载",
+    copyTsv: "复制制表符",
     reset: "重置",
   },
   nav: {
