@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { TOOL_IDS } from '@/lib/config/tools.meta'
 
-const BASE_URL = 'https://use.biotools.site'
+const BASE_URL = 'https://use.biotools.space'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date()

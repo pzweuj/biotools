@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://use.biotools.site/sitemap.xml
+Sitemap: https://use.biotools.space/sitemap.xml

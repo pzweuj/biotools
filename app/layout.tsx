@@ -9,7 +9,7 @@ import { CommandPalette } from "@/components/command-palette"
 import { SwRegister } from "@/components/sw-register"
 import "./globals.css"
 
-const siteUrl = "https://use.biotools.site"
+const siteUrl = "https://use.biotools.space"
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
