@@ -13,6 +13,7 @@
 |---|---|
 | `alphabet.ts` | DNA/RNA 互补表（含 IUPAC）、氨基酸单字母↔三字母 |
 | `sequence.ts` | `cleanSequence` / `complement` / `reverseComplement` / `countBases` / `gcContent` / `atContent` / `shannonEntropy` / `parseFasta` / `toFasta` |
+| `coordinates.ts` | `findAllMatches` / `locateForwardPrimer` / `locateReversePrimer` / `locatePrimer` / `computeAmplicon`（引物结合区 -> 基因组坐标，1-based inclusive） |
 | `tm.ts` | `tmWallace` / `tmBasicGc` / `tmSaltAdjusted` |
 | `codons.ts` | `STANDARD_CODE` / `VERT_MITO_CODE` / `translateDna` |
 | `index.ts` | 集中 re-export |

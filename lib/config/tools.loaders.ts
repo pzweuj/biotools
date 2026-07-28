@@ -32,6 +32,7 @@ export const TOOL_LOADERS: Record<string, ComponentType> = {
   "primer-dimer-detector": dyn(() => import("@/components/tools/primer-dimer-detector"), "PrimerDimerDetector"),
   "pcr-product-calculator": dyn(() => import("@/components/tools/pcr-product-calculator"), "PCRProductCalculator"),
   "pcr-master-mix-calculator": dyn(() => import("@/components/tools/pcr-master-mix-calculator"), "PcrMasterMixCalculator"),
+  "primer-coordinate-calculator": dyn(() => import("@/components/tools/primer-coordinate-calculator"), "PrimerCoordinateCalculator"),
 
   // data-processing
   "index-checker": dyn(() => import("@/components/tools/index-checker"), "IndexChecker"),

@@ -23,6 +23,7 @@ import { SerialDilutionIcon } from "@/components/icons/serial-dilution-icon"
 import { PcrIcon } from "@/components/icons/pcr-icon"
 import { CurveIcon } from "@/components/icons/curve-icon"
 import { GcSkewIcon } from "@/components/icons/gc-skew-icon"
+import { PrimerCoordinateIcon } from "@/components/icons/primer-coordinate-icon"
 
 export const TOOL_CATEGORIES: ToolMetaCategory[] = [
   {
@@ -55,6 +56,7 @@ export const TOOL_CATEGORIES: ToolMetaCategory[] = [
       { id: "primer-dimer-detector", nameKey: "tools.primer-dimer-detector.name", descriptionKey: "tools.primer-dimer-detector.description", category: "primer-design", icon: DnaIcon },
       { id: "pcr-product-calculator", nameKey: "tools.pcr-product-calculator.name", descriptionKey: "tools.pcr-product-calculator.description", category: "primer-design", icon: CalculatorIcon },
       { id: "pcr-master-mix-calculator", nameKey: "tools.pcr-master-mix.name", descriptionKey: "tools.pcr-master-mix.description", category: "primer-design", icon: PcrIcon },
+      { id: "primer-coordinate-calculator", nameKey: "tools.primer-coordinate-calculator.name", descriptionKey: "tools.primer-coordinate-calculator.description", category: "primer-design", icon: PrimerCoordinateIcon },
     ],
   },
   {
