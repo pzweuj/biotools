@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
 import { useI18n } from "@/lib/i18n"
+import { reverseComplement, cleanDnaStrict } from "@/lib/bio"
 import { Scissors, AlertTriangle, CheckCircle2, Info, XCircle } from "lucide-react"
 
 type PAMType = "NGG" | "NG" | "NRG" | "NNGRRT"
@@ -57,16 +58,6 @@ export function SgRNADesigner() {
   const calculateGC = (seq: string): number => {
     const gc = (seq.match(/[GC]/g) || []).length
     return (gc / seq.length) * 100
-  }
-
-  // 计算反向互补
-  const reverseComplement = (seq: string): string => {
-    const complement: { [key: string]: string } = { A: "T", T: "A", G: "C", C: "G" }
-    return seq
-      .split("")
-      .reverse()
-      .map((base) => complement[base] || base)
-      .join("")
   }
 
   // 检测poly-T序列（TTTT会导致转录终止）
@@ -133,12 +124,12 @@ export function SgRNADesigner() {
   const findSgRNAs = () => {
     if (!input.trim()) return
 
-    const sequence = input
-      .split("\n")
-      .filter((line) => !line.startsWith(">"))
-      .join("")
-      .replace(/[^ATCGatcg]/g, "")
-      .toUpperCase()
+    const sequence = cleanDnaStrict(
+      input
+        .split("\n")
+        .filter((line) => !line.startsWith(">"))
+        .join(""),
+    )
 
     if (sequence.length < 23) {
       return

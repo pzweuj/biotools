@@ -12,12 +12,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { TrendingUp, Info, Dna } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { cleanDnaStrict, gcSkewWindows } from "@/lib/bio"
 
 interface GCSkewResult {
   position: number
   gcSkew: number
   gcContent: number
-  window: string
 }
 
 export function GcSkewAnalyzer() {
@@ -28,20 +28,7 @@ export function GcSkewAnalyzer() {
   const [stepSize, setStepSize] = useState("10")
   const [results, setResults] = useState<GCSkewResult[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  
-  // 计算GC Skew
-  const calculateGCSkew = (seq: string): { gcSkew: number; gcContent: number } => {
-    const g = (seq.match(/G/g) || []).length
-    const c = (seq.match(/C/g) || []).length
-    const a = (seq.match(/A/g) || []).length
-    const t = (seq.match(/T/g) || []).length
-    
-    const gcSkew = (g + c) > 0 ? (g - c) / (g + c) : 0
-    const gcContent = seq.length > 0 ? ((g + c) / seq.length) * 100 : 0
-    
-    return { gcSkew, gcContent }
-  }
-  
+
   // 滑动窗口分析
   const analyzeSequence = async () => {
     if (!sequence.trim()) return
@@ -49,7 +36,7 @@ export function GcSkewAnalyzer() {
     setIsAnalyzing(true)
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    const cleanSeq = sequence.toUpperCase().replace(/[^ATCG]/g, "")
+    const cleanSeq = cleanDnaStrict(sequence)
     const window = parseInt(windowSize) || 100
     const step = parseInt(stepSize) || 10
     
@@ -59,21 +46,7 @@ export function GcSkewAnalyzer() {
       return
     }
     
-    const skewResults: GCSkewResult[] = []
-    
-    for (let i = 0; i <= cleanSeq.length - window; i += step) {
-      const windowSeq = cleanSeq.substring(i, i + window)
-      const { gcSkew, gcContent } = calculateGCSkew(windowSeq)
-      
-      skewResults.push({
-        position: i + 1, // 1-based
-        gcSkew,
-        gcContent,
-        window: windowSeq
-      })
-    }
-    
-    setResults(skewResults)
+    setResults(gcSkewWindows(cleanSeq, window, step))
     setIsAnalyzing(false)
   }
   

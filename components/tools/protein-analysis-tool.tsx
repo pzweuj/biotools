@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Activity, Calculator } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { AMINO_ACID_WEIGHT } from "@/lib/bio"
 
 // 氨基酸pKa值 (用于pI计算)
 const AA_PKA: Record<string, { pKa?: number; charge: number }> = {
@@ -26,14 +27,6 @@ const HYDROPHOBICITY: Record<string, number> = {
   A: 1.8, R: -4.5, N: -3.5, D: -3.5, C: 2.5, Q: -3.5, E: -3.5, G: -0.4,
   H: -3.2, I: 4.5, L: 3.8, K: -3.9, M: 1.9, F: 2.8, P: -1.6, S: -0.8,
   T: -0.7, W: -0.9, Y: -1.3, V: 4.2
-}
-
-// 氨基酸分子量表 (Da)
-const AMINO_ACID_WEIGHTS: Record<string, number> = {
-  A: 89.09, R: 174.20, N: 132.12, D: 133.10, C: 121.15,
-  E: 147.13, Q: 146.15, G: 75.07, H: 155.16, I: 131.17,
-  L: 131.17, K: 146.19, M: 149.21, F: 165.19, P: 115.13,
-  S: 105.09, T: 119.12, W: 204.23, Y: 181.19, V: 117.15
 }
 
 // 氨基酸分类
@@ -56,7 +49,7 @@ export function ProteinAnalysisTool() {
     
     let weight = 18.015 // 水分子 (H2O)
     for (const aa of cleanSeq) {
-      weight += AMINO_ACID_WEIGHTS[aa] || 0
+      weight += AMINO_ACID_WEIGHT[aa] || 0
     }
     
     // 减去肽键形成过程中失去的水分子

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useI18n } from "@/lib/i18n"
+import { copyText } from "@/lib/bio"
 import { Copy, ArrowLeftRight } from "lucide-react"
 
 // 氨基酸映射表
@@ -158,7 +159,7 @@ export function AaConverter() {
   // 复制结果
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(output)
+      await copyText(output)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {

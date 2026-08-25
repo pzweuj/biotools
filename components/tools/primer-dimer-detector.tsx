@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Copy, Check, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { reverseComplement, complement, cleanDnaStrict, copyText } from "@/lib/bio"
 
 // 热力学参数 (简化版，基于最近邻模型)
 const THERMODYNAMIC_PARAMS = {
@@ -65,20 +66,6 @@ export function PrimerDimerDetector() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // 获取互补碱基
-  const getComplement = (base: string): string => {
-    const complements: { [key: string]: string } = {
-      'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G',
-      'a': 't', 't': 'a', 'g': 'c', 'c': 'g'
-    }
-    return complements[base] || base
-  }
-
-  // 反向互补
-  const reverseComplement = (seq: string): string => {
-    return seq.split('').reverse().map(getComplement).join('')
-  }
-
   // 计算两个序列的最佳对齐
   const findBestAlignment = (seq1: string, seq2: string) => {
     let bestScore = 0
@@ -118,7 +105,7 @@ export function PrimerDimerDetector() {
     for (let i = 0; i < maxLen; i++) {
       const base1 = seq1[start1 + i]
       const base2 = seq2[start2 + i]
-      const isMatch = base1.toUpperCase() === getComplement(base2.toUpperCase())
+      const isMatch = base1.toUpperCase() === complement(base2.toUpperCase())
       
       primer1Aligned += base1
       primer2Aligned += base2
@@ -210,7 +197,7 @@ export function PrimerDimerDetector() {
         ? prevLine.substring(1).trim() || `Primer ${index + 1}`
         : `Primer ${primerList.length + 1}`
 
-      const cleanSeq = line.toUpperCase().replace(/[^ATGC]/g, '')
+      const cleanSeq = cleanDnaStrict(line)
       if (cleanSeq.length > 0) {
         primerList.push({ name, sequence: cleanSeq })
       }
@@ -296,7 +283,7 @@ export function PrimerDimerDetector() {
 
   const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text)
+      await copyText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {

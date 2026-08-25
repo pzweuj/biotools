@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Copy, Check, AlertTriangle, CheckCircle, XCircle, Target, Dna, Plus, Trash2 } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { reverseComplement, copyText } from "@/lib/bio"
 
 interface Template {
   name: string
@@ -72,21 +73,6 @@ export function PCRProductCalculator() {
   const [results, setResults] = useState<PCRResult[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [copied, setCopied] = useState(false)
-
-  // 获取互补碱基
-  const getComplement = (base: string): string => {
-    const complements: { [key: string]: string } = {
-      'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G',
-      'a': 't', 't': 'a', 'g': 'c', 'c': 'g',
-      'N': 'N', 'n': 'n'
-    }
-    return complements[base] || base
-  }
-
-  // 反向互补
-  const reverseComplement = (seq: string): string => {
-    return seq.split('').reverse().map(getComplement).join('')
-  }
 
   // 解析FASTA格式
   const parseFasta = (text: string): Template[] => {
@@ -350,7 +336,7 @@ export function PCRProductCalculator() {
 
   const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(text)
+      await copyText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {

@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
 import { useI18n } from "@/lib/i18n"
+import { cleanDnaStrict } from "@/lib/bio"
 import { Dna, AlertTriangle, TrendingUp, Info } from "lucide-react"
 
 // 大肠杆菌密码子使用频率表（每千个密码子）
@@ -105,7 +106,7 @@ export function CodonOptimizer() {
       if (line.startsWith(">")) {
         name = line.substring(1).trim() || "Sequence"
       } else {
-        sequence += line.replace(/[^ATCGatcg]/g, "").toUpperCase()
+        sequence += cleanDnaStrict(line)
       }
     }
 

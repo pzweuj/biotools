@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { useI18n } from "@/lib/i18n"
+import { cleanDnaStrict } from "@/lib/bio"
 
 interface PrimerResult {
   sequence: string
@@ -111,7 +112,7 @@ export function TmCalculator() {
     const newResults: PrimerResult[] = []
 
     sequenceLines.forEach((originalSeq) => {
-      const cleanSeq = originalSeq.toUpperCase().replace(/[^ATCG]/g, "")
+      const cleanSeq = cleanDnaStrict(originalSeq)
       
       if (cleanSeq.length === 0) return
 

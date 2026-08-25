@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Copy, Check, Download } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { copyText, downloadBlob } from "@/lib/bio"
 import { useToolStorage } from "@/hooks/use-tool-storage"
 import { TryExample } from "@/components/try-example"
 
@@ -157,7 +158,7 @@ export function BaseComplement() {
     if (!output) return
 
     try {
-      await navigator.clipboard.writeText(output)
+      await copyText(output)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
@@ -167,12 +168,7 @@ export function BaseComplement() {
 
   const downloadOutput = () => {
     if (!output) return
-    const blob = new Blob([output], { type: "text/plain;charset=utf-8" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url; a.download = "base-complement-output.txt"
-    document.body.appendChild(a); a.click()
-    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 0)
+    downloadBlob(output, "base-complement-output.txt")
   }
 
   const handleTryExample = (example: Record<string, unknown>) => {

@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { RefreshCw, FileText, Filter, Copy } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { copyText } from "@/lib/bio"
 
 type SequenceRecord = {
   id: string
@@ -293,7 +294,7 @@ export function SequenceFormatConverter() {
   const parsedRecords = useMemo(() => parseSequences(inputText), [inputText])
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(processedText)
+    copyText(processedText).catch(() => {})
   }
 
   const clearAll = () => {

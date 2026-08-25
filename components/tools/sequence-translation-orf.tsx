@@ -16,66 +16,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Copy, Check, Dna } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { reverseComplement, cleanDnaStrict, copyText, STANDARD_CODE, VERT_MITO_CODE, AMINO_ACID_WEIGHT } from "@/lib/bio"
 
-// 遗传密码表
+// 遗传密码表（RNA 键，由库中共用的 DNA 表派生）
+const toRnaTable = (t: Readonly<Record<string, string>>): Record<string, string> =>
+  Object.fromEntries(Object.entries(t).map(([codon, aa]) => [codon.replace(/T/g, "U"), aa]))
+
 const GENETIC_CODES: Record<string, { name: string; table: Record<string, string> }> = {
-  standard: {
-    name: "Standard",
-    table: {
-      UUU: "F", UUC: "F", UUA: "L", UUG: "L",
-      CUU: "L", CUC: "L", CUA: "L", CUG: "L",
-      AUU: "I", AUC: "I", AUA: "I", AUG: "M",
-      GUU: "V", GUC: "V", GUA: "V", GUG: "V",
-      UCU: "S", UCC: "S", UCA: "S", UCG: "S",
-      CCU: "P", CCC: "P", CCA: "P", CCG: "P",
-      ACU: "T", ACC: "T", ACA: "T", ACG: "T",
-      GCU: "A", GCC: "A", GCA: "A", GCG: "A",
-      UAU: "Y", UAC: "Y", UAA: "*", UAG: "*",
-      CAU: "H", CAC: "H", CAA: "Q", CAG: "Q",
-      AAU: "N", AAC: "N", AAA: "K", AAG: "K",
-      GAU: "D", GAC: "D", GAA: "E", GAG: "E",
-      UGU: "C", UGC: "C", UGA: "*", UGG: "W",
-      CGU: "R", CGC: "R", CGA: "R", CGG: "R",
-      AGU: "S", AGC: "S", AGA: "R", AGG: "R",
-      GGU: "G", GGC: "G", GGA: "G", GGG: "G",
-    },
-  },
-  vertebrate_mito: {
-    name: "Vertebrate Mitochondrial",
-    table: {
-      UUU: "F", UUC: "F", UUA: "L", UUG: "L",
-      CUU: "L", CUC: "L", CUA: "L", CUG: "L",
-      AUU: "I", AUC: "I", AUA: "M", AUG: "M",
-      GUU: "V", GUC: "V", GUA: "V", GUG: "V",
-      UCU: "S", UCC: "S", UCA: "S", UCG: "S",
-      CCU: "P", CCC: "P", CCA: "P", CCG: "P",
-      ACU: "T", ACC: "T", ACA: "T", ACG: "T",
-      GCU: "A", GCC: "A", GCA: "A", GCG: "A",
-      UAU: "Y", UAC: "Y", UAA: "*", UAG: "*",
-      CAU: "H", CAC: "H", CAA: "Q", CAG: "Q",
-      AAU: "N", AAC: "N", AAA: "K", AAG: "K",
-      GAU: "D", GAC: "D", GAA: "E", GAG: "E",
-      UGU: "C", UGC: "C", UGA: "W", UGG: "W",
-      CGU: "R", CGC: "R", CGA: "R", CGG: "R",
-      AGU: "S", AGC: "S", AGA: "*", AGG: "*",
-      GGU: "G", GGC: "G", GGA: "G", GGG: "G",
-    },
-  },
-}
-
-// DNA互补配对
-const DNA_COMPLEMENT: Record<string, string> = {
-  A: "T", T: "A", G: "C", C: "G",
-  a: "t", t: "a", g: "c", c: "g",
-  N: "N", n: "n",
-}
-
-// 氨基酸分子量表 (Da)
-const AMINO_ACID_WEIGHTS: { [key: string]: number } = {
-  A: 89.09, R: 174.20, N: 132.12, D: 133.10, C: 121.15,
-  E: 147.13, Q: 146.15, G: 75.07, H: 155.16, I: 131.17,
-  L: 131.17, K: 146.19, M: 149.21, F: 165.19, P: 115.13,
-  S: 105.09, T: 119.12, W: 204.23, Y: 181.19, V: 117.15
+  standard: { name: "Standard", table: toRnaTable(STANDARD_CODE) },
+  vertebrate_mito: { name: "Vertebrate Mitochondrial", table: toRnaTable(VERT_MITO_CODE) },
 }
 
 interface ORF {
@@ -94,14 +43,6 @@ interface ORF {
 const TRANSLATION_EXAMPLE: Record<string, unknown> = {
   sequence: "ATGGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAG",
   geneticCode: "standard",
-}
-
-function reverseString(s: string) {
-  return s.split("").reverse().join("")
-}
-
-function reverseComplement(seq: string) {
-  return reverseString(seq.split("").map((b) => DNA_COMPLEMENT[b] ?? b).join(""))
 }
 
 function transcribeDNAtoRNA(seq: string) {
@@ -134,7 +75,7 @@ function calculateMolecularWeight(proteinSeq: string): number {
   let weight = 18.015
   for (const aa of proteinSeq) {
     if (aa !== '*' && aa !== 'X') {
-      weight += AMINO_ACID_WEIGHTS[aa] || 0
+      weight += AMINO_ACID_WEIGHT[aa] || 0
     }
   }
   return Math.round(weight * 100) / 100
@@ -317,7 +258,7 @@ export function SequenceTranslationOrf() {
   const copyToClipboard = async () => {
     if (!output) return
     try {
-      await navigator.clipboard.writeText(output)
+      await copyText(output)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (e) {

@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Beaker, Scissors } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { cleanDnaStrict } from "@/lib/bio"
 
 // Minimal client-side enzyme database (extendable)
 // pattern uses IUPAC codes; we compile to regex for search on both strands
@@ -74,7 +75,7 @@ export function RestrictionEnzymesTool() {
   const [vectorEnz, setVectorEnz] = useState("EcoRI")
   const [insertEnz, setInsertEnz] = useState("EcoRI")
 
-  const cleanSeq = useMemo(() => sequence.toUpperCase().replace(/[^ACGT]/g, ""), [sequence])
+  const cleanSeq = useMemo(() => cleanDnaStrict(sequence), [sequence])
 
   const sites: CutSite[] = useMemo(() => {
     const res: CutSite[] = []
@@ -189,8 +190,8 @@ export function RestrictionEnzymesTool() {
   }
 
   function checkCloningCompatibility() {
-    const v = vectorSeq.toUpperCase().replace(/[^ACGT]/g, "")
-    const ins = insertSeq.toUpperCase().replace(/[^ACGT]/g, "")
+    const v = cleanDnaStrict(vectorSeq)
+    const ins = cleanDnaStrict(insertSeq)
     if (!v || !ins) return { ok: false, reason: t("tools.restriction-enzymes.tool.needSeq", "Provide sequences") }
     const vEnd = digestEnds(v, vectorEnz)
     const iEnd = digestEnds(ins, insertEnz)

@@ -168,3 +168,35 @@ export function toFasta(records: FastaRecord[], wrap = 80): string {
   }
   return out.join("\n")
 }
+
+export interface GcSkewWindow {
+  /** 1-based 窗口起点 */
+  position: number
+  /** (G-C)/(G+C)；无 GC 时取 0 */
+  gcSkew: number
+  /** (G+C)/window 百分比 */
+  gcContent: number
+}
+
+/** 滑窗计算 GC skew / GC 含量。前缀和单次扫描 O(n)，避免每个窗口重复计数。 */
+export function gcSkewWindows(seq: string, window: number, step: number): GcSkewWindow[] {
+  const out: GcSkewWindow[] = []
+  if (window <= 0 || step <= 0 || seq.length < window) return out
+  const gPre = new Uint32Array(seq.length + 1)
+  const cPre = new Uint32Array(seq.length + 1)
+  for (let i = 0; i < seq.length; i++) {
+    const ch = seq[i]
+    gPre[i + 1] = gPre[i] + (ch === "G" ? 1 : 0)
+    cPre[i + 1] = cPre[i] + (ch === "C" ? 1 : 0)
+  }
+  for (let i = 0; i <= seq.length - window; i += step) {
+    const g = gPre[i + window] - gPre[i]
+    const c = cPre[i + window] - cPre[i]
+    out.push({
+      position: i + 1,
+      gcSkew: g + c > 0 ? (g - c) / (g + c) : 0,
+      gcContent: ((g + c) / window) * 100,
+    })
+  }
+  return out
+}

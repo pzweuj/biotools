@@ -11,6 +11,7 @@ import {
   shannonEntropy,
   parseFasta,
   toFasta,
+  gcSkewWindows,
 } from "../sequence"
 
 describe("cleanSequence", () => {
@@ -137,5 +138,56 @@ describe("parseFasta / toFasta", () => {
   it("toFasta wraps sequences", () => {
     const out = toFasta([{ id: "x", description: "", sequence: "AAAACCCC" }], 4)
     expect(out.split("\n")).toEqual([">x", "AAAA", "CCCC"])
+  })
+})
+
+describe("gcSkewWindows", () => {
+  // 对照：朴素逐窗正则计数，验证前缀和实现行为一致
+  const naive = (seq: string, window: number, step: number) => {
+    const out = []
+    for (let i = 0; i <= seq.length - window; i += step) {
+      const w = seq.substring(i, i + window)
+      const g = (w.match(/G/g) || []).length
+      const c = (w.match(/C/g) || []).length
+      out.push({
+        position: i + 1,
+        gcSkew: g + c > 0 ? (g - c) / (g + c) : 0,
+        gcContent: ((g + c) / window) * 100,
+      })
+    }
+    return out
+  }
+
+  it("matches naive per-window counting", () => {
+    const seq = "ATGCGGCCAATTGCCCGTAGCAT"
+    const got = gcSkewWindows(seq, 8, 3)
+    const want = naive(seq, 8, 3)
+    expect(got).toHaveLength(want.length)
+    for (let i = 0; i < want.length; i++) {
+      expect(got[i].position).toBe(want[i].position)
+      expect(got[i].gcSkew).toBeCloseTo(want[i].gcSkew, 12)
+      expect(got[i].gcContent).toBeCloseTo(want[i].gcContent, 12)
+    }
+  })
+
+  it("uses 1-based positions and fixed window denominator", () => {
+    const got = gcSkewWindows("GGGGCCCC", 4, 4)
+    expect(got.map((w) => w.position)).toEqual([1, 5])
+    expect(got[0].gcSkew).toBeCloseTo(1, 12) // GGGG
+    expect(got[1].gcSkew).toBeCloseTo(-1, 12) // CCCC
+    expect(got[0].gcContent).toBe(100)
+  })
+
+  it("returns zero skew when no GC in window", () => {
+    const got = gcSkewWindows("ATATATAT", 8, 1)
+    expect(got).toHaveLength(1)
+    expect(got[0].gcSkew).toBe(0)
+    expect(got[0].gcContent).toBe(0)
+  })
+
+  it("returns empty for window longer than seq or invalid params", () => {
+    expect(gcSkewWindows("ACGT", 100, 1)).toHaveLength(0)
+    expect(gcSkewWindows("ACGT", 0, 1)).toHaveLength(0)
+    expect(gcSkewWindows("ACGT", 2, 0)).toHaveLength(0)
   })
 })

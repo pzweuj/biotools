@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useI18n } from "@/lib/i18n"
+import { reverseComplement } from "@/lib/bio"
 import { AlertCircle, CheckCircle2, XCircle } from "lucide-react"
 
 // 最大输入限制，避免计算卡死
@@ -42,23 +43,6 @@ export function IndexChecker() {
   const [input, setInput] = useState("")
   const [result, setResult] = useState<ValidationResult | null>(null)
   const [isChecking, setIsChecking] = useState(false)
-
-  // 计算反向互补序列
-  const reverseComplement = (seq: string): string => {
-    const complement: { [key: string]: string } = {
-      A: "T",
-      T: "A",
-      G: "C",
-      C: "G",
-      N: "N",
-    }
-    return seq
-      .toUpperCase()
-      .split("")
-      .reverse()
-      .map((base) => complement[base] || base)
-      .join("")
-  }
 
   // 计算两个序列之间的汉明距离
   const hammingDistance = (seq1: string, seq2: string): number => {
