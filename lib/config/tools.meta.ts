@@ -15,6 +15,7 @@ import { AaConverterIcon } from "@/components/icons/aa-converter-icon"
 import { MutalyzerIcon } from "@/components/icons/mutalyzer-icon"
 import { SpliceAIIcon } from "@/components/icons/spliceai-icon"
 import { TransVarIcon } from "@/components/icons/transvar-icon"
+import { FusionDrawIcon } from "@/components/icons/fusiondraw-icon"
 import { SequencingDepthIcon } from "@/components/icons/sequencing-depth-icon"
 import { CodonOptimizerIcon } from "@/components/icons/codon-optimizer-icon"
 import { SgRNAIcon } from "@/components/icons/sgrna-icon"
@@ -101,6 +102,7 @@ export const TOOL_CATEGORIES: ToolMetaCategory[] = [
       { id: "mutalyzer", nameKey: "tools.mutalyzer.name", descriptionKey: "tools.mutalyzer.description", category: "external-tools", icon: MutalyzerIcon, external: true },
       { id: "spliceai", nameKey: "tools.spliceai.name", descriptionKey: "tools.spliceai.description", category: "external-tools", icon: SpliceAIIcon, external: true },
       { id: "transvar", nameKey: "tools.transvar.name", descriptionKey: "tools.transvar.description", category: "external-tools", icon: TransVarIcon, external: true },
+      { id: "fusiondraw", nameKey: "tools.fusiondraw.name", descriptionKey: "tools.fusiondraw.description", category: "external-tools", icon: FusionDrawIcon, external: true },
     ],
   },
 ]

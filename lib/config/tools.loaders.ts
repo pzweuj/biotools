@@ -61,4 +61,5 @@ export const TOOL_LOADERS: Record<string, ComponentType> = {
   "mutalyzer": dyn(() => import("@/components/tools/mutalyzer"), "Mutalyzer"),
   "spliceai": dyn(() => import("@/components/tools/spliceai"), "SpliceAI"),
   "transvar": dyn(() => import("@/components/tools/transvar"), "TransVar"),
+  "fusiondraw": dyn(() => import("@/components/tools/fusiondraw"), "FusionDraw"),
 }
