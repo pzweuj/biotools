@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -215,20 +216,20 @@ export function SequencingDepthCalculator() {
   }, [])
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.sequencing-depth.name", "Sequencing Depth Calculator")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.sequencing-depth.description", "Calculate NGS sequencing depth and required reads number")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 计算模式选择 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <Label className="text-base font-semibold font-mono">
+            <Label className="text-base font-semibold ">
               {t("tools.sequencing-depth.calculationMode", "Calculation Mode")}
             </Label>
           </CardHeader>
@@ -237,7 +238,7 @@ export function SequencingDepthCalculator() {
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center space-x-3 p-3 border rounded-md hover:bg-muted/50 transition-colors cursor-pointer">
                   <RadioGroupItem value="target-to-data" id="target-to-data" />
-                  <Label htmlFor="target-to-data" className="flex-1 cursor-pointer font-mono">
+                  <Label htmlFor="target-to-data" className="flex-1 cursor-pointer ">
                     <div className="font-semibold">
                       {t("tools.sequencing-depth.targetToData", "目标区域 → 数据量")}
                     </div>
@@ -248,7 +249,7 @@ export function SequencingDepthCalculator() {
                 </div>
                 <div className="flex items-center space-x-3 p-3 border rounded-md hover:bg-muted/50 transition-colors cursor-pointer">
                   <RadioGroupItem value="data-to-depth" id="data-to-depth" />
-                  <Label htmlFor="data-to-depth" className="flex-1 cursor-pointer font-mono">
+                  <Label htmlFor="data-to-depth" className="flex-1 cursor-pointer ">
                     <div className="font-semibold">
                       {t("tools.sequencing-depth.dataToDepth", "数据量 → 有效深度")}
                     </div>
@@ -265,7 +266,7 @@ export function SequencingDepthCalculator() {
         {/* 输入参数 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Calculator className="w-4 h-4 mr-2" />
               {t("tools.sequencing-depth.parameters", "Parameters")}
             </CardTitle>
@@ -273,7 +274,7 @@ export function SequencingDepthCalculator() {
           <CardContent className="space-y-4">
             {/* 目标区域大小 */}
             <div className="space-y-2">
-              <Label className="text-base font-semibold font-mono">
+              <Label className="text-base font-semibold ">
                 {t("tools.sequencing-depth.targetSize", "目标区域大小")}
               </Label>
               <div className="flex gap-2">
@@ -286,14 +287,14 @@ export function SequencingDepthCalculator() {
                   className="flex-1 font-mono"
                 />
                 <Select value={targetSizeUnit} onValueChange={setTargetSizeUnit}>
-                  <SelectTrigger className="w-24 font-mono">
+                  <SelectTrigger className="w-24 ">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bp" className="font-mono">bp</SelectItem>
-                    <SelectItem value="Kb" className="font-mono">Kb</SelectItem>
-                    <SelectItem value="Mb" className="font-mono">Mb</SelectItem>
-                    <SelectItem value="Gb" className="font-mono">Gb</SelectItem>
+                    <SelectItem value="bp" className="">bp</SelectItem>
+                    <SelectItem value="Kb" className="">Kb</SelectItem>
+                    <SelectItem value="Mb" className="">Mb</SelectItem>
+                    <SelectItem value="Gb" className="">Gb</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -304,7 +305,7 @@ export function SequencingDepthCalculator() {
 
             {/* 读长 */}
             <div className="space-y-2">
-              <Label className="text-base font-semibold font-mono">
+              <Label className="text-base font-semibold ">
                 {t("tools.sequencing-depth.readLength", "读长")}
               </Label>
               <div className="flex gap-2">
@@ -317,12 +318,12 @@ export function SequencingDepthCalculator() {
                   className="flex-1 font-mono"
                 />
                 <Select value={readLengthUnit} onValueChange={setReadLengthUnit}>
-                  <SelectTrigger className="w-24 font-mono">
+                  <SelectTrigger className="w-24 ">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bp" className="font-mono">bp</SelectItem>
-                    <SelectItem value="Kb" className="font-mono">Kb</SelectItem>
+                    <SelectItem value="bp" className="">bp</SelectItem>
+                    <SelectItem value="Kb" className="">Kb</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -333,7 +334,7 @@ export function SequencingDepthCalculator() {
 
             {/* 捕获效率 */}
             <div className="space-y-2">
-              <Label className="text-base font-semibold font-mono">
+              <Label className="text-base font-semibold ">
                 {t("tools.sequencing-depth.captureEfficiency", "捕获效率 (%)")}
               </Label>
               <Input
@@ -354,7 +355,7 @@ export function SequencingDepthCalculator() {
             {/* 条件输入：深度或reads数 */}
             {mode === "target-to-data" ? (
               <div className="space-y-2">
-                <Label className="text-base font-semibold font-mono">
+                <Label className="text-base font-semibold ">
                   {t("tools.sequencing-depth.targetDepth", "目标深度 (×)")}
                 </Label>
                 <Input
@@ -371,7 +372,7 @@ export function SequencingDepthCalculator() {
               </div>
             ) : (
               <div className="space-y-2">
-                <Label className="text-base font-semibold font-mono">
+                <Label className="text-base font-semibold ">
                   {t("tools.sequencing-depth.inputDataSize", "数据量")}
                 </Label>
                 <div className="flex gap-2">
@@ -384,14 +385,14 @@ export function SequencingDepthCalculator() {
                     className="flex-1 font-mono"
                   />
                   <Select value={inputDataSizeUnit} onValueChange={setInputDataSizeUnit}>
-                    <SelectTrigger className="w-24 font-mono">
+                    <SelectTrigger className="w-24 ">
                       <SelectValue placeholder="Gb" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="bp" className="font-mono">bp</SelectItem>
-                      <SelectItem value="Kb" className="font-mono">Kb</SelectItem>
-                      <SelectItem value="Mb" className="font-mono">Mb</SelectItem>
-                      <SelectItem value="Gb" className="font-mono">Gb</SelectItem>
+                      <SelectItem value="bp" className="">bp</SelectItem>
+                      <SelectItem value="Kb" className="">Kb</SelectItem>
+                      <SelectItem value="Mb" className="">Mb</SelectItem>
+                      <SelectItem value="Gb" className="">Gb</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -403,11 +404,11 @@ export function SequencingDepthCalculator() {
 
             {/* 按钮 */}
             <div className="flex gap-2 pt-2">
-              <Button onClick={calculate} className="flex-1 font-mono">
+              <Button onClick={calculate} className="flex-1 ">
                 <Calculator className="w-4 h-4 mr-2" />
                 {t("common.calculate")}
               </Button>
-              <Button onClick={clearAll} variant="outline" className="font-mono">
+              <Button onClick={clearAll} variant="outline" className="">
                 {t("common.clear", "Clear")}
               </Button>
             </div>
@@ -418,7 +419,7 @@ export function SequencingDepthCalculator() {
         {result && (
           <Card className="border-2 border-primary/50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-mono flex items-center">
+              <CardTitle className="text-sm flex items-center">
                 <ArrowRight className="w-4 h-4 mr-2" />
                 {t("tools.sequencing-depth.results", "Results")}
               </CardTitle>
@@ -512,14 +513,14 @@ export function SequencingDepthCalculator() {
         {/* 提示信息 */}
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t(
               "tools.sequencing-depth.formula",
               "公式：数据量 = (目标区域大小 × 目标深度) / 捕获效率。有效深度 = (数据量 × 捕获效率) / 目标区域大小。"
             )}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

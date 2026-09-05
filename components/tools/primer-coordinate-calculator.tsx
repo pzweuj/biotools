@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 // 引物坐标计算：输入 FASTA 模板 + 基因组起始坐标 + F/R 引物，
 // 输出 F/R 引物在基因组上的起始/终止坐标（含链向、5'/3' 端、扩增子跨度）。
@@ -9,7 +10,6 @@ import { useState } from "react"
 import { useToolStorage } from "@/hooks/use-tool-storage"
 import { TryExample } from "@/components/try-example"
 import { ResultActions } from "@/components/result-actions"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -154,7 +154,7 @@ export function PrimerCoordinateCalculator() {
         {hits.length === 0 ? (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="font-mono text-sm">
+            <AlertDescription className="text-sm">
               {t(`tools.primer-coordinate-calculator.${label === "F" ? "notFoundF" : "notFoundR"}`)}
             </AlertDescription>
           </Alert>
@@ -202,7 +202,7 @@ export function PrimerCoordinateCalculator() {
         {!location.orientationMatches && hits.length > 0 && (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="font-mono text-xs">
+            <AlertDescription className="text-xs">
               {t("tools.primer-coordinate-calculator.oppositeStrandNote")}
             </AlertDescription>
           </Alert>
@@ -252,19 +252,19 @@ export function PrimerCoordinateCalculator() {
   ]
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.primer-coordinate-calculator.name")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.primer-coordinate-calculator.description")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 模板序列 */}
         <div className="space-y-2">
-          <Label htmlFor="template" className="font-mono">
+          <Label htmlFor="template" className="">
             {t("tools.primer-coordinate-calculator.templateLabel")}
           </Label>
           <Textarea
@@ -280,7 +280,7 @@ export function PrimerCoordinateCalculator() {
         {/* 基因组起始坐标 + 可选参考名 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="genomic-start" className="font-mono">
+            <Label htmlFor="genomic-start" className="">
               {t("tools.primer-coordinate-calculator.genomicStartLabel")}
             </Label>
             <Input
@@ -294,7 +294,7 @@ export function PrimerCoordinateCalculator() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ref-name" className="font-mono">
+            <Label htmlFor="ref-name" className="">
               {t("tools.primer-coordinate-calculator.refNameLabel")}
             </Label>
             <Input
@@ -313,7 +313,7 @@ export function PrimerCoordinateCalculator() {
         {/* F / R 引物 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="f-primer" className="font-mono">
+            <Label htmlFor="f-primer" className="">
               {t("tools.primer-coordinate-calculator.fPrimerLabel")}
             </Label>
             <Input
@@ -325,7 +325,7 @@ export function PrimerCoordinateCalculator() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="r-primer" className="font-mono">
+            <Label htmlFor="r-primer" className="">
               {t("tools.primer-coordinate-calculator.rPrimerLabel")}
             </Label>
             <Input
@@ -345,12 +345,12 @@ export function PrimerCoordinateCalculator() {
         <div className="flex gap-2">
           <Button
             onClick={calculate}
-            className="flex-1 font-mono"
+            className="flex-1 "
             disabled={!template.trim() || (!fPrimer.trim() && !rPrimer.trim())}
           >
             {t("tools.primer-coordinate-calculator.calculate")}
           </Button>
-          <Button onClick={handleClear} variant="outline" className="font-mono">
+          <Button onClick={handleClear} variant="outline" className="">
             {t("common.clear")}
           </Button>
         </div>
@@ -375,7 +375,7 @@ export function PrimerCoordinateCalculator() {
         {error && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="font-mono text-sm">
+            <AlertDescription className="text-sm">
               {t(`tools.primer-coordinate-calculator.${error}`)}
             </AlertDescription>
           </Alert>
@@ -432,11 +432,11 @@ export function PrimerCoordinateCalculator() {
 
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertDescription className="font-mono text-xs">
+          <AlertDescription className="text-xs">
             {t("tools.primer-coordinate-calculator.coordinateConvention")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

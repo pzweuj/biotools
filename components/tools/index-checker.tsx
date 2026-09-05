@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -279,13 +280,13 @@ export function IndexChecker() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("tools.index-checker.name")}</CardTitle>
-          <CardDescription>{t("tools.index-checker.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <ToolPage>
+
+        <ToolPageHeader>
+          <ToolPageTitle>{t("tools.index-checker.name")}</ToolPageTitle>
+          <ToolPageDescription>{t("tools.index-checker.description")}</ToolPageDescription>
+        </ToolPageHeader>
+        <ToolPageContent>
           <div className="space-y-2">
             <Label htmlFor="index-input">{t("tools.index-checker.inputLabel")}</Label>
             <Textarea
@@ -301,10 +302,7 @@ export function IndexChecker() {
           <Button onClick={handleCheck} disabled={isChecking || !input.trim()} className="w-full">
             {isChecking ? t("common.loading") : t("tools.index-checker.checkIndices")}
           </Button>
-        </CardContent>
-      </Card>
-
-      {result && (
+          {result && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -426,7 +424,8 @@ export function IndexChecker() {
             </Tabs>
           </CardContent>
         </Card>
-      )}
-    </div>
+          )}
+        </ToolPageContent>
+    </ToolPage>
   )
 }

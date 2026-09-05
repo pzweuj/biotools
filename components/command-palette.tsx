@@ -5,25 +5,10 @@ import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
 import { useI18n } from "@/lib/i18n"
 import { ALL_TOOL_META } from "@/lib/config/tools.meta"
+import { loadRecentToolIds, recordRecentTool } from "@/lib/recent-tools"
 import { Search, Star, Clock, Globe, Dna } from "lucide-react"
 
-const RECENT_KEY = "biotools:recent-tools"
 const FAVORITES_KEY = "biotools:favorites"
-const MAX_RECENT = 6
-
-function loadRecent(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]") as string[]
-  } catch {
-    return []
-  }
-}
-
-function saveRecent(ids: string[]) {
-  try {
-    localStorage.setItem(RECENT_KEY, JSON.stringify(ids))
-  } catch {}
-}
 
 function loadFavorites(): string[] {
   try {
@@ -52,7 +37,7 @@ export function CommandPalette() {
   // 加载已持久化的收藏 / 最近
   useEffect(() => {
     setFavorites(loadFavorites())
-    setRecent(loadRecent())
+    setRecent(loadRecentToolIds())
   }, [])
 
   // 全局快捷键
@@ -64,7 +49,7 @@ export function CommandPalette() {
           if (prev) return prev
           setSearch("")
           setFavorites(loadFavorites())
-          setRecent(loadRecent())
+          setRecent(loadRecentToolIds())
           return true
         })
       }
@@ -76,13 +61,12 @@ export function CommandPalette() {
   const selectTool = useCallback(
     (toolId: string) => {
       // 记录最近使用
-      const updated = [toolId, ...recent.filter((id) => id !== toolId)].slice(0, MAX_RECENT)
+      const updated = recordRecentTool(toolId)
       setRecent(updated)
-      saveRecent(updated)
       setOpen(false)
       router.push(`/tools/${toolId}`)
     },
-    [recent, router],
+    [router],
   )
 
   const handleFavorite = useCallback((e: React.MouseEvent, toolId: string) => {
@@ -144,7 +128,7 @@ export function CommandPalette() {
       {/* 遮罩 */}
       <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
 
-      <div className="relative z-10 w-full max-w-lg rounded-xl border bg-card shadow-2xl overflow-hidden font-mono">
+      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-lg border bg-card shadow-lg">
         {/* 搜索栏 */}
         <div className="flex items-center border-b px-3">
           <Search className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
@@ -258,15 +242,15 @@ export function CommandPalette() {
         {/* 底部提示 */}
         <div className="border-t px-3 py-2 flex items-center gap-4 text-[10px] text-muted-foreground">
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px]">↑↓</kbd>{" "}
+            <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">↑↓</kbd>{" "}
             {locale === "zh" ? "导航" : "Navigate"}
           </span>
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px]">↵</kbd>{" "}
+            <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">↵</kbd>{" "}
             {locale === "zh" ? "打开" : "Open"}
           </span>
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px]">Esc</kbd>{" "}
+            <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-[10px]">Esc</kbd>{" "}
             {locale === "zh" ? "关闭" : "Close"}
           </span>
           <span className="ml-auto">

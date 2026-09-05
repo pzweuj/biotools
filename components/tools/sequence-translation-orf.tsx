@@ -1,10 +1,10 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { useToolStorage } from "@/hooks/use-tool-storage"
 import { TryExample } from "@/components/try-example"
 import { ResultActions } from "@/components/result-actions"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -277,27 +277,27 @@ export function SequenceTranslationOrf() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground flex items-center gap-2">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           <Dna className="w-5 h-5" />
           {t("tools.sequence-translation.name", "Sequence Translation & ORF Finder")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.sequence-translation.description", "DNA/RNA translation, six-frame translation, and ORF detection in one tool")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 模式选择 */}
         <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="simple" className="font-mono text-xs">
+            <TabsTrigger value="simple" className="text-xs">
               {t("tools.sequence-translation-orf.simpleMode", "Simple Translation")}
             </TabsTrigger>
-            <TabsTrigger value="six-frame" className="font-mono text-xs">
+            <TabsTrigger value="six-frame" className="text-xs">
               {t("tools.sequence-translation-orf.sixFrame", "Six-Frame Translation")}
             </TabsTrigger>
-            <TabsTrigger value="orf" className="font-mono text-xs">
+            <TabsTrigger value="orf" className="text-xs">
               {t("tools.sequence-translation-orf.orfMode", "ORF Finder")}
             </TabsTrigger>
           </TabsList>
@@ -306,63 +306,63 @@ export function SequenceTranslationOrf() {
           <TabsContent value="simple" className="space-y-4 mt-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-translation.inputType", "Input Type")}</Label>
+                <Label className="">{t("tools.sequence-translation.inputType", "Input Type")}</Label>
                 <Select value={inputType} onValueChange={(v) => setInputType(v as any)}>
-                  <SelectTrigger className="font-mono">
+                  <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DNA" className="font-mono">DNA</SelectItem>
-                    <SelectItem value="RNA" className="font-mono">RNA</SelectItem>
+                    <SelectItem value="DNA" className="">DNA</SelectItem>
+                    <SelectItem value="RNA" className="">RNA</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
+                <Label className="">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
                 <Select value={geneticCode} onValueChange={setGeneticCode}>
-                  <SelectTrigger className="font-mono">
+                  <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {codeOptions.map((opt) => (
-                      <SelectItem key={opt.key} value={opt.key} className="font-mono">{opt.name}</SelectItem>
+                      <SelectItem key={opt.key} value={opt.key} className="">{opt.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-translation.frame", "Reading Frame")}</Label>
+                <Label className="">{t("tools.sequence-translation.frame", "Reading Frame")}</Label>
                 <Select value={String(frame)} onValueChange={(v) => setFrame(Number(v) as 1 | 2 | 3)}>
-                  <SelectTrigger className="font-mono">
+                  <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1" className="font-mono">1</SelectItem>
-                    <SelectItem value="2" className="font-mono">2</SelectItem>
-                    <SelectItem value="3" className="font-mono">3</SelectItem>
+                    <SelectItem value="1" className="">1</SelectItem>
+                    <SelectItem value="2" className="">2</SelectItem>
+                    <SelectItem value="3" className="">3</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-translation.stopMode", "Stop Codon")}</Label>
+                <Label className="">{t("tools.sequence-translation.stopMode", "Stop Codon")}</Label>
                 <Select value={stopMode} onValueChange={(v) => setStopMode(v as any)}>
-                  <SelectTrigger className="font-mono">
+                  <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="asterisk" className="font-mono">*</SelectItem>
-                    <SelectItem value="stop" className="font-mono">Stop</SelectItem>
-                    <SelectItem value="truncate" className="font-mono">Truncate</SelectItem>
+                    <SelectItem value="asterisk" className="">*</SelectItem>
+                    <SelectItem value="stop" className="">Stop</SelectItem>
+                    <SelectItem value="truncate" className="">Truncate</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="sequence-input" className="font-mono">
+              <Label htmlFor="sequence-input" className="">
                 {t("tools.sequence-translation.inputLabel", "Input Sequence")}
               </Label>
               <Textarea
@@ -376,13 +376,13 @@ export function SequenceTranslationOrf() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button onClick={handleTranscribe} variant="outline" className="font-mono" disabled={inputType !== "DNA"}>
+              <Button onClick={handleTranscribe} variant="outline" className="" disabled={inputType !== "DNA"}>
                 {t("tools.sequence-translation.transcribe", "DNA → RNA")}
               </Button>
-              <Button onClick={handleTranslate} variant="outline" className="font-mono">
+              <Button onClick={handleTranslate} variant="outline" className="">
                 {t("tools.sequence-translation.translate", "Translate to Protein")}
               </Button>
-              <Button onClick={handleReverseComplement} variant="outline" className="font-mono">
+              <Button onClick={handleReverseComplement} variant="outline" className="">
                 {t("tools.sequence-translation.reverseComplement", "Reverse Complement")}
               </Button>
               <TryExample
@@ -392,18 +392,18 @@ export function SequenceTranslationOrf() {
                   if (typeof example.geneticCode === "string") setGeneticCode(example.geneticCode)
                 }}
               />
-              <Button onClick={clearAll} variant="outline" className="font-mono">
+              <Button onClick={clearAll} variant="outline" className="">
                 {t("common.clear")}
               </Button>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="sequence-output" className="font-mono">
+                <Label htmlFor="sequence-output" className="">
                   {t("tools.sequence-translation.outputLabel", "Output")}
                 </Label>
                 {output && (
-                  <Button onClick={copyToClipboard} variant="ghost" size="sm" className="font-mono h-8 px-2">
+                  <Button onClick={copyToClipboard} variant="ghost" size="sm" className="h-8 px-2">
                     {copied ? (
                       <>
                         <Check className="w-4 h-4 mr-1" />
@@ -432,21 +432,21 @@ export function SequenceTranslationOrf() {
           {/* 六框翻译模式 */}
           <TabsContent value="six-frame" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label className="font-mono">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
+              <Label className="">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
               <Select value={geneticCode} onValueChange={setGeneticCode}>
-                <SelectTrigger className="font-mono">
+                <SelectTrigger className="">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {codeOptions.map((opt) => (
-                    <SelectItem key={opt.key} value={opt.key} className="font-mono">{opt.name}</SelectItem>
+                    <SelectItem key={opt.key} value={opt.key} className="">{opt.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="six-frame-input" className="font-mono">
+              <Label htmlFor="six-frame-input" className="">
                 {t("tools.sequence-translation-orf.inputLabel", "Input DNA Sequence")}
               </Label>
               <Textarea
@@ -460,10 +460,10 @@ export function SequenceTranslationOrf() {
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={handleSixFrameTranslation} className="font-mono flex-1">
+              <Button onClick={handleSixFrameTranslation} className="flex-1">
                 {t("tools.sequence-translation-orf.translateSixFrames", "Translate (6 Frames)")}
               </Button>
-              <Button onClick={clearAll} variant="outline" className="font-mono">
+              <Button onClick={clearAll} variant="outline" className="">
                 {t("common.clear")}
               </Button>
             </div>
@@ -506,7 +506,7 @@ export function SequenceTranslationOrf() {
           {/* ORF查找模式 */}
           <TabsContent value="orf" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="orf-sequence" className="font-mono">
+              <Label htmlFor="orf-sequence" className="">
                 {t("tools.orf-finder.sequenceLabel", "DNA Sequence")}
               </Label>
               <Textarea
@@ -521,7 +521,7 @@ export function SequenceTranslationOrf() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="min-length" className="font-mono">
+                <Label htmlFor="min-length" className="">
                   {t("tools.orf-finder.minLength", "Min Length (bp)")}
                 </Label>
                 <Input
@@ -536,7 +536,7 @@ export function SequenceTranslationOrf() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="start-codons" className="font-mono">
+                <Label htmlFor="start-codons" className="">
                   {t("tools.orf-finder.startCodons", "Start Codons")}
                 </Label>
                 <Input
@@ -548,14 +548,14 @@ export function SequenceTranslationOrf() {
               </div>
 
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
+                <Label className="">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
                 <Select value={geneticCode} onValueChange={setGeneticCode}>
-                  <SelectTrigger className="font-mono">
+                  <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {codeOptions.map((opt) => (
-                      <SelectItem key={opt.key} value={opt.key} className="font-mono">{opt.name}</SelectItem>
+                      <SelectItem key={opt.key} value={opt.key} className="">{opt.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -563,10 +563,10 @@ export function SequenceTranslationOrf() {
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={analyzeORFs} className="flex-1 font-mono" disabled={isAnalyzing}>
+              <Button onClick={analyzeORFs} className="flex-1 " disabled={isAnalyzing}>
                 {isAnalyzing ? t("common.loading") : t("tools.orf-finder.findOrfs", "Find ORFs")}
               </Button>
-              <Button onClick={clearAll} variant="outline" className="font-mono">
+              <Button onClick={clearAll} variant="outline" className="">
                 {t("common.clear")}
               </Button>
             </div>
@@ -627,7 +627,7 @@ export function SequenceTranslationOrf() {
             )}
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

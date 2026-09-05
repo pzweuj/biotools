@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -233,28 +234,28 @@ export function StandardCurveFitting() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground flex items-center gap-2">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           <LineChart className="w-5 h-5" />
           {t("tools.standard-curve.name", "Standard Curve Fitting")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.standard-curve.description", "Fit standard curves with linear, logarithmic, exponential, or power models - calculate R² and predict unknown values")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 数据输入 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Calculator className="w-4 h-4 mr-2" />
               {t("tools.standard-curve.dataInput", "Data Input")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="data-input" className="font-mono">
+              <Label htmlFor="data-input" className="">
                 {t("tools.standard-curve.dataLabel", "X-Y Data Points")}
               </Label>
               <Textarea
@@ -271,13 +272,13 @@ export function StandardCurveFitting() {
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={parseData} className="font-mono flex-1">
+              <Button onClick={parseData} className="flex-1">
                 {t("tools.standard-curve.loadData", "Load Data")}
               </Button>
-              <Button onClick={loadExample} variant="outline" className="font-mono">
+              <Button onClick={loadExample} variant="outline" className="">
                 {t("tools.standard-curve.loadExample", "Example")}
               </Button>
-              <Button onClick={clearAll} variant="outline" className="font-mono">
+              <Button onClick={clearAll} variant="outline" className="">
                 {t("common.clear")}
               </Button>
             </div>
@@ -285,7 +286,7 @@ export function StandardCurveFitting() {
             {dataPoints.length > 0 && (
               <Alert>
                 <Info className="h-4 w-4" />
-                <AlertDescription className="font-mono text-sm">
+                <AlertDescription className="text-sm">
                   {t("tools.standard-curve.dataLoaded", "Loaded")} {dataPoints.length} {t("tools.standard-curve.dataPoints", "data points")}
                 </AlertDescription>
               </Alert>
@@ -297,29 +298,29 @@ export function StandardCurveFitting() {
         {dataPoints.length >= 2 && (
           <Card className="border-2 border-dashed border-border/50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-mono flex items-center">
+              <CardTitle className="text-sm flex items-center">
                 <TrendingUp className="w-4 h-4 mr-2" />
                 {t("tools.standard-curve.fittingOptions", "Fitting Options")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.standard-curve.fitType", "Fit Type")}</Label>
+                <Label className="">{t("tools.standard-curve.fitType", "Fit Type")}</Label>
                 <Select value={fitType} onValueChange={(v) => setFitType(v as any)}>
-                  <SelectTrigger className="font-mono">
+                  <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="linear" className="font-mono">
+                    <SelectItem value="linear" className="">
                       {t("tools.standard-curve.linear", "Linear")} (y = a + bx)
                     </SelectItem>
-                    <SelectItem value="logarithmic" className="font-mono">
+                    <SelectItem value="logarithmic" className="">
                       {t("tools.standard-curve.logarithmic", "Logarithmic")} (y = a + b*ln(x))
                     </SelectItem>
-                    <SelectItem value="exponential" className="font-mono">
+                    <SelectItem value="exponential" className="">
                       {t("tools.standard-curve.exponential", "Exponential")} (y = a * e^(bx))
                     </SelectItem>
-                    <SelectItem value="power" className="font-mono">
+                    <SelectItem value="power" className="">
                       {t("tools.standard-curve.power", "Power")} (y = a * x^b)
                     </SelectItem>
                   </SelectContent>
@@ -334,7 +335,7 @@ export function StandardCurveFitting() {
           <>
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono">
+                <CardTitle className="text-sm ">
                   {t("tools.standard-curve.fitResults", "Fit Results")}
                 </CardTitle>
               </CardHeader>
@@ -416,13 +417,13 @@ export function StandardCurveFitting() {
             {/* 预测未知值 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono">
+                <CardTitle className="text-sm ">
                   {t("tools.standard-curve.predictUnknown", "Predict Unknown Values")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="unknown-values" className="font-mono">
+                  <Label htmlFor="unknown-values" className="">
                     {t("tools.standard-curve.unknownX", "Enter X values (comma or space separated)")}
                   </Label>
                   <Input
@@ -466,8 +467,8 @@ export function StandardCurveFitting() {
             </Card>
           </>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

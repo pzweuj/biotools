@@ -1,7 +1,7 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -177,15 +177,15 @@ export function BaseComplement() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">{t("tools.base-complement.name")}</CardTitle>
-        <CardDescription className="font-mono">{t("tools.base-complement.description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>{t("tools.base-complement.name")}</ToolPageTitle>
+        <ToolPageDescription>{t("tools.base-complement.description")}</ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 输入框 */}
         <div className="space-y-2">
-          <Label htmlFor="sequence-input" className="font-mono">
+          <Label htmlFor="sequence-input" className="">
             {t("tools.base-complement.inputLabel")}
           </Label>
           <Textarea
@@ -225,16 +225,16 @@ export function BaseComplement() {
 
         {/* 操作按钮 */}
         <div className="flex flex-wrap gap-2">
-          <Button onClick={handleComplement} variant="outline" className="font-mono">
+          <Button onClick={handleComplement} variant="outline" className="">
             {t("tools.base-complement.complement")}
           </Button>
-          <Button onClick={handleReverse} variant="outline" className="font-mono">
+          <Button onClick={handleReverse} variant="outline" className="">
             {t("tools.base-complement.reverse")}
           </Button>
-          <Button onClick={handleReverseComplement} variant="outline" className="font-mono">
+          <Button onClick={handleReverseComplement} variant="outline" className="">
             {t("tools.base-complement.reverseComplement")}
           </Button>
-          <Button onClick={clearAll} variant="outline" className="font-mono">
+          <Button onClick={clearAll} variant="outline" className="">
             {t("common.clear")}
           </Button>
           <TryExample
@@ -246,7 +246,7 @@ export function BaseComplement() {
         {/* 输出框 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="sequence-output" className="font-mono">
+            <Label htmlFor="sequence-output" className="">
               {t("tools.base-complement.outputLabel")}
             </Label>
             {output && (
@@ -255,7 +255,7 @@ export function BaseComplement() {
                   onClick={copyToClipboard}
                   variant="ghost"
                   size="sm"
-                  className="font-mono h-8 px-2"
+                  className="h-8 px-2"
                   disabled={!output}
                 >
                   {copied ? (
@@ -274,7 +274,7 @@ export function BaseComplement() {
                   onClick={downloadOutput}
                   variant="ghost"
                   size="sm"
-                  className="font-mono h-8 px-2"
+                  className="h-8 px-2"
                   disabled={!output}
                 >
                   <Download className="w-4 h-4 mr-1" />
@@ -300,7 +300,7 @@ export function BaseComplement() {
             {output && <div>{t("tools.base-complement.outputLength")}: {output.length}</div>}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

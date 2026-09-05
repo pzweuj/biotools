@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -206,20 +207,20 @@ export function RestrictionEnzymesTool() {
   const cloneCheck = useMemo(checkCloningCompatibility, [vectorSeq, insertSeq, vectorEnz, insertEnz])
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.restriction-enzymes.name", "Restriction Enzyme Tool")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.restriction-enzymes.description", "Find common sites, render digestion map, multi-enzyme analysis, and basic cloning planning")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* Sequence and enzymes */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Scissors className="w-4 h-4 mr-2" />
               {t("tools.restriction-enzymes.analysis", "Restriction Analysis")}
             </CardTitle>
@@ -227,12 +228,12 @@ export function RestrictionEnzymesTool() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="md:col-span-2">
-                <Label className="font-mono">{t("tools.restriction-enzymes.sequence", "Input DNA Sequence")}</Label>
+                <Label className="">{t("tools.restriction-enzymes.sequence", "Input DNA Sequence")}</Label>
                 <Textarea value={sequence} onChange={(e) => setSequence(e.target.value)} rows={6} className="terminal-input font-mono" placeholder="ATGC..." />
                 <div className="text-xs text-muted-foreground font-mono mt-1">{cleanSeq.length} bp</div>
               </div>
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.restriction-enzymes.enzymes", "Select Enzymes")}</Label>
+                <Label className="">{t("tools.restriction-enzymes.enzymes", "Select Enzymes")}</Label>
                 <div className="grid grid-cols-2 gap-2 p-2 rounded-md border">
                   {ENZYMES.map(e => (
                     <label key={e.name} className="flex items-center gap-2 font-mono text-sm">
@@ -281,7 +282,7 @@ export function RestrictionEnzymesTool() {
 
             {/* Fragments */}
             <div className="space-y-2">
-              <Label className="font-mono">{t("tools.restriction-enzymes.fragments", "Fragments")}</Label>
+              <Label className="">{t("tools.restriction-enzymes.fragments", "Fragments")}</Label>
               <div className="flex flex-wrap gap-2">
                 {fragments.map((f, idx) => (
                   <Badge key={idx} variant="outline" className="font-mono">{f.length} bp</Badge>
@@ -294,53 +295,53 @@ export function RestrictionEnzymesTool() {
         {/* Cloning planner */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Beaker className="w-4 h-4 mr-2" />
               {t("tools.restriction-enzymes.cloning", "Cloning Planner")}
             </CardTitle>
-            <CardDescription className="text-xs font-mono">
+            <CardDescription className="text-xs ">
               {t("tools.restriction-enzymes.cloneHint", "Choose enzymes and check sticky/blunt-end compatibility")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.restriction-enzymes.vector", "Vector Sequence")}</Label>
+                <Label className="">{t("tools.restriction-enzymes.vector", "Vector Sequence")}</Label>
                 <Textarea rows={4} className="terminal-input font-mono" value={vectorSeq} onChange={(e) => setVectorSeq(e.target.value)} />
                 <div className="flex items-center gap-2">
-                  <Label className="font-mono text-xs">{t("tools.restriction-enzymes.enzyme", "Enzyme")}</Label>
+                  <Label className="text-xs">{t("tools.restriction-enzymes.enzyme", "Enzyme")}</Label>
                   <Select value={vectorEnz} onValueChange={setVectorEnz}>
-                    <SelectTrigger className="font-mono w-28"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {ENZYMES.map(e => <SelectItem key={e.name} value={e.name} className="font-mono">{e.name}</SelectItem>)}
+                      {ENZYMES.map(e => <SelectItem key={e.name} value={e.name} className="">{e.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.restriction-enzymes.insert", "Insert Sequence")}</Label>
+                <Label className="">{t("tools.restriction-enzymes.insert", "Insert Sequence")}</Label>
                 <Textarea rows={4} className="terminal-input font-mono" value={insertSeq} onChange={(e) => setInsertSeq(e.target.value)} />
                 <div className="flex items-center gap-2">
-                  <Label className="font-mono text-xs">{t("tools.restriction-enzymes.enzyme", "Enzyme")}</Label>
+                  <Label className="text-xs">{t("tools.restriction-enzymes.enzyme", "Enzyme")}</Label>
                   <Select value={insertEnz} onValueChange={setInsertEnz}>
-                    <SelectTrigger className="font-mono w-28"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {ENZYMES.map(e => <SelectItem key={e.name} value={e.name} className="font-mono">{e.name}</SelectItem>)}
+                      {ENZYMES.map(e => <SelectItem key={e.name} value={e.name} className="">{e.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             </div>
             <Alert>
-              <AlertDescription className="font-mono text-sm">
+              <AlertDescription className="text-sm">
                 {cloneCheck.ok ? t("tools.restriction-enzymes.compatible", "Compatible for ligation") : t("tools.restriction-enzymes.incompatible", "Not compatible")}
                 {": "}{cloneCheck.reason}
               </AlertDescription>
             </Alert>
           </CardContent>
         </Card>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

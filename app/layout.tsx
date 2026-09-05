@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
+import { Newsreader, Noto_Sans_SC } from "next/font/google"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
@@ -8,6 +9,20 @@ import { Providers } from "@/components/providers"
 import { CommandPalette } from "@/components/command-palette"
 import { SwRegister } from "@/components/sw-register"
 import "./globals.css"
+
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  display: "swap",
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600"],
+})
+
+const notoSansSC = Noto_Sans_SC({
+  variable: "--font-noto-sans-sc",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+})
 
 const siteUrl = "https://use.biotools.space"
 
@@ -89,7 +104,7 @@ export default function RootLayout({
       <head>
         <meta name="msapplication-TileColor" content="#000000" />
       </head>
-      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+      <body className={`${newsreader.variable} ${notoSansSC.variable} ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <Providers>
           <Suspense fallback={<div className="flex items-center justify-center h-screen font-mono">Loading...</div>}>
             {children}

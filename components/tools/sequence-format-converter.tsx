@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -307,27 +308,27 @@ export function SequenceFormatConverter() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.sequence-format-converter.name", "Sequence Format Converter")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.sequence-format-converter.description", "Convert between FASTA/GenBank/EMBL formats, rename IDs, filter by length, and remove duplicates")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 输入区域 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <FileText className="w-4 h-4 mr-2" />
               {t("tools.sequence-format-converter.input", "Input Sequences")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
-              <Label htmlFor="input-sequences" className="font-mono">
+              <Label htmlFor="input-sequences" className="">
                 {t("tools.sequence-format-converter.inputLabel", "Paste sequences (FASTA/GenBank/EMBL format)")}
               </Label>
               <Textarea
@@ -342,7 +343,7 @@ export function SequenceFormatConverter() {
                 <span>
                   {parsedRecords.length} {t("tools.sequence-format-converter.sequencesDetected", "sequences detected")}
                 </span>
-                <Button onClick={clearAll} variant="outline" size="sm" className="font-mono">
+                <Button onClick={clearAll} variant="outline" size="sm" className="">
                   {t("common.clear", "Clear")}
                 </Button>
               </div>
@@ -353,7 +354,7 @@ export function SequenceFormatConverter() {
         {/* 处理选项 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Filter className="w-4 h-4 mr-2" />
               {t("tools.sequence-format-converter.processing", "Processing Options")}
             </CardTitle>
@@ -362,22 +363,22 @@ export function SequenceFormatConverter() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* 输出格式 */}
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-format-converter.outputFormat", "Output Format")}</Label>
+                <Label className="">{t("tools.sequence-format-converter.outputFormat", "Output Format")}</Label>
                 <Select value={outputFormat} onValueChange={(value: any) => setOutputFormat(value)}>
-                  <SelectTrigger className="font-mono">
+                  <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="fasta" className="font-mono">FASTA</SelectItem>
-                    <SelectItem value="genbank" className="font-mono">GenBank</SelectItem>
-                    <SelectItem value="embl" className="font-mono">EMBL</SelectItem>
+                    <SelectItem value="fasta" className="">FASTA</SelectItem>
+                    <SelectItem value="genbank" className="">GenBank</SelectItem>
+                    <SelectItem value="embl" className="">EMBL</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* ID重命名模式 */}
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-format-converter.renamePattern", "ID Rename Pattern")}</Label>
+                <Label className="">{t("tools.sequence-format-converter.renamePattern", "ID Rename Pattern")}</Label>
                 <Input
                   placeholder="seq_{n} or {id}_new"
                   value={renamePattern}
@@ -391,7 +392,7 @@ export function SequenceFormatConverter() {
 
               {/* 长度过滤 */}
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-format-converter.lengthFilter", "Length Filter")}</Label>
+                <Label className="">{t("tools.sequence-format-converter.lengthFilter", "Length Filter")}</Label>
                 <div className="flex gap-2">
                   <Input
                     placeholder={t("tools.sequence-format-converter.minLength", "Min")}
@@ -412,7 +413,7 @@ export function SequenceFormatConverter() {
 
               {/* 去重选项 */}
               <div className="space-y-2">
-                <Label className="font-mono">{t("tools.sequence-format-converter.deduplication", "Deduplication")}</Label>
+                <Label className="">{t("tools.sequence-format-converter.deduplication", "Deduplication")}</Label>
                 <div className={`p-3 border rounded-lg transition-all ${
                   removeDuplicates 
                     ? 'border-primary bg-primary/5' 
@@ -447,7 +448,7 @@ export function SequenceFormatConverter() {
               </div>
             </div>
 
-            <Button onClick={processSequences} className="w-full font-mono" disabled={parsedRecords.length === 0}>
+            <Button onClick={processSequences} className="w-full " disabled={parsedRecords.length === 0}>
               <RefreshCw className="w-4 h-4 mr-2" />
               {t("tools.sequence-format-converter.process", "Process Sequences")}
             </Button>
@@ -458,12 +459,12 @@ export function SequenceFormatConverter() {
         {processedText && (
           <Card className="border-2 border-dashed border-border/50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-mono flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center justify-between">
                 <span className="flex items-center">
                   <FileText className="w-4 h-4 mr-2" />
                   {t("tools.sequence-format-converter.output", "Processed Output")}
                 </span>
-                <Button onClick={copyToClipboard} variant="outline" size="sm" className="font-mono">
+                <Button onClick={copyToClipboard} variant="outline" size="sm" className="">
                   <Copy className="w-4 h-4 mr-1" />
                   {t("common.copy", "Copy")}
                 </Button>
@@ -482,12 +483,12 @@ export function SequenceFormatConverter() {
 
         <Alert>
           <FileText className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t("tools.sequence-format-converter.note", "Supports automatic format detection. GenBank and EMBL parsing is simplified for basic conversion needs.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

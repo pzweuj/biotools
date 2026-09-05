@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,10 +20,10 @@ export function DeepHpo() {
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-6 bg-background">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Card className="border-2 border-primary/20 bg-card/50">
-          <CardHeader className="text-center space-y-4">
+    <ToolPage>
+      <div className="mx-auto w-full max-w-4xl space-y-8">
+
+          <ToolPageHeader className="text-center space-y-4">
             <div className="flex items-center justify-center">
               <img 
                 src="https://github.com/pzweuj/DeepHPO/raw/refs/heads/main/src/app/favicon.ico" 
@@ -34,27 +35,27 @@ export function DeepHpo() {
                 }}
               />
               <div>
-                <CardTitle className="text-3xl font-bold font-mono text-primary">
+                <ToolPageTitle>
                   DeepHPO
-                </CardTitle>
-                <CardDescription className="text-lg font-mono mt-2">
+                </ToolPageTitle>
+                <ToolPageDescription>
                   {t("tools.deephpo.subtitle", "AI-Powered Clinical Phenotype HPO Term Extraction")}
-                </CardDescription>
+                </ToolPageDescription>
               </div>
             </div>
             
             <div className="flex items-center justify-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="font-mono">LLM</Badge>
-              <Badge variant="outline" className="font-mono">HPO</Badge>
-              <Badge variant="outline" className="font-mono">Clinical Phenotype</Badge>
-              <Badge variant="outline" className="font-mono">AI</Badge>
+              <Badge variant="secondary" className="">LLM</Badge>
+              <Badge variant="outline" className="">HPO</Badge>
+              <Badge variant="outline" className="">Clinical Phenotype</Badge>
+              <Badge variant="outline" className="">AI</Badge>
             </div>
-          </CardHeader>
+          </ToolPageHeader>
 
-          <CardContent className="space-y-6">
+          <ToolPageContent className="space-y-6">
             {/* Project Description */}
             <div className="text-center space-y-4">
-              <p className="text-muted-foreground font-mono leading-relaxed max-w-3xl mx-auto">
+              <p className="text-muted-foreground leading-relaxed max-w-3xl mx-auto">
                 {t("tools.deephpo.description", 
                   "DeepHPO is a web application based on DeepSeek for extracting HPO (Human Phenotype Ontology) terms from clinical phenotype descriptions. It provides convenient HPO term query services for users. The current version uses DeepSeek-V3 (0324) model."
                 )}
@@ -64,7 +65,7 @@ export function DeepHpo() {
             {/* Important Notice */}
             <Alert className="border-yellow-500/50 bg-yellow-500/10">
               <AlertCircle className="h-4 w-4 text-yellow-500" />
-              <AlertDescription className="font-mono text-sm">
+              <AlertDescription className="text-sm">
                 {t("tools.deephpo.notice", 
                   "Due to Vercel's 60-second timeout mechanism, queries may fail if complete information cannot be retrieved in time. The default API provider is SiliconFlow, but you can configure other OpenAI-compatible service providers through the settings button on the homepage."
                 )}
@@ -75,10 +76,10 @@ export function DeepHpo() {
             <div className="grid md:grid-cols-2 gap-4">
               <Card className="border border-muted">
                 <CardContent className="p-4">
-                  <h3 className="font-mono font-semibold mb-2 text-primary">
+                  <h3 className="font-semibold mb-2 text-primary">
                     {t("tools.deephpo.features.ai", "AI-Powered Extraction")}
                   </h3>
-                  <p className="text-sm text-muted-foreground font-mono">
+                  <p className="text-sm text-muted-foreground ">
                     {t("tools.deephpo.features.aiDesc", "Utilizes DeepSeek-V3 for intelligent HPO term extraction")}
                   </p>
                 </CardContent>
@@ -86,10 +87,10 @@ export function DeepHpo() {
 
               <Card className="border border-muted">
                 <CardContent className="p-4">
-                  <h3 className="font-mono font-semibold mb-2 text-primary">
+                  <h3 className="font-semibold mb-2 text-primary">
                     {t("tools.deephpo.features.hpo", "HPO Ontology")}
                   </h3>
-                  <p className="text-sm text-muted-foreground font-mono">
+                  <p className="text-sm text-muted-foreground ">
                     {t("tools.deephpo.features.hpoDesc", "Standardized clinical phenotype terminology system")}
                   </p>
                 </CardContent>
@@ -97,10 +98,10 @@ export function DeepHpo() {
 
               <Card className="border border-muted">
                 <CardContent className="p-4">
-                  <h3 className="font-mono font-semibold mb-2 text-primary">
+                  <h3 className="font-semibold mb-2 text-primary">
                     {t("tools.deephpo.features.web", "Web-based Interface")}
                   </h3>
-                  <p className="text-sm text-muted-foreground font-mono">
+                  <p className="text-sm text-muted-foreground ">
                     {t("tools.deephpo.features.webDesc", "Easy-to-use web application accessible via Vercel")}
                   </p>
                 </CardContent>
@@ -108,10 +109,10 @@ export function DeepHpo() {
 
               <Card className="border border-muted">
                 <CardContent className="p-4">
-                  <h3 className="font-mono font-semibold mb-2 text-primary">
+                  <h3 className="font-semibold mb-2 text-primary">
                     {t("tools.deephpo.features.flexible", "Flexible API Configuration")}
                   </h3>
-                  <p className="text-sm text-muted-foreground font-mono">
+                  <p className="text-sm text-muted-foreground ">
                     {t("tools.deephpo.features.flexibleDesc", "Support for custom OpenAI-compatible API providers")}
                   </p>
                 </CardContent>
@@ -122,7 +123,7 @@ export function DeepHpo() {
             <div className="flex items-center justify-center gap-4 pt-4">
               <Button 
                 onClick={handleVisitSite}
-                className="font-mono bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 size="lg"
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
@@ -132,7 +133,7 @@ export function DeepHpo() {
               <Button 
                 onClick={handleViewSource}
                 variant="outline"
-                className="font-mono border-primary/20 hover:bg-primary/10"
+                className="border-primary/20 hover:bg-primary/10"
                 size="lg"
               >
                 <Github className="w-4 h-4 mr-2" />
@@ -142,13 +143,13 @@ export function DeepHpo() {
 
             {/* Usage Note */}
             <div className="text-center pt-4 border-t border-muted">
-              <p className="text-xs text-muted-foreground font-mono">
+              <p className="text-xs text-muted-foreground ">
                 {t("tools.deephpo.note", "Click 'Visit DeepHPO' to access the full application with all features")}
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </ToolPageContent>
+
       </div>
-    </div>
+    </ToolPage>
   )
 }

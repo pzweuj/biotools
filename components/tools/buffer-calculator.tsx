@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -250,31 +251,31 @@ export function BufferCalculator() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.buffer-calculator.name", "Buffer Calculator")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.buffer-calculator.description", "Common buffer recipes, pH adjustment, ionic strength calculation, and molarity conversion")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <Tabs defaultValue="buffer" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="buffer" className="font-mono text-xs">
+            <TabsTrigger value="buffer" className="text-xs">
               <Beaker className="w-4 h-4 mr-1" />
               {t("tools.buffer-calculator.bufferRecipes", "Buffer Recipes")}
             </TabsTrigger>
-            <TabsTrigger value="ph" className="font-mono text-xs">
+            <TabsTrigger value="ph" className="text-xs">
               <Calculator className="w-4 h-4 mr-1" />
               {t("tools.buffer-calculator.phAdjustment", "pH Adjustment")}
             </TabsTrigger>
-            <TabsTrigger value="ionic" className="font-mono text-xs">
+            <TabsTrigger value="ionic" className="text-xs">
               <Zap className="w-4 h-4 mr-1" />
               {t("tools.buffer-calculator.ionicStrength", "Ionic Strength")}
             </TabsTrigger>
-            <TabsTrigger value="molarity" className="font-mono text-xs">
+            <TabsTrigger value="molarity" className="text-xs">
               <FlaskConical className="w-4 h-4 mr-1" />
               {t("tools.buffer-calculator.molarityConversion", "Molarity")}
             </TabsTrigger>
@@ -284,7 +285,7 @@ export function BufferCalculator() {
             {/* 缓冲液配方 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Beaker className="w-4 h-4 mr-2" />
                   {t("tools.buffer-calculator.commonBuffers", "Common Buffer Systems")}
                 </CardTitle>
@@ -324,7 +325,7 @@ export function BufferCalculator() {
             {/* pH调节计算 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Calculator className="w-4 h-4 mr-2" />
                   {t("tools.buffer-calculator.bufferCalculation", "Buffer Calculation")}
                 </CardTitle>
@@ -333,14 +334,14 @@ export function BufferCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.bufferSystem", "Buffer System")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.bufferSystem", "Buffer System")}</Label>
                       <Select value={selectedBuffer} onValueChange={setSelectedBuffer}>
-                        <SelectTrigger className="font-mono">
+                        <SelectTrigger className="">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {BUFFER_SYSTEMS.map(buffer => (
-                            <SelectItem key={buffer.name} value={buffer.name} className="font-mono">
+                            <SelectItem key={buffer.name} value={buffer.name} className="">
                               {buffer.name} (pKa {buffer.pKa})
                             </SelectItem>
                           ))}
@@ -349,7 +350,7 @@ export function BufferCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.targetPH", "Target pH")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.targetPH", "Target pH")}</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -361,7 +362,7 @@ export function BufferCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.totalConcentration", "Total Concentration (mM)")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.totalConcentration", "Total Concentration (mM)")}</Label>
                       <Input
                         type="number"
                         value={totalConcentration}
@@ -372,7 +373,7 @@ export function BufferCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.finalVolume", "Final Volume (mL)")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.finalVolume", "Final Volume (mL)")}</Label>
                       <Input
                         type="number"
                         value={finalVolume}
@@ -385,7 +386,7 @@ export function BufferCalculator() {
 
                   {bufferRecipe && currentBuffer && (
                     <div className="space-y-3">
-                      <h4 className="font-mono font-medium">{t("tools.buffer-calculator.recipe", "Recipe")}</h4>
+                      <h4 className="font-medium">{t("tools.buffer-calculator.recipe", "Recipe")}</h4>
                       <div className="space-y-3 bg-muted/20 p-4 rounded-lg">
                         <div className="space-y-2 text-sm font-mono">
                           <div className="flex justify-between">
@@ -403,7 +404,7 @@ export function BufferCalculator() {
                         </div>
                         
                         <Alert>
-                          <AlertDescription className="font-mono text-xs">
+                          <AlertDescription className="text-xs">
                             {t("tools.buffer-calculator.instructions", "Dissolve compounds in ~80% of final volume, adjust pH if needed, then dilute to final volume.")}
                           </AlertDescription>
                         </Alert>
@@ -419,7 +420,7 @@ export function BufferCalculator() {
             {/* 离子强度计算 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Zap className="w-4 h-4 mr-2" />
                   {t("tools.buffer-calculator.ionicStrengthCalc", "Ionic Strength Calculation")}
                 </CardTitle>
@@ -428,14 +429,14 @@ export function BufferCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.salt", "Salt")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.salt", "Salt")}</Label>
                       <Select value={selectedSalt} onValueChange={setSelectedSalt}>
-                        <SelectTrigger className="font-mono">
+                        <SelectTrigger className="">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {SALTS.map(salt => (
-                            <SelectItem key={salt.formula} value={salt.formula} className="font-mono">
+                            <SelectItem key={salt.formula} value={salt.formula} className="">
                               {salt.name} ({salt.formula})
                             </SelectItem>
                           ))}
@@ -444,7 +445,7 @@ export function BufferCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.concentration", "Concentration (mM)")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.concentration", "Concentration (mM)")}</Label>
                       <Input
                         type="number"
                         value={saltConcentration}
@@ -456,7 +457,7 @@ export function BufferCalculator() {
                   </div>
 
                   <div className="space-y-3">
-                    <h4 className="font-mono font-medium">{t("tools.buffer-calculator.results", "Results")}</h4>
+                    <h4 className="font-medium">{t("tools.buffer-calculator.results", "Results")}</h4>
                     <div className="space-y-2 bg-muted/20 p-4 rounded-lg">
                       <div className="flex justify-between text-sm font-mono">
                         <span>{t("tools.buffer-calculator.ionicStrength", "Ionic Strength")}:</span>
@@ -484,7 +485,7 @@ export function BufferCalculator() {
             {/* 摩尔浓度换算 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <FlaskConical className="w-4 h-4 mr-2" />
                   {t("tools.buffer-calculator.molarityCalculation", "Molarity Calculation")}
                 </CardTitle>
@@ -493,7 +494,7 @@ export function BufferCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.compound", "Compound")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.compound", "Compound")}</Label>
                       <Input
                         value={compound}
                         onChange={(e) => setCompound(e.target.value)}
@@ -503,7 +504,7 @@ export function BufferCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.molecularWeight", "Molecular Weight (g/mol)")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.molecularWeight", "Molecular Weight (g/mol)")}</Label>
                       <Input
                         type="number"
                         value={molecularWeight}
@@ -514,7 +515,7 @@ export function BufferCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.mass", "Mass (mg)")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.mass", "Mass (mg)")}</Label>
                       <Input
                         type="number"
                         value={mass}
@@ -525,7 +526,7 @@ export function BufferCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.volume", "Volume (mL)")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.volume", "Volume (mL)")}</Label>
                       <Input
                         type="number"
                         value={volume}
@@ -536,7 +537,7 @@ export function BufferCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.buffer-calculator.molarity", "Molarity (M)")}</Label>
+                      <Label className="">{t("tools.buffer-calculator.molarity", "Molarity (M)")}</Label>
                       <Input
                         type="number"
                         value={molarity}
@@ -549,7 +550,7 @@ export function BufferCalculator() {
 
                   {molarityConversion && (
                     <div className="space-y-3">
-                      <h4 className="font-mono font-medium">{t("tools.buffer-calculator.calculation", "Calculation")}</h4>
+                      <h4 className="font-medium">{t("tools.buffer-calculator.calculation", "Calculation")}</h4>
                       <div className="space-y-2 bg-muted/20 p-4 rounded-lg">
                         {molarityConversion.type === 'from_mass' && 'molarity' in molarityConversion ? (
                           <div className="space-y-2 text-sm font-mono">
@@ -584,19 +585,19 @@ export function BufferCalculator() {
         </Tabs>
 
         <div className="flex gap-2">
-          <Button onClick={clearAll} variant="outline" className="font-mono">
+          <Button onClick={clearAll} variant="outline" className="">
             {t("common.clear", "Clear")}
           </Button>
         </div>
 
         <Alert>
           <Beaker className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t("tools.buffer-calculator.note", "Henderson-Hasselbalch equation: pH = pKa + log([A-]/[HA]). Ionic strength: I = 0.5 × Σ(ci × zi²). Always verify pH with a pH meter.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

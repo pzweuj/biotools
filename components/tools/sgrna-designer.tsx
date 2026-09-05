@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -237,40 +238,40 @@ export function SgRNADesigner() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.sgrna-designer.name", "sgRNA Designer")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.sgrna-designer.description", "Design and score CRISPR sgRNAs with PAM site detection")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 输入区域 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <Label className="text-base font-semibold font-mono">
+              <Label className="text-base font-semibold ">
                 {t("tools.sgrna-designer.inputSequence", "Target DNA Sequence")}
               </Label>
               <div className="flex items-center gap-2">
-                <Label className="text-xs font-mono whitespace-nowrap">{t("tools.sgrna-designer.pamType", "PAM Type")}:</Label>
+                <Label className="text-xs whitespace-nowrap">{t("tools.sgrna-designer.pamType", "PAM Type")}:</Label>
                 <Select value={pamType} onValueChange={(value) => setPamType(value as PAMType)}>
-                  <SelectTrigger className="w-[180px] font-mono">
+                  <SelectTrigger className="w-[180px] ">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="NGG" className="font-mono">
+                    <SelectItem value="NGG" className="">
                       NGG (SpCas9)
                     </SelectItem>
-                    <SelectItem value="NG" className="font-mono">
+                    <SelectItem value="NG" className="">
                       NG (SpG/SpRY)
                     </SelectItem>
-                    <SelectItem value="NRG" className="font-mono">
+                    <SelectItem value="NRG" className="">
                       NRG (SaCas9)
                     </SelectItem>
-                    <SelectItem value="NNGRRT" className="font-mono">
+                    <SelectItem value="NNGRRT" className="">
                       NNGRRT (SaCas9)
                     </SelectItem>
                   </SelectContent>
@@ -290,11 +291,11 @@ export function SgRNADesigner() {
               rows={8}
             />
             <div className="flex gap-2">
-              <Button onClick={findSgRNAs} className="flex-1 font-mono" disabled={!input.trim()}>
+              <Button onClick={findSgRNAs} className="flex-1 " disabled={!input.trim()}>
                 <Scissors className="w-4 h-4 mr-2" />
                 {t("tools.sgrna-designer.findSgRNAs", "Find sgRNAs")}
               </Button>
-              <Button onClick={clearAll} variant="outline" className="font-mono">
+              <Button onClick={clearAll} variant="outline" className="">
                 {t("common.clear", "Clear")}
               </Button>
             </div>
@@ -305,7 +306,7 @@ export function SgRNADesigner() {
         {results.length > 0 && (
           <Card className="border-2 border-primary/50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-mono">
+              <CardTitle className="text-sm ">
                 {t("tools.sgrna-designer.foundResults", "Found")} {results.length} sgRNAs
               </CardTitle>
             </CardHeader>
@@ -367,7 +368,7 @@ export function SgRNADesigner() {
 
               {/* 详细问题列表 */}
               <div className="mt-4 space-y-2">
-                <Label className="text-sm font-semibold font-mono">
+                <Label className="text-sm font-semibold ">
                   {t("tools.sgrna-designer.detectedIssues", "Detected Issues")}:
                 </Label>
                 {results
@@ -376,7 +377,7 @@ export function SgRNADesigner() {
                   .map((result, index) => (
                     <Alert key={index} variant="default" className="py-2">
                       <AlertTriangle className="h-4 w-4" />
-                      <AlertDescription className="font-mono text-xs">
+                      <AlertDescription className="text-xs">
                         <span className="font-semibold">Pos {result.position}:</span> {result.issues.join(", ")}
                       </AlertDescription>
                     </Alert>
@@ -389,7 +390,7 @@ export function SgRNADesigner() {
         {results.length === 0 && input.trim() && (
           <Alert>
             <Info className="h-4 w-4" />
-            <AlertDescription className="font-mono text-sm">
+            <AlertDescription className="text-sm">
               {t("tools.sgrna-designer.noResults", "No sgRNAs found. Try a different sequence or PAM type.")}
             </AlertDescription>
           </Alert>
@@ -398,14 +399,14 @@ export function SgRNADesigner() {
         {/* 提示信息 */}
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t(
               "tools.sgrna-designer.tip",
               "Scoring considers GC content (40-60% optimal), poly-T sequences, secondary structure, and 5' G preference. Higher scores indicate better sgRNAs."
             )}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

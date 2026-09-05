@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -92,21 +93,21 @@ export function PcrMasterMixCalculator() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground flex items-center gap-2">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           <Beaker className="w-5 h-5" />
           {t("tools.pcr-master-mix.name", "PCR Master Mix Calculator")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.pcr-master-mix.description", "Calculate volumes for PCR master mix preparation - supports standard PCR, qPCR, and custom protocols")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 使用说明 */}
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             <div className="font-bold mb-2">{t("tools.pcr-master-mix.howToUse", "How to use")}:</div>
             <ol className="list-decimal list-inside space-y-1">
               <li>{t("tools.pcr-master-mix.step1", "Select a preset protocol or customize components")}</li>
@@ -120,23 +121,23 @@ export function PcrMasterMixCalculator() {
         {/* 参数设置 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Calculator className="w-4 h-4 mr-2" />
               {t("tools.pcr-master-mix.basicSettings", "Basic Settings")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="font-mono">{t("tools.pcr-master-mix.preset", "Preset Protocol")}</Label>
+              <Label className="">{t("tools.pcr-master-mix.preset", "Preset Protocol")}</Label>
               <Select value={preset} onValueChange={setPreset}>
-                <SelectTrigger className="font-mono">
+                <SelectTrigger className="">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standard" className="font-mono">
+                  <SelectItem value="standard" className="">
                     {t("tools.pcr-master-mix.standardPCR", "Standard PCR")} (25μL)
                   </SelectItem>
-                  <SelectItem value="qpcr" className="font-mono">
+                  <SelectItem value="qpcr" className="">
                     {t("tools.pcr-master-mix.qPCR", "qPCR/Real-Time PCR")} (20μL)
                   </SelectItem>
                 </SelectContent>
@@ -145,7 +146,7 @@ export function PcrMasterMixCalculator() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="num-reactions" className="font-mono">
+                <Label htmlFor="num-reactions" className="">
                   {t("tools.pcr-master-mix.numberOfReactions", "Number of Reactions")}
                 </Label>
                 <Input
@@ -159,7 +160,7 @@ export function PcrMasterMixCalculator() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reaction-volume" className="font-mono">
+                <Label htmlFor="reaction-volume" className="">
                   {t("tools.pcr-master-mix.reactionVolume", "Reaction Volume (μL)")}
                 </Label>
                 <Input
@@ -175,7 +176,7 @@ export function PcrMasterMixCalculator() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="extra-percent" className="font-mono">
+                <Label htmlFor="extra-percent" className="">
                   {t("tools.pcr-master-mix.extraVolume", "Extra Volume (%)")}
                 </Label>
                 <Input
@@ -193,7 +194,7 @@ export function PcrMasterMixCalculator() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="template-volume" className="font-mono">
+                <Label htmlFor="template-volume" className="">
                   {t("tools.pcr-master-mix.templateVolume", "Template Volume per Rxn (μL)")}
                 </Label>
                 <Input
@@ -211,7 +212,7 @@ export function PcrMasterMixCalculator() {
               </div>
             </div>
 
-            <Button onClick={clearAll} variant="outline" className="font-mono w-full">
+            <Button onClick={clearAll} variant="outline" className="w-full">
               {t("common.clear", "Clear")}
             </Button>
           </CardContent>
@@ -221,7 +222,7 @@ export function PcrMasterMixCalculator() {
         {results && (
           <Card className="border-2 border-dashed border-border/50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-mono">
+              <CardTitle className="text-sm ">
                 {t("tools.pcr-master-mix.masterMixRecipe", "Master Mix Recipe")}
               </CardTitle>
               <div className="text-xs text-muted-foreground font-mono mt-1">
@@ -298,7 +299,7 @@ export function PcrMasterMixCalculator() {
               {/* 操作步骤 */}
               <Alert>
                 <Beaker className="h-4 w-4" />
-                <AlertDescription className="font-mono text-sm">
+                <AlertDescription className="text-sm">
                   <div className="font-bold mb-2">🧪 {t("tools.pcr-master-mix.procedure", "Procedure")}:</div>
                   <ol className="list-decimal list-inside space-y-1">
                     <li>{t("tools.pcr-master-mix.procedureStep1", "Add all components from the table above to create master mix")}</li>
@@ -353,8 +354,8 @@ export function PcrMasterMixCalculator() {
             </CardContent>
           </Card>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

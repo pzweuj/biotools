@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -365,19 +366,19 @@ export function PCRProductCalculator() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.pcr-product-calculator.name", "PCR Product Size Calculator")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.pcr-product-calculator.description", "Calculate primer positions and amplification product sizes from FASTA templates and primer pairs with specificity checking")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 模板序列输入 */}
         <div className="space-y-2">
-          <Label htmlFor="templates" className="font-mono">
+          <Label htmlFor="templates" className="">
             {t("tools.pcr-product-calculator.templateLabel", "Template Sequences (FASTA)")}
           </Label>
           <Textarea
@@ -393,14 +394,14 @@ export function PCRProductCalculator() {
         {/* 引物对输入 */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="font-mono">
+            <Label className="">
               {t("tools.pcr-product-calculator.primerPairs", "Primer Pairs")}
             </Label>
             <Button
               onClick={addPrimerPair}
               variant="outline"
               size="sm"
-              className="font-mono"
+              className=""
             >
               <Plus className="w-4 h-4 mr-1" />
               {t("tools.pcr-product-calculator.addPair", "Add Pair")}
@@ -454,7 +455,7 @@ export function PCRProductCalculator() {
         <div className="flex gap-2">
           <Button 
             onClick={analyzePCR} 
-            className="flex-1 font-mono"
+            className="flex-1 "
             disabled={isAnalyzing || !templates.trim()}
           >
             {isAnalyzing ? t("common.loading") : t("tools.pcr-product-calculator.calculate", "Calculate PCR Products")}
@@ -462,7 +463,7 @@ export function PCRProductCalculator() {
           <Button 
             onClick={clearResults} 
             variant="outline" 
-            className="font-mono"
+            className=""
           >
             {t("common.clear")}
           </Button>
@@ -492,10 +493,10 @@ export function PCRProductCalculator() {
 
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="overview" className="font-mono text-xs">
+                <TabsTrigger value="overview" className="text-xs">
                   {t("tools.pcr-product-calculator.overview", "Overview")}
                 </TabsTrigger>
-                <TabsTrigger value="details" className="font-mono text-xs">
+                <TabsTrigger value="details" className="text-xs">
                   {t("tools.pcr-product-calculator.details", "Details")}
                 </TabsTrigger>
               </TabsList>
@@ -565,7 +566,7 @@ export function PCRProductCalculator() {
                   <Card key={result.id} className="border">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm font-mono flex items-center gap-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
                           {getSpecificityIcon(result.specificity)}
                           {result.templateName} - {result.forwardPrimerName} × {result.reversePrimerName}
                         </CardTitle>
@@ -573,7 +574,7 @@ export function PCRProductCalculator() {
                           {t(`tools.pcr-product-calculator.${result.specificity}Specificity`, result.specificity)}
                         </Badge>
                       </div>
-                      <CardDescription className="text-xs font-mono">
+                      <CardDescription className="text-xs ">
                         {t("tools.pcr-product-calculator.forwardMatches", "Forward matches")}: {result.forwardMatches.length} | 
                         {t("tools.pcr-product-calculator.reverseMatches", "Reverse matches")}: {result.reverseMatches.length} | 
                         {t("tools.pcr-product-calculator.products", "Products")}: {result.products.length}
@@ -632,12 +633,12 @@ export function PCRProductCalculator() {
         {results.length > 0 && (
           <Alert>
             <Dna className="h-4 w-4" />
-            <AlertDescription className="font-mono text-sm">
+            <AlertDescription className="text-sm">
               {t("tools.pcr-product-calculator.tip", "High specificity indicates unique products with perfect primer matches. Low specificity suggests multiple products or primer mismatches.")}
             </AlertDescription>
           </Alert>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

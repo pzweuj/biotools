@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -191,31 +192,31 @@ export function CellCultureCalculator() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.cell-culture-calculator.name", "Cell Culture Calculator")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.cell-culture-calculator.description", "Cell density calculation, passage dilution ratios, media preparation, and viability statistics")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <Tabs defaultValue="density" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="density" className="font-mono text-xs">
+            <TabsTrigger value="density" className="text-xs">
               <Microscope className="w-4 h-4 mr-1" />
               {t("tools.cell-culture-calculator.cellDensity", "Cell Density")}
             </TabsTrigger>
-            <TabsTrigger value="passage" className="font-mono text-xs">
+            <TabsTrigger value="passage" className="text-xs">
               <Calculator className="w-4 h-4 mr-1" />
               {t("tools.cell-culture-calculator.passage", "Passage")}
             </TabsTrigger>
-            <TabsTrigger value="media" className="font-mono text-xs">
+            <TabsTrigger value="media" className="text-xs">
               <FlaskConical className="w-4 h-4 mr-1" />
               {t("tools.cell-culture-calculator.media", "Media")}
             </TabsTrigger>
-            <TabsTrigger value="viability" className="font-mono text-xs">
+            <TabsTrigger value="viability" className="text-xs">
               <Activity className="w-4 h-4 mr-1" />
               {t("tools.cell-culture-calculator.viability", "Viability")}
             </TabsTrigger>
@@ -225,7 +226,7 @@ export function CellCultureCalculator() {
             {/* 细胞密度计算 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Microscope className="w-4 h-4 mr-2" />
                   {t("tools.cell-culture-calculator.hemocytometer", "Hemocytometer Counting")}
                 </CardTitle>
@@ -234,20 +235,20 @@ export function CellCultureCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.chamberType", "Chamber Type")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.chamberType", "Chamber Type")}</Label>
                       <Select value={chamberType} onValueChange={setChamberType}>
-                        <SelectTrigger className="font-mono">
+                        <SelectTrigger className="">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="standard" className="font-mono">{t("tools.cell-culture-calculator.standard", "Standard (0.1 μL/square)")}</SelectItem>
-                          <SelectItem value="improved" className="font-mono">{t("tools.cell-culture-calculator.improved", "Improved Neubauer (0.04 μL/square)")}</SelectItem>
+                          <SelectItem value="standard" className="">{t("tools.cell-culture-calculator.standard", "Standard (0.1 μL/square)")}</SelectItem>
+                          <SelectItem value="improved" className="">{t("tools.cell-culture-calculator.improved", "Improved Neubauer (0.04 μL/square)")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.cellCount", "Cell Count")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.cellCount", "Cell Count")}</Label>
                       <Input
                         type="number"
                         value={cellCount}
@@ -258,7 +259,7 @@ export function CellCultureCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.squaresCounted", "Squares Counted")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.squaresCounted", "Squares Counted")}</Label>
                       <Input
                         type="number"
                         value={squaresCounted}
@@ -269,7 +270,7 @@ export function CellCultureCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.dilutionFactor", "Dilution Factor")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.dilutionFactor", "Dilution Factor")}</Label>
                       <Input
                         type="number"
                         value={dilutionFactor}
@@ -282,7 +283,7 @@ export function CellCultureCalculator() {
 
                   {cellDensityCalculation && (
                     <div className="space-y-3">
-                      <h4 className="font-mono font-medium">{t("tools.cell-culture-calculator.results", "Results")}</h4>
+                      <h4 className="font-medium">{t("tools.cell-culture-calculator.results", "Results")}</h4>
                       <div className="space-y-2 bg-muted/20 p-4 rounded-lg">
                         <div className="space-y-2 text-sm font-mono">
                           <div className="flex justify-between">
@@ -314,7 +315,7 @@ export function CellCultureCalculator() {
             {/* 传代计算 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Calculator className="w-4 h-4 mr-2" />
                   {t("tools.cell-culture-calculator.passageCalculation", "Passage Calculation")}
                 </CardTitle>
@@ -323,14 +324,14 @@ export function CellCultureCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.cellLine", "Cell Line")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.cellLine", "Cell Line")}</Label>
                       <Select value={selectedCellLine} onValueChange={setSelectedCellLine}>
-                        <SelectTrigger className="font-mono">
+                        <SelectTrigger className="">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {CELL_LINES.map(line => (
-                            <SelectItem key={line.name} value={line.name} className="font-mono">
+                            <SelectItem key={line.name} value={line.name} className="">
                               {line.name}
                             </SelectItem>
                           ))}
@@ -339,7 +340,7 @@ export function CellCultureCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.currentDensity", "Current Density (cells/cm²)")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.currentDensity", "Current Density (cells/cm²)")}</Label>
                       <Input
                         type="number"
                         value={currentDensity}
@@ -350,7 +351,7 @@ export function CellCultureCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.targetDensity", "Target Density (cells/cm²)")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.targetDensity", "Target Density (cells/cm²)")}</Label>
                       <Input
                         type="number"
                         value={targetDensity}
@@ -362,7 +363,7 @@ export function CellCultureCalculator() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.cell-culture-calculator.currentFlask", "Current Flask (cm²)")}</Label>
+                        <Label className="text-xs">{t("tools.cell-culture-calculator.currentFlask", "Current Flask (cm²)")}</Label>
                         <Input
                           type="number"
                           value={flaskArea}
@@ -372,7 +373,7 @@ export function CellCultureCalculator() {
                         />
                       </div>
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.cell-culture-calculator.newFlask", "New Flask (cm²)")}</Label>
+                        <Label className="text-xs">{t("tools.cell-culture-calculator.newFlask", "New Flask (cm²)")}</Label>
                         <Input
                           type="number"
                           value={newFlaskArea}
@@ -395,7 +396,7 @@ export function CellCultureCalculator() {
 
                   {passageCalculation && (
                     <div className="space-y-3">
-                      <h4 className="font-mono font-medium">{t("tools.cell-culture-calculator.passageProtocol", "Passage Protocol")}</h4>
+                      <h4 className="font-medium">{t("tools.cell-culture-calculator.passageProtocol", "Passage Protocol")}</h4>
                       <div className="space-y-2 bg-muted/20 p-4 rounded-lg">
                         <div className="space-y-2 text-sm font-mono">
                           <div className="flex justify-between">
@@ -427,14 +428,14 @@ export function CellCultureCalculator() {
             {/* 培养基配制 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <FlaskConical className="w-4 h-4 mr-2" />
                   {t("tools.cell-culture-calculator.mediaPreparation", "Media Preparation")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="font-mono">{t("tools.cell-culture-calculator.totalVolume", "Total Volume (mL)")}</Label>
+                  <Label className="">{t("tools.cell-culture-calculator.totalVolume", "Total Volume (mL)")}</Label>
                   <Input
                     type="number"
                     value={mediaVolume}
@@ -473,7 +474,7 @@ export function CellCultureCalculator() {
 
                 <Alert>
                   <FlaskConical className="h-4 w-4" />
-                  <AlertDescription className="font-mono text-sm">
+                  <AlertDescription className="text-sm">
                     {t("tools.cell-culture-calculator.mediaNote", "Add components to base medium in order. Adjust volume with base medium to reach final volume. Filter sterilize if needed.")}
                   </AlertDescription>
                 </Alert>
@@ -485,7 +486,7 @@ export function CellCultureCalculator() {
             {/* 细胞活力统计 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Activity className="w-4 h-4 mr-2" />
                   {t("tools.cell-culture-calculator.viabilityAssessment", "Viability Assessment")}
                 </CardTitle>
@@ -494,7 +495,7 @@ export function CellCultureCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.liveCells", "Live Cells")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.liveCells", "Live Cells")}</Label>
                       <Input
                         type="number"
                         value={liveCells}
@@ -505,7 +506,7 @@ export function CellCultureCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.deadCells", "Dead Cells (optional)")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.deadCells", "Dead Cells (optional)")}</Label>
                       <Input
                         type="number"
                         value={deadCells}
@@ -516,7 +517,7 @@ export function CellCultureCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.cell-culture-calculator.totalCells", "Total Cells (optional)")}</Label>
+                      <Label className="">{t("tools.cell-culture-calculator.totalCells", "Total Cells (optional)")}</Label>
                       <Input
                         type="number"
                         value={totalCellsViability}
@@ -529,7 +530,7 @@ export function CellCultureCalculator() {
 
                   {viabilityStats && (
                     <div className="space-y-3">
-                      <h4 className="font-mono font-medium">{t("tools.cell-culture-calculator.viabilityResults", "Viability Results")}</h4>
+                      <h4 className="font-medium">{t("tools.cell-culture-calculator.viabilityResults", "Viability Results")}</h4>
                       <div className="space-y-2 bg-muted/20 p-4 rounded-lg">
                         <div className="space-y-2 text-sm font-mono">
                           <div className="flex justify-between">
@@ -567,19 +568,19 @@ export function CellCultureCalculator() {
         </Tabs>
 
         <div className="flex gap-2">
-          <Button onClick={clearAll} variant="outline" className="font-mono">
+          <Button onClick={clearAll} variant="outline" className="">
             {t("common.clear", "Clear")}
           </Button>
         </div>
 
         <Alert>
           <Calculator className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t("tools.cell-culture-calculator.note", "Standard hemocytometer: 1 large square = 0.1 μL. Improved Neubauer: 1 large square = 0.04 μL. Always count viable cells using trypan blue exclusion.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

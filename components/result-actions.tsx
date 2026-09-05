@@ -76,13 +76,13 @@ export function ResultActions<T>({
     <div className="flex items-center gap-2 pt-4">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="font-mono gap-1.5">
+          <Button variant="outline" size="sm" className="gap-1.5">
             <Download className="w-3.5 h-3.5" />
             {t("common.export")}
             <ChevronDown className="w-3 h-3 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="font-mono text-xs">
+        <DropdownMenuContent align="end" className="text-xs">
           <DropdownMenuLabel>{t("common.export")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {hasRows && !hidden.has("csv") && (

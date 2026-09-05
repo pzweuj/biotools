@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -174,13 +175,13 @@ export function AaConverter() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("tools.aa-converter.name")}</CardTitle>
-          <CardDescription>{t("tools.aa-converter.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <ToolPage>
+
+        <ToolPageHeader>
+          <ToolPageTitle>{t("tools.aa-converter.name")}</ToolPageTitle>
+          <ToolPageDescription>{t("tools.aa-converter.description")}</ToolPageDescription>
+        </ToolPageHeader>
+        <ToolPageContent>
           {/* 转换方向选择 */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">{t("tools.aa-converter.conversionMode")}</Label>
@@ -336,11 +337,8 @@ export function AaConverter() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* 使用示例 */}
-      <Card>
+          {/* 使用示例 */}
+          <Card>
         <CardHeader>
           <CardTitle>{t("tools.aa-converter.examplesTitle")}</CardTitle>
         </CardHeader>
@@ -387,7 +385,8 @@ export function AaConverter() {
             </div>
           </div>
         </CardContent>
-      </Card>
-    </div>
+          </Card>
+        </ToolPageContent>
+    </ToolPage>
   )
 }

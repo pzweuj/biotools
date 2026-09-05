@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -241,20 +242,20 @@ export function MolecularWeightCalculator() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.molecular-weight-calculator.name", "Molecular Weight Calculator")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.molecular-weight-calculator.description", "Calculate molecular weights for DNA/RNA/proteins, concentration conversion, dilution calculator")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 分子量计算器 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Dna className="w-4 h-4 mr-2" />
               {t("tools.molecular-weight-calculator.molecularWeight", "Molecular Weight Calculator")}
             </CardTitle>
@@ -262,19 +263,19 @@ export function MolecularWeightCalculator() {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label htmlFor="sequences" className="font-mono">
+                <Label htmlFor="sequences" className="">
                   {t("tools.molecular-weight-calculator.sequenceLabel", "Input Sequences")}
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Label className="font-mono text-xs">{t("tools.molecular-weight-calculator.sequenceType", "Type")}:</Label>
+                  <Label className="text-xs">{t("tools.molecular-weight-calculator.sequenceType", "Type")}:</Label>
                   <Select value={sequenceType} onValueChange={(value) => setSequenceType(value as any)}>
-                    <SelectTrigger className="font-mono w-24">
+                    <SelectTrigger className="w-24">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="dna" className="font-mono">DNA</SelectItem>
-                      <SelectItem value="rna" className="font-mono">RNA</SelectItem>
-                      <SelectItem value="protein" className="font-mono">{t("tools.molecular-weight-calculator.protein", "Protein")}</SelectItem>
+                      <SelectItem value="dna" className="">DNA</SelectItem>
+                      <SelectItem value="rna" className="">RNA</SelectItem>
+                      <SelectItem value="protein" className="">{t("tools.molecular-weight-calculator.protein", "Protein")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -290,10 +291,10 @@ export function MolecularWeightCalculator() {
               />
 
               <div className="flex gap-2">
-                <Button onClick={calculateMW} className="flex-1 font-mono" disabled={!sequences.trim()}>
+                <Button onClick={calculateMW} className="flex-1 " disabled={!sequences.trim()}>
                   {t("tools.molecular-weight-calculator.calculate", "Calculate MW")}
                 </Button>
-                <Button onClick={clearAll} variant="outline" className="font-mono">
+                <Button onClick={clearAll} variant="outline" className="">
                   {t("common.clear")}
                 </Button>
               </div>
@@ -363,7 +364,7 @@ export function MolecularWeightCalculator() {
         {/* 浓度转换器 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Calculator className="w-4 h-4 mr-2" />
               {t("tools.molecular-weight-calculator.concentrationCalc", "Concentration Calculator")}
             </CardTitle>
@@ -373,19 +374,19 @@ export function MolecularWeightCalculator() {
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="font-mono text-xs">{t("tools.molecular-weight-calculator.mass", "Mass")}</Label>
+                    <Label className="text-xs">{t("tools.molecular-weight-calculator.mass", "Mass")}</Label>
                     <Input placeholder="100" value={mass} onChange={(e) => setMass(e.target.value)} className="font-mono" />
                   </div>
                   <div>
-                    <Label className="font-mono text-xs">{t("tools.molecular-weight-calculator.unit", "Unit")}</Label>
+                    <Label className="text-xs">{t("tools.molecular-weight-calculator.unit", "Unit")}</Label>
                     <Select value={massUnit} onValueChange={setMassUnit}>
-                      <SelectTrigger className="font-mono"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className=""><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="g" className="font-mono">g</SelectItem>
-                        <SelectItem value="mg" className="font-mono">mg</SelectItem>
-                        <SelectItem value="μg" className="font-mono">μg</SelectItem>
-                        <SelectItem value="ng" className="font-mono">ng</SelectItem>
-                        <SelectItem value="pg" className="font-mono">pg</SelectItem>
+                        <SelectItem value="g" className="">g</SelectItem>
+                        <SelectItem value="mg" className="">mg</SelectItem>
+                        <SelectItem value="μg" className="">μg</SelectItem>
+                        <SelectItem value="ng" className="">ng</SelectItem>
+                        <SelectItem value="pg" className="">pg</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -393,29 +394,29 @@ export function MolecularWeightCalculator() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="font-mono text-xs">{t("tools.molecular-weight-calculator.volume", "Volume")}</Label>
+                    <Label className="text-xs">{t("tools.molecular-weight-calculator.volume", "Volume")}</Label>
                     <Input placeholder="10" value={volume} onChange={(e) => setVolume(e.target.value)} className="font-mono" />
                   </div>
                   <div>
-                    <Label className="font-mono text-xs">{t("tools.molecular-weight-calculator.unit", "Unit")}</Label>
+                    <Label className="text-xs">{t("tools.molecular-weight-calculator.unit", "Unit")}</Label>
                     <Select value={volumeUnit} onValueChange={setVolumeUnit}>
-                      <SelectTrigger className="font-mono"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className=""><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="L" className="font-mono">L</SelectItem>
-                        <SelectItem value="mL" className="font-mono">mL</SelectItem>
-                        <SelectItem value="μL" className="font-mono">μL</SelectItem>
-                        <SelectItem value="nL" className="font-mono">nL</SelectItem>
+                        <SelectItem value="L" className="">L</SelectItem>
+                        <SelectItem value="mL" className="">mL</SelectItem>
+                        <SelectItem value="μL" className="">μL</SelectItem>
+                        <SelectItem value="nL" className="">nL</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div>
-                  <Label className="font-mono text-xs">{t("tools.molecular-weight-calculator.molecularWeightLabel", "MW (g/mol)")}</Label>
+                  <Label className="text-xs">{t("tools.molecular-weight-calculator.molecularWeightLabel", "MW (g/mol)")}</Label>
                   <Input placeholder="10000" value={molecularWeight} onChange={(e) => setMolecularWeight(e.target.value)} className="font-mono" />
                 </div>
 
-                <Button onClick={calculateConcentration} className="w-full font-mono">
+                <Button onClick={calculateConcentration} className="w-full ">
                   {t("tools.molecular-weight-calculator.calculate", "Calculate")}
                 </Button>
 
@@ -448,11 +449,11 @@ export function MolecularWeightCalculator() {
         {/* 稀释计算器 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Beaker className="w-4 h-4 mr-2" />
               {t("tools.molecular-weight-calculator.dilutionCalc", "Dilution Calculator")}
             </CardTitle>
-            <CardDescription className="text-xs font-mono">
+            <CardDescription className="text-xs ">
               {t("tools.molecular-weight-calculator.dilutionHint", "C₁V₁ = C₂V₂ - Leave one field empty to calculate it")}
             </CardDescription>
           </CardHeader>
@@ -461,7 +462,7 @@ export function MolecularWeightCalculator() {
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="font-mono text-xs">C₁ ({t("tools.molecular-weight-calculator.initialConc", "Initial Conc.")})</Label>
+                    <Label className="text-xs">C₁ ({t("tools.molecular-weight-calculator.initialConc", "Initial Conc.")})</Label>
                     <Input 
                       placeholder="100" 
                       value={c1} 
@@ -471,7 +472,7 @@ export function MolecularWeightCalculator() {
                     />
                   </div>
                   <div>
-                    <Label className="font-mono text-xs">V₁ ({t("tools.molecular-weight-calculator.initialVol", "Initial Vol.")})</Label>
+                    <Label className="text-xs">V₁ ({t("tools.molecular-weight-calculator.initialVol", "Initial Vol.")})</Label>
                     <Input 
                       placeholder="10" 
                       value={v1} 
@@ -484,7 +485,7 @@ export function MolecularWeightCalculator() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="font-mono text-xs">C₂ ({t("tools.molecular-weight-calculator.finalConc", "Final Conc.")})</Label>
+                    <Label className="text-xs">C₂ ({t("tools.molecular-weight-calculator.finalConc", "Final Conc.")})</Label>
                     <Input 
                       placeholder="10" 
                       value={c2} 
@@ -494,7 +495,7 @@ export function MolecularWeightCalculator() {
                     />
                   </div>
                   <div>
-                    <Label className="font-mono text-xs">V₂ ({t("tools.molecular-weight-calculator.finalVol", "Final Vol.")})</Label>
+                    <Label className="text-xs">V₂ ({t("tools.molecular-weight-calculator.finalVol", "Final Vol.")})</Label>
                     <Input 
                       placeholder="100" 
                       value={v2} 
@@ -535,11 +536,11 @@ export function MolecularWeightCalculator() {
 
         <Alert>
           <Calculator className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t("tools.molecular-weight-calculator.tip", "Molecular weights include phosphate groups for DNA/RNA. Protein calculations account for peptide bond formation.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

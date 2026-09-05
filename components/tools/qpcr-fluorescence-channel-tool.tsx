@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -208,27 +209,27 @@ export function QpcrFluorescenceChannelTool() {
   const conflicts = checkChannelConflicts()
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.qpcr-fluorescence.name", "qPCR Fluorescence Channel Tool")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.qpcr-fluorescence.description", "Fluorophore database, channel design, and multiplex PCR optimization")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <Tabs defaultValue="database" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="database" className="font-mono text-xs">
+            <TabsTrigger value="database" className="text-xs">
               <Search className="w-4 h-4 mr-1" />
               {t("tools.qpcr-fluorescence.database", "Fluorophore DB")}
             </TabsTrigger>
-            <TabsTrigger value="channels" className="font-mono text-xs">
+            <TabsTrigger value="channels" className="text-xs">
               <Zap className="w-4 h-4 mr-1" />
               {t("tools.qpcr-fluorescence.channels", "Channel Design")}
             </TabsTrigger>
-            <TabsTrigger value="multiplex" className="font-mono text-xs">
+            <TabsTrigger value="multiplex" className="text-xs">
               <Lightbulb className="w-4 h-4 mr-1" />
               {t("tools.qpcr-fluorescence.multiplex", "Multiplex PCR")}
             </TabsTrigger>
@@ -238,7 +239,7 @@ export function QpcrFluorescenceChannelTool() {
             {/* 荧光基团数据库 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Search className="w-4 h-4 mr-2" />
                   {t("tools.qpcr-fluorescence.fluorophoreDatabase", "Fluorophore Database")}
                 </CardTitle>
@@ -246,7 +247,7 @@ export function QpcrFluorescenceChannelTool() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
-                    <Label className="font-mono">{t("tools.qpcr-fluorescence.search", "Search")}</Label>
+                    <Label className="">{t("tools.qpcr-fluorescence.search", "Search")}</Label>
                     <Input
                       placeholder={t("tools.qpcr-fluorescence.searchPlaceholder", "Name or application...")}
                       value={searchTerm}
@@ -255,30 +256,30 @@ export function QpcrFluorescenceChannelTool() {
                     />
                   </div>
                   <div>
-                    <Label className="font-mono">{t("tools.qpcr-fluorescence.brightness", "Brightness")}</Label>
+                    <Label className="">{t("tools.qpcr-fluorescence.brightness", "Brightness")}</Label>
                     <Select value={filterBrightness} onValueChange={setFilterBrightness}>
-                      <SelectTrigger className="font-mono">
+                      <SelectTrigger className="">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all" className="font-mono">{t("tools.qpcr-fluorescence.all", "All")}</SelectItem>
-                        <SelectItem value="high" className="font-mono">{t("tools.qpcr-fluorescence.high", "High")}</SelectItem>
-                        <SelectItem value="medium" className="font-mono">{t("tools.qpcr-fluorescence.medium", "Medium")}</SelectItem>
-                        <SelectItem value="low" className="font-mono">{t("tools.qpcr-fluorescence.low", "Low")}</SelectItem>
+                        <SelectItem value="all" className="">{t("tools.qpcr-fluorescence.all", "All")}</SelectItem>
+                        <SelectItem value="high" className="">{t("tools.qpcr-fluorescence.high", "High")}</SelectItem>
+                        <SelectItem value="medium" className="">{t("tools.qpcr-fluorescence.medium", "Medium")}</SelectItem>
+                        <SelectItem value="low" className="">{t("tools.qpcr-fluorescence.low", "Low")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="font-mono">{t("tools.qpcr-fluorescence.cost", "Cost")}</Label>
+                    <Label className="">{t("tools.qpcr-fluorescence.cost", "Cost")}</Label>
                     <Select value={filterCost} onValueChange={setFilterCost}>
-                      <SelectTrigger className="font-mono">
+                      <SelectTrigger className="">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all" className="font-mono">{t("tools.qpcr-fluorescence.all", "All")}</SelectItem>
-                        <SelectItem value="low" className="font-mono">{t("tools.qpcr-fluorescence.low", "Low")}</SelectItem>
-                        <SelectItem value="medium" className="font-mono">{t("tools.qpcr-fluorescence.medium", "Medium")}</SelectItem>
-                        <SelectItem value="high" className="font-mono">{t("tools.qpcr-fluorescence.high", "High")}</SelectItem>
+                        <SelectItem value="all" className="">{t("tools.qpcr-fluorescence.all", "All")}</SelectItem>
+                        <SelectItem value="low" className="">{t("tools.qpcr-fluorescence.low", "Low")}</SelectItem>
+                        <SelectItem value="medium" className="">{t("tools.qpcr-fluorescence.medium", "Medium")}</SelectItem>
+                        <SelectItem value="high" className="">{t("tools.qpcr-fluorescence.high", "High")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -341,21 +342,21 @@ export function QpcrFluorescenceChannelTool() {
             {/* 通道设计 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Zap className="w-4 h-4 mr-2" />
                   {t("tools.qpcr-fluorescence.channelDesign", "Channel Design")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="font-mono">{t("tools.qpcr-fluorescence.instrument", "qPCR Instrument")}</Label>
+                  <Label className="">{t("tools.qpcr-fluorescence.instrument", "qPCR Instrument")}</Label>
                   <Select value={selectedInstrument} onValueChange={setSelectedInstrument}>
-                    <SelectTrigger className="font-mono">
+                    <SelectTrigger className="">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {INSTRUMENTS.map(inst => (
-                        <SelectItem key={inst.name} value={inst.name} className="font-mono">
+                        <SelectItem key={inst.name} value={inst.name} className="">
                           {inst.name}
                         </SelectItem>
                       ))}
@@ -365,13 +366,13 @@ export function QpcrFluorescenceChannelTool() {
 
                 {currentInstrument && (
                   <div className="space-y-4">
-                    <h4 className="font-mono font-medium">{t("tools.qpcr-fluorescence.availableChannels", "Available Channels")}</h4>
+                    <h4 className="font-medium">{t("tools.qpcr-fluorescence.availableChannels", "Available Channels")}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {currentInstrument.channels.map((channel, index) => (
                         <Card key={index} className="border">
                           <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-mono">{channel.name}</CardTitle>
-                            <CardDescription className="text-xs font-mono">
+                            <CardTitle className="text-sm ">{channel.name}</CardTitle>
+                            <CardDescription className="text-xs ">
                               Ex: {channel.excitation}nm, Em: {channel.emission}nm
                             </CardDescription>
                           </CardHeader>
@@ -406,7 +407,7 @@ export function QpcrFluorescenceChannelTool() {
             {/* 多重PCR设计 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Lightbulb className="w-4 h-4 mr-2" />
                   {t("tools.qpcr-fluorescence.multiplexDesign", "Multiplex PCR Design")}
                 </CardTitle>
@@ -414,8 +415,8 @@ export function QpcrFluorescenceChannelTool() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="font-mono">{t("tools.qpcr-fluorescence.targets", "PCR Targets")}</Label>
-                    <Button onClick={addMultiplexTarget} size="sm" className="font-mono">
+                    <Label className="">{t("tools.qpcr-fluorescence.targets", "PCR Targets")}</Label>
+                    <Button onClick={addMultiplexTarget} size="sm" className="">
                       <Plus className="w-4 h-4 mr-1" />
                       {t("tools.qpcr-fluorescence.addTarget", "Add Target")}
                     </Button>
@@ -447,18 +448,18 @@ export function QpcrFluorescenceChannelTool() {
                     ))}
                   </div>
 
-                  <Button onClick={autoAssignChannels} className="w-full font-mono">
+                  <Button onClick={autoAssignChannels} className="w-full ">
                     {t("tools.qpcr-fluorescence.autoAssign", "Auto Assign Channels")}
                   </Button>
                 </div>
 
                 {selectedChannels.length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="font-mono font-medium">{t("tools.qpcr-fluorescence.channelAssignments", "Channel Assignments")}</h4>
+                    <h4 className="font-medium">{t("tools.qpcr-fluorescence.channelAssignments", "Channel Assignments")}</h4>
                     
                     {conflicts.length > 0 && (
                       <Alert>
-                        <AlertDescription className="font-mono text-sm text-red-600">
+                        <AlertDescription className="text-sm text-red-600">
                           {conflicts.join(', ')}
                         </AlertDescription>
                       </Alert>
@@ -517,12 +518,12 @@ export function QpcrFluorescenceChannelTool() {
 
         <Alert>
           <Lightbulb className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t("tools.qpcr-fluorescence.note", "Choose fluorophores with minimal spectral overlap. Consider instrument-specific filter sets and cross-talk between channels.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

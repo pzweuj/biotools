@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -438,11 +439,11 @@ export function Mutalyzer() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("tools.mutalyzer.name")}</CardTitle>
-          <CardDescription>{t("tools.mutalyzer.description")}</CardDescription>
+    <ToolPage>
+
+        <ToolPageHeader>
+          <ToolPageTitle>{t("tools.mutalyzer.name")}</ToolPageTitle>
+          <ToolPageDescription>{t("tools.mutalyzer.description")}</ToolPageDescription>
           <Alert className="mt-4 bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900">
             <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
             <AlertDescription className="text-yellow-800 dark:text-yellow-300">
@@ -460,8 +461,8 @@ export function Mutalyzer() {
               </span>
             </AlertDescription>
           </Alert>
-        </CardHeader>
-        <CardContent>
+        </ToolPageHeader>
+        <ToolPageContent>
           <Tabs defaultValue="convert" className="w-full">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="convert">{t("tools.mutalyzer.convert")}</TabsTrigger>
@@ -695,11 +696,8 @@ export function Mutalyzer() {
               {renderResult(mutateResult)}
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Usage Examples */}
-      <Card>
+          {/* Usage Examples */}
+          <Card>
         <CardHeader>
           <CardTitle>{t("tools.mutalyzer.examplesTitle")}</CardTitle>
         </CardHeader>
@@ -750,7 +748,7 @@ export function Mutalyzer() {
             </div>
           </div>
         </CardContent>
-      </Card>
+          </Card>
 
       {/* API Reference */}
       <Card>
@@ -777,6 +775,7 @@ export function Mutalyzer() {
           </div>
         </CardContent>
       </Card>
-    </div>
+        </ToolPageContent>
+    </ToolPage>
   )
 }

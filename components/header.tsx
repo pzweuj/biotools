@@ -27,28 +27,28 @@ export function Header() {
   }, [])
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-card/50 backdrop-blur-sm">
-      <div className="flex h-14 items-center justify-between px-6">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background">
+      <div className="flex h-14 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/')}
-            className="text-xl font-bold text-primary font-mono hover:text-primary/80 transition-colors duration-200 cursor-pointer"
+            className="font-display text-xl font-medium tracking-tight text-primary transition-colors duration-200 hover:text-primary/80"
             aria-label={t("nav.backToHome")}
             title={t("nav.backToHome")}
           >
             {t("nav.title")}
           </button>
-          <div className="text-sm text-muted-foreground font-mono">v{APP_VERSION}</div>
+          <div className="font-mono text-xs text-muted-foreground">v{APP_VERSION}</div>
           {swReady && (
             <span
-              className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono"
+              className="flex items-center gap-1 text-[10px] text-muted-foreground"
               title="Offline-ready — 可离线使用"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
               Offline
             </span>
           )}
-          <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground bg-muted rounded border">
+          <kbd className="hidden items-center gap-1 rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
             ⌘K
           </kbd>
         </div>

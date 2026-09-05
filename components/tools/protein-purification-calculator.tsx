@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -203,31 +204,31 @@ export function ProteinPurificationCalculator() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.protein-purification.name", "Protein Purification Calculator")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.protein-purification.description", "Protein concentration assays, purification fold calculation, recovery statistics, and SDS-PAGE gel concentration")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <Tabs defaultValue="assay" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="assay" className="font-mono text-xs">
+            <TabsTrigger value="assay" className="text-xs">
               <FlaskConical className="w-4 h-4 mr-1" />
               {t("tools.protein-purification.assay", "Assay")}
             </TabsTrigger>
-            <TabsTrigger value="purification" className="font-mono text-xs">
+            <TabsTrigger value="purification" className="text-xs">
               <BarChart3 className="w-4 h-4 mr-1" />
               {t("tools.protein-purification.purification", "Purification")}
             </TabsTrigger>
-            <TabsTrigger value="recovery" className="font-mono text-xs">
+            <TabsTrigger value="recovery" className="text-xs">
               <Calculator className="w-4 h-4 mr-1" />
               {t("tools.protein-purification.recovery", "Recovery")}
             </TabsTrigger>
-            <TabsTrigger value="gel" className="font-mono text-xs">
+            <TabsTrigger value="gel" className="text-xs">
               <Zap className="w-4 h-4 mr-1" />
               {t("tools.protein-purification.gel", "SDS-PAGE")}
             </TabsTrigger>
@@ -237,7 +238,7 @@ export function ProteinPurificationCalculator() {
             {/* 蛋白质浓度测定 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <FlaskConical className="w-4 h-4 mr-2" />
                   {t("tools.protein-purification.concentrationAssay", "Protein Concentration Assay")}
                 </CardTitle>
@@ -246,14 +247,14 @@ export function ProteinPurificationCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-mono">{t("tools.protein-purification.assayMethod", "Assay Method")}</Label>
+                      <Label className="">{t("tools.protein-purification.assayMethod", "Assay Method")}</Label>
                       <Select value={selectedAssay} onValueChange={setSelectedAssay}>
-                        <SelectTrigger className="font-mono">
+                        <SelectTrigger className="">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {ASSAY_METHODS.map(method => (
-                            <SelectItem key={method.name} value={method.name} className="font-mono">
+                            <SelectItem key={method.name} value={method.name} className="">
                               {method.name} ({method.range[0]}-{method.range[1]} μg/mL)
                             </SelectItem>
                           ))}
@@ -262,7 +263,7 @@ export function ProteinPurificationCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.protein-purification.absorbance", "Absorbance")}</Label>
+                      <Label className="">{t("tools.protein-purification.absorbance", "Absorbance")}</Label>
                       <Input
                         type="number"
                         step="0.001"
@@ -274,7 +275,7 @@ export function ProteinPurificationCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.protein-purification.standardCurve", "Standard Curve")}</Label>
+                      <Label className="">{t("tools.protein-purification.standardCurve", "Standard Curve")}</Label>
                       <Input
                         value={standardCurve}
                         onChange={(e) => setStandardCurve(e.target.value)}
@@ -284,7 +285,7 @@ export function ProteinPurificationCalculator() {
                     </div>
 
                     <div>
-                      <Label className="font-mono">{t("tools.protein-purification.dilutionFactor", "Dilution Factor")}</Label>
+                      <Label className="">{t("tools.protein-purification.dilutionFactor", "Dilution Factor")}</Label>
                       <Input
                         type="number"
                         value={dilutionFactor}
@@ -298,7 +299,7 @@ export function ProteinPurificationCalculator() {
                   <div className="space-y-3">
                     {proteinConcentration && (
                       <div>
-                        <h4 className="font-mono font-medium">{t("tools.protein-purification.results", "Results")}</h4>
+                        <h4 className="font-medium">{t("tools.protein-purification.results", "Results")}</h4>
                         <div className="space-y-2 bg-muted/20 p-4 rounded-lg">
                           <div className="flex justify-between text-sm font-mono">
                             <span>{t("tools.protein-purification.concentration", "Concentration")}:</span>
@@ -317,7 +318,7 @@ export function ProteinPurificationCalculator() {
 
                     {currentAssay && (
                       <div>
-                        <h4 className="font-mono font-medium">{t("tools.protein-purification.methodInfo", "Method Information")}</h4>
+                        <h4 className="font-medium">{t("tools.protein-purification.methodInfo", "Method Information")}</h4>
                         <div className="space-y-2 bg-muted/20 p-3 rounded-lg text-xs font-mono">
                           <div><strong>{t("tools.protein-purification.advantages", "Advantages")}:</strong></div>
                           <ul className="list-disc list-inside ml-2">
@@ -344,16 +345,16 @@ export function ProteinPurificationCalculator() {
             {/* 纯化表 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center justify-between">
                   <span className="flex items-center">
                     <BarChart3 className="w-4 h-4 mr-2" />
                     {t("tools.protein-purification.purificationTable", "Purification Table")}
                   </span>
                   <div className="flex gap-2">
-                    <Button onClick={resetToDefaultSteps} variant="outline" size="sm" className="font-mono">
+                    <Button onClick={resetToDefaultSteps} variant="outline" size="sm" className="">
                       {t("tools.protein-purification.resetDefault", "Reset Default")}
                     </Button>
-                    <Button onClick={addPurificationStep} size="sm" className="font-mono">
+                    <Button onClick={addPurificationStep} size="sm" className="">
                       <Plus className="w-4 h-4 mr-1" />
                       {t("tools.protein-purification.addStep", "Add Step")}
                     </Button>
@@ -365,7 +366,7 @@ export function ProteinPurificationCalculator() {
                   {purificationSteps.map((step, index) => (
                     <div key={step.id} className="grid grid-cols-1 md:grid-cols-6 gap-2 p-3 border rounded-lg">
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.protein-purification.stepName", "Step")}</Label>
+                        <Label className="text-xs">{t("tools.protein-purification.stepName", "Step")}</Label>
                         <Input
                           value={step.name}
                           onChange={(e) => updatePurificationStep(step.id, 'name', e.target.value)}
@@ -373,7 +374,7 @@ export function ProteinPurificationCalculator() {
                         />
                       </div>
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.protein-purification.volume", "Volume (mL)")}</Label>
+                        <Label className="text-xs">{t("tools.protein-purification.volume", "Volume (mL)")}</Label>
                         <Input
                           type="number"
                           value={step.volume}
@@ -382,7 +383,7 @@ export function ProteinPurificationCalculator() {
                         />
                       </div>
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.protein-purification.totalProtein", "Total Protein (mg)")}</Label>
+                        <Label className="text-xs">{t("tools.protein-purification.totalProtein", "Total Protein (mg)")}</Label>
                         <Input
                           type="number"
                           value={step.totalProtein}
@@ -391,7 +392,7 @@ export function ProteinPurificationCalculator() {
                         />
                       </div>
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.protein-purification.totalActivity", "Total Activity (U)")}</Label>
+                        <Label className="text-xs">{t("tools.protein-purification.totalActivity", "Total Activity (U)")}</Label>
                         <Input
                           type="number"
                           value={step.totalActivity}
@@ -456,7 +457,7 @@ export function ProteinPurificationCalculator() {
             {/* 回收率统计 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Calculator className="w-4 h-4 mr-2" />
                   {t("tools.protein-purification.recoveryStatistics", "Recovery Statistics")}
                 </CardTitle>
@@ -494,7 +495,7 @@ export function ProteinPurificationCalculator() {
             {/* SDS-PAGE胶浓度 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Zap className="w-4 h-4 mr-2" />
                   {t("tools.protein-purification.sdsPageGel", "SDS-PAGE Gel Calculator")}
                 </CardTitle>
@@ -503,7 +504,7 @@ export function ProteinPurificationCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <Label className="font-mono">{t("tools.protein-purification.targetMW", "Target Protein MW (kDa)")}</Label>
+                      <Label className="">{t("tools.protein-purification.targetMW", "Target Protein MW (kDa)")}</Label>
                       <Input
                         type="number"
                         value={targetMW}
@@ -517,7 +518,7 @@ export function ProteinPurificationCalculator() {
                   <div className="space-y-3">
                     {recommendedGel && (
                       <div>
-                        <h4 className="font-mono font-medium">{t("tools.protein-purification.recommendedGels", "Recommended Gels")}</h4>
+                        <h4 className="font-medium">{t("tools.protein-purification.recommendedGels", "Recommended Gels")}</h4>
                         <div className="space-y-2">
                           {recommendedGel.slice(0, 3).map((gel, index) => (
                             <div key={index} className="bg-muted/20 p-2 rounded text-sm font-mono">
@@ -561,19 +562,19 @@ export function ProteinPurificationCalculator() {
         </Tabs>
 
         <div className="flex gap-2">
-          <Button onClick={clearAll} variant="outline" className="font-mono">
+          <Button onClick={clearAll} variant="outline" className="">
             {t("common.clear", "Clear")}
           </Button>
         </div>
 
         <Alert>
           <FlaskConical className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t("tools.protein-purification.note", "Purification fold = (Specific activity at step) / (Initial specific activity). Yield = (Total activity at step) / (Initial total activity) × 100%.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

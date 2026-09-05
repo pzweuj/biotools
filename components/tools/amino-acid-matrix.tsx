@@ -1,7 +1,7 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useRef, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -164,46 +164,46 @@ export function AminoAcidMatrix() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {isDistanceMode ? t("tools.amino-acid-matrix.nameDistance") : t("tools.amino-acid-matrix.name")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {isDistanceMode ? t("tools.amino-acid-matrix.descriptionDistance") : t("tools.amino-acid-matrix.description")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
-            <Label className="font-mono">{t("tools.amino-acid-matrix.matrixLabel")}</Label>
+            <Label className="">{t("tools.amino-acid-matrix.matrixLabel")}</Label>
             <Select value={selectedMatrixId} onValueChange={setSelectedMatrixId}>
-              <SelectTrigger className="font-mono">
+              <SelectTrigger className="">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {matrices.map((matrix) => (
-                  <SelectItem key={matrix.id} value={matrix.id} className="font-mono">
+                  <SelectItem key={matrix.id} value={matrix.id} className="">
                     {matrix.id}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-sm text-muted-foreground font-mono leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {isDistanceMode ? t("tools.amino-acid-matrix.noteGrantham") : t("tools.amino-acid-matrix.note62")}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-1">
             <div className="space-y-2">
-              <Label className="font-mono">{t("tools.amino-acid-matrix.rowLabel")}</Label>
+              <Label className="">{t("tools.amino-acid-matrix.rowLabel")}</Label>
               <Select value={rowResidue} onValueChange={setRowResidue}>
-                <SelectTrigger className="font-mono">
+                <SelectTrigger className="">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {aminoAcids.map((aa) => (
-                    <SelectItem key={aa.code} value={aa.code} className="font-mono">
+                    <SelectItem key={aa.code} value={aa.code} className="">
                       {aa.code} · {locale === "zh" ? aa.zh : aa.en}
                     </SelectItem>
                   ))}
@@ -211,14 +211,14 @@ export function AminoAcidMatrix() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="font-mono">{t("tools.amino-acid-matrix.colLabel")}</Label>
+              <Label className="">{t("tools.amino-acid-matrix.colLabel")}</Label>
               <Select value={colResidue} onValueChange={setColResidue}>
-                <SelectTrigger className="font-mono">
+                <SelectTrigger className="">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {aminoAcids.map((aa) => (
-                    <SelectItem key={aa.code} value={aa.code} className="font-mono">
+                    <SelectItem key={aa.code} value={aa.code} className="">
                       {aa.code} · {locale === "zh" ? aa.zh : aa.en}
                     </SelectItem>
                   ))}
@@ -239,7 +239,7 @@ export function AminoAcidMatrix() {
             <div className="text-3xl font-bold font-mono">
               {formatScore(selectedScore, isDistanceMode)}
             </div>
-            <p className="text-xs text-muted-foreground font-mono leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {isDistanceMode ? t("tools.amino-acid-matrix.hintDistance") : t("tools.amino-acid-matrix.hint")}
             </p>
           </div>
@@ -348,7 +348,7 @@ export function AminoAcidMatrix() {
             </>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

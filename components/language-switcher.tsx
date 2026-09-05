@@ -12,7 +12,7 @@ export function LanguageSwitcher() {
         variant={locale === "zh" ? "default" : "ghost"}
         size="sm"
         onClick={() => switchLocale("zh")}
-        className="h-7 px-2 text-xs font-mono"
+        className="h-8 px-2 text-xs"
       >
         中文
       </Button>
@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
         variant={locale === "en" ? "default" : "ghost"}
         size="sm"
         onClick={() => switchLocale("en")}
-        className="h-7 px-2 text-xs font-mono"
+        className="h-8 px-2 text-xs"
       >
         EN
       </Button>

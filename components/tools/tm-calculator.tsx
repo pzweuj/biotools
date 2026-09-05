@@ -1,10 +1,10 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { useToolStorage } from "@/hooks/use-tool-storage"
 import { TryExample } from "@/components/try-example"
 import { ResultActions } from "@/components/result-actions"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -133,14 +133,14 @@ export function TmCalculator() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">{t("tools.tm-calculator.name")}</CardTitle>
-        <CardDescription className="font-mono">{t("tools.tm-calculator.description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>{t("tools.tm-calculator.name")}</ToolPageTitle>
+        <ToolPageDescription>{t("tools.tm-calculator.description")}</ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <div className="space-y-2">
-          <Label htmlFor="primer-sequences" className="font-mono">
+          <Label htmlFor="primer-sequences" className="">
             {t("tools.tm-calculator.sequenceLabel")}
           </Label>
           <Textarea
@@ -158,7 +158,7 @@ export function TmCalculator() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="salt-concentration" className="font-mono">
+            <Label htmlFor="salt-concentration" className="">
               {t("tools.tm-calculator.saltLabel")}
             </Label>
             <Input
@@ -172,7 +172,7 @@ export function TmCalculator() {
           </div>
 
           <div className="space-y-2">
-            <Label className="font-mono">{t("tools.tm-calculator.methodLabel")}</Label>
+            <Label className="">{t("tools.tm-calculator.methodLabel")}</Label>
             <Select value={method} onValueChange={setMethod}>
               <SelectTrigger className="terminal-input">
                 <SelectValue />
@@ -191,7 +191,7 @@ export function TmCalculator() {
           </div>
         </div>
 
-        <Button onClick={calculateTm} className="w-full font-mono">
+        <Button onClick={calculateTm} className="w-full ">
           {t("tools.tm-calculator.calculate")}
         </Button>
 
@@ -282,7 +282,7 @@ export function TmCalculator() {
             />
           </div>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

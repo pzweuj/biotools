@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -95,28 +96,28 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground flex items-center gap-2">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           <TrendingUp className="w-5 h-5" />
           {t("tools.gc-skew.name", "GC Skew Analyzer")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.gc-skew.description", "Calculate GC skew [(G-C)/(G+C)] using sliding window analysis - useful for identifying replication origins and strand bias")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 序列输入 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Dna className="w-4 h-4 mr-2" />
               {t("tools.gc-skew.sequenceInput", "Sequence Input")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="sequence" className="font-mono">
+              <Label htmlFor="sequence" className="">
                 {t("tools.gc-skew.sequenceLabel", "DNA Sequence")}
               </Label>
               <Textarea
@@ -131,7 +132,7 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="window-size" className="font-mono">
+                <Label htmlFor="window-size" className="">
                   {t("tools.gc-skew.windowSize", "Window Size (bp)")}
                 </Label>
                 <Input
@@ -149,7 +150,7 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="step-size" className="font-mono">
+                <Label htmlFor="step-size" className="">
                   {t("tools.gc-skew.stepSize", "Step Size (bp)")}
                 </Label>
                 <Input
@@ -168,13 +169,13 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={analyzeSequence} className="font-mono flex-1" disabled={isAnalyzing}>
+              <Button onClick={analyzeSequence} className="flex-1" disabled={isAnalyzing}>
                 {isAnalyzing ? t("common.loading") : t("tools.gc-skew.analyze", "Analyze")}
               </Button>
-              <Button onClick={loadExample} variant="outline" className="font-mono">
+              <Button onClick={loadExample} variant="outline" className="">
                 {t("tools.gc-skew.loadExample", "Example")}
               </Button>
-              <Button onClick={clearAll} variant="outline" className="font-mono">
+              <Button onClick={clearAll} variant="outline" className="">
                 {t("common.clear")}
               </Button>
             </div>
@@ -185,7 +186,7 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
         {statistics && (
           <Card className="border-2 border-dashed border-border/50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-mono">
+              <CardTitle className="text-sm ">
                 {t("tools.gc-skew.statistics", "Statistics")}
               </CardTitle>
             </CardHeader>
@@ -219,7 +220,7 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
 
               <Alert className="mt-4">
                 <Info className="h-4 w-4" />
-                <AlertDescription className="font-mono text-sm">
+                <AlertDescription className="text-sm">
                   {t("tools.gc-skew.maxSkewAt", "Max GC Skew at position")}: {statistics.maxSkewPos} bp<br/>
                   {t("tools.gc-skew.minSkewAt", "Min GC Skew at position")}: {statistics.minSkewPos} bp
                 </AlertDescription>
@@ -232,7 +233,7 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
         {results.length > 0 && (
           <Card className="border-2 border-dashed border-border/50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-mono">
+              <CardTitle className="text-sm ">
                 {t("tools.gc-skew.results", "Analysis Results")} ({results.length} {t("tools.gc-skew.windows", "windows")})
               </CardTitle>
             </CardHeader>
@@ -301,13 +302,13 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
         {/* 说明 */}
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             <div className="font-bold mb-1">{t("tools.gc-skew.about", "About GC Skew")}:</div>
             {t("tools.gc-skew.aboutText", "GC Skew = (G-C)/(G+C) indicates strand asymmetry. Positive values mean more G than C, negative values mean more C than G. Sharp transitions often indicate replication origins (oriC) or terminus regions.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

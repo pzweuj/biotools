@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -232,27 +233,27 @@ export function GelElectrophoresisAnalyzer() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.gel-electrophoresis.name", "Gel Electrophoresis Analyzer")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.gel-electrophoresis.description", "Molecular weight standard curve, band size estimation, and concentration quantification")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <Tabs defaultValue="standard" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="standard" className="font-mono text-xs">
+            <TabsTrigger value="standard" className="text-xs">
               <BarChart3 className="w-4 h-4 mr-1" />
               {t("tools.gel-electrophoresis.standardCurve", "Standard Curve")}
             </TabsTrigger>
-            <TabsTrigger value="bands" className="font-mono text-xs">
+            <TabsTrigger value="bands" className="text-xs">
               <Ruler className="w-4 h-4 mr-1" />
               {t("tools.gel-electrophoresis.bandAnalysis", "Band Analysis")}
             </TabsTrigger>
-            <TabsTrigger value="quantification" className="font-mono text-xs">
+            <TabsTrigger value="quantification" className="text-xs">
               <Zap className="w-4 h-4 mr-1" />
               {t("tools.gel-electrophoresis.quantification", "Quantification")}
             </TabsTrigger>
@@ -262,7 +263,7 @@ export function GelElectrophoresisAnalyzer() {
             {/* 标准曲线 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   {t("tools.gel-electrophoresis.molecularWeightStandard", "Molecular Weight Standard")}
                 </CardTitle>
@@ -270,29 +271,29 @@ export function GelElectrophoresisAnalyzer() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <Label className="font-mono">{t("tools.gel-electrophoresis.gelType", "Gel Type")}</Label>
+                    <Label className="">{t("tools.gel-electrophoresis.gelType", "Gel Type")}</Label>
                     <Select value={gelType} onValueChange={(value: any) => setGelType(value)}>
-                      <SelectTrigger className="font-mono">
+                      <SelectTrigger className="">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="dna" className="font-mono">DNA</SelectItem>
-                        <SelectItem value="protein" className="font-mono">{t("tools.gel-electrophoresis.protein", "Protein")}</SelectItem>
+                        <SelectItem value="dna" className="">DNA</SelectItem>
+                        <SelectItem value="protein" className="">{t("tools.gel-electrophoresis.protein", "Protein")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="font-mono">{t("tools.gel-electrophoresis.presetMarker", "Preset Marker")}</Label>
+                    <Label className="">{t("tools.gel-electrophoresis.presetMarker", "Preset Marker")}</Label>
                     <Select value={selectedMarker} onValueChange={(value) => {
                       setSelectedMarker(value)
                       if (value) selectPresetMarker(value)
                     }}>
-                      <SelectTrigger className="font-mono">
+                      <SelectTrigger className="">
                         <SelectValue placeholder={t("tools.gel-electrophoresis.selectMarker", "Select marker...")} />
                       </SelectTrigger>
                       <SelectContent>
                         {(gelType === 'dna' ? DNA_MARKERS : PROTEIN_MARKERS).map(marker => (
-                          <SelectItem key={marker.name} value={marker.name} className="font-mono">
+                          <SelectItem key={marker.name} value={marker.name} className="">
                             {marker.name}
                           </SelectItem>
                         ))}
@@ -302,7 +303,7 @@ export function GelElectrophoresisAnalyzer() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="font-mono">
+                  <Label className="">
                     {t("tools.gel-electrophoresis.standardData", "Standard Data")} 
                     ({gelType === 'dna' ? 'bp' : 'kDa'}, {t("tools.gel-electrophoresis.distance", "Distance (mm)")})
                   </Label>
@@ -321,7 +322,7 @@ export function GelElectrophoresisAnalyzer() {
                 {standardCurve.rSquared > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h4 className="font-mono font-medium">{t("tools.gel-electrophoresis.curveParameters", "Curve Parameters")}</h4>
+                      <h4 className="font-medium">{t("tools.gel-electrophoresis.curveParameters", "Curve Parameters")}</h4>
                       <div className="space-y-2 text-sm font-mono bg-muted/20 p-3 rounded-lg">
                         <div className="flex justify-between">
                           <span>{t("tools.gel-electrophoresis.slope", "Slope")}:</span>
@@ -349,12 +350,12 @@ export function GelElectrophoresisAnalyzer() {
             {/* 条带分析 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center justify-between">
                   <span className="flex items-center">
                     <Ruler className="w-4 h-4 mr-2" />
                     {t("tools.gel-electrophoresis.unknownBands", "Unknown Bands")}
                   </span>
-                  <Button onClick={addUnknownBand} size="sm" className="font-mono">
+                  <Button onClick={addUnknownBand} size="sm" className="">
                     <Plus className="w-4 h-4 mr-1" />
                     {t("tools.gel-electrophoresis.addBand", "Add Band")}
                   </Button>
@@ -365,7 +366,7 @@ export function GelElectrophoresisAnalyzer() {
                   {unknownBands.map((band, index) => (
                     <div key={band.id} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 border rounded-lg">
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.gel-electrophoresis.bandName", "Band Name")}</Label>
+                        <Label className="text-xs">{t("tools.gel-electrophoresis.bandName", "Band Name")}</Label>
                         <Input
                           value={band.name}
                           onChange={(e) => updateUnknownBand(band.id, 'name', e.target.value)}
@@ -373,7 +374,7 @@ export function GelElectrophoresisAnalyzer() {
                         />
                       </div>
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.gel-electrophoresis.distance", "Distance (mm)")}</Label>
+                        <Label className="text-xs">{t("tools.gel-electrophoresis.distance", "Distance (mm)")}</Label>
                         <Input
                           type="number"
                           value={band.distance}
@@ -383,7 +384,7 @@ export function GelElectrophoresisAnalyzer() {
                         />
                       </div>
                       <div>
-                        <Label className="font-mono text-xs">{t("tools.gel-electrophoresis.intensity", "Intensity (optional)")}</Label>
+                        <Label className="text-xs">{t("tools.gel-electrophoresis.intensity", "Intensity (optional)")}</Label>
                         <Input
                           type="number"
                           value={band.intensity || ''}
@@ -448,14 +449,14 @@ export function GelElectrophoresisAnalyzer() {
             {/* 浓度定量 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <Zap className="w-4 h-4 mr-2" />
                   {t("tools.gel-electrophoresis.concentrationStandards", "Concentration Standards")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="font-mono">
+                  <Label className="">
                     {t("tools.gel-electrophoresis.intensityData", "Intensity Data")} 
                     ({t("tools.gel-electrophoresis.concentration", "Concentration")}, {t("tools.gel-electrophoresis.intensity", "Intensity")})
                   </Label>
@@ -505,19 +506,19 @@ export function GelElectrophoresisAnalyzer() {
         </Tabs>
 
         <div className="flex gap-2">
-          <Button onClick={clearAll} variant="outline" className="font-mono">
+          <Button onClick={clearAll} variant="outline" className="">
             {t("common.clear", "Clear")}
           </Button>
         </div>
 
         <Alert>
           <BarChart3 className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t("tools.gel-electrophoresis.note", "Standard curve uses log(molecular weight) vs migration distance. Measure distances accurately for best results. R² ≥ 0.95 recommended.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

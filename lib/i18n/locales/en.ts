@@ -31,8 +31,10 @@ export const en = {
     toggleTheme: "Toggle Theme",
     localTool: "Local",
     externalTool: "Online",
+    recentTools: "Recently Used",
   },
   intro: {
+    eyebrow: "Bioinformatics / Local analysis",
     subtitle: "Bioinformatics Tools Library",
     about: {
       title: "About Project",

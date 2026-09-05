@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -184,23 +185,23 @@ export function QpcrDataAnalyzer() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.qpcr-data-analyzer.name", "qPCR Data Analyzer")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.qpcr-data-analyzer.description", "Ct calculation, ΔΔCt relative quantification, standard curve fitting, and efficiency calculation")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <Tabs defaultValue="ddct" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="ddct" className="font-mono text-xs">
+            <TabsTrigger value="ddct" className="text-xs">
               <Calculator className="w-4 h-4 mr-1" />
               {t("tools.qpcr-data-analyzer.ddctAnalysis", "ΔΔCt Analysis")}
             </TabsTrigger>
-            <TabsTrigger value="standard" className="font-mono text-xs">
+            <TabsTrigger value="standard" className="text-xs">
               <TrendingUp className="w-4 h-4 mr-1" />
               {t("tools.qpcr-data-analyzer.standardCurve", "Standard Curve")}
             </TabsTrigger>
@@ -210,7 +211,7 @@ export function QpcrDataAnalyzer() {
             {/* ΔΔCt分析 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   {t("tools.qpcr-data-analyzer.ddctInput", "ΔΔCt Data Input")}
                 </CardTitle>
@@ -218,7 +219,7 @@ export function QpcrDataAnalyzer() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <Label className="font-mono">{t("tools.qpcr-data-analyzer.referenceGene", "Reference Gene")}</Label>
+                    <Label className="">{t("tools.qpcr-data-analyzer.referenceGene", "Reference Gene")}</Label>
                     <Input
                       value={referenceGene}
                       onChange={(e) => setReferenceGene(e.target.value)}
@@ -227,7 +228,7 @@ export function QpcrDataAnalyzer() {
                     />
                   </div>
                   <div>
-                    <Label className="font-mono">{t("tools.qpcr-data-analyzer.controlGroup", "Control Group")}</Label>
+                    <Label className="">{t("tools.qpcr-data-analyzer.controlGroup", "Control Group")}</Label>
                     <Input
                       value={controlGroup}
                       onChange={(e) => setControlGroup(e.target.value)}
@@ -236,7 +237,7 @@ export function QpcrDataAnalyzer() {
                     />
                   </div>
                   <div>
-                    <Label className="font-mono">{t("tools.qpcr-data-analyzer.treatmentGroup", "Treatment Group")}</Label>
+                    <Label className="">{t("tools.qpcr-data-analyzer.treatmentGroup", "Treatment Group")}</Label>
                     <Input
                       value={treatmentGroup}
                       onChange={(e) => setTreatmentGroup(e.target.value)}
@@ -247,7 +248,7 @@ export function QpcrDataAnalyzer() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="font-mono">{t("tools.qpcr-data-analyzer.ctData", "Ct Data (Sample, Target, Ct, Group)")}</Label>
+                  <Label className="">{t("tools.qpcr-data-analyzer.ctData", "Ct Data (Sample, Target, Ct, Group)")}</Label>
                   <Textarea
                     placeholder={t("tools.qpcr-data-analyzer.ctPlaceholder", "Sample1\tGAPDH\t20.5\tcontrol\nSample1\tGeneX\t25.2\tcontrol\nSample2\tGAPDH\t20.8\ttreatment\nSample2\tGeneX\t23.1\ttreatment")}
                     value={ctInput}
@@ -302,14 +303,14 @@ export function QpcrDataAnalyzer() {
             {/* 标准曲线 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono flex items-center">
+                <CardTitle className="text-sm flex items-center">
                   <TrendingUp className="w-4 h-4 mr-2" />
                   {t("tools.qpcr-data-analyzer.standardCurveInput", "Standard Curve Data")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="font-mono">{t("tools.qpcr-data-analyzer.dilutionData", "Dilution Data (Dilution, Ct)")}</Label>
+                  <Label className="">{t("tools.qpcr-data-analyzer.dilutionData", "Dilution Data (Dilution, Ct)")}</Label>
                   <Textarea
                     placeholder={t("tools.qpcr-data-analyzer.dilutionPlaceholder", "1000000\t15.2\n100000\t18.5\n10000\t21.8\n1000\t25.1\n100\t28.4")}
                     value={standardCurveInput}
@@ -325,7 +326,7 @@ export function QpcrDataAnalyzer() {
                 {standardCurveData.length >= 2 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-3">
-                      <h4 className="font-mono font-medium">{t("tools.qpcr-data-analyzer.curveParameters", "Curve Parameters")}</h4>
+                      <h4 className="font-medium">{t("tools.qpcr-data-analyzer.curveParameters", "Curve Parameters")}</h4>
                       <div className="space-y-2 text-sm font-mono">
                         <div className="flex justify-between">
                           <span>{t("tools.qpcr-data-analyzer.slope", "Slope")}:</span>
@@ -378,19 +379,19 @@ export function QpcrDataAnalyzer() {
         </Tabs>
 
         <div className="flex gap-2">
-          <Button onClick={clearAll} variant="outline" className="font-mono">
+          <Button onClick={clearAll} variant="outline" className="">
             {t("common.clear", "Clear")}
           </Button>
         </div>
 
         <Alert>
           <Calculator className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t("tools.qpcr-data-analyzer.note", "ΔΔCt method: 2^(-ΔΔCt). PCR efficiency calculated from slope: E = 10^(-1/slope) - 1. Optimal efficiency: 90-110%.")}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

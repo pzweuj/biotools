@@ -19,8 +19,8 @@ export function TryExample({ example, onApply, label }: TryExampleProps) {
   return (
     <Button
       variant="outline"
-      size="sm"
-      className="font-mono text-xs gap-1.5 hover:bg-muted"
+      size="default"
+      className="text-xs gap-1.5 hover:bg-muted"
       onClick={() => onApply(example)}
       title={t("common.tryExample", "Load example data")}
     >

@@ -12,11 +12,11 @@ export function ToolDisplay({ tool }: ToolDisplayProps) {
 
   if (!tool) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="text-center max-w-md">
-          <div className="text-6xl mb-6 font-mono text-primary">{">"}_</div>
-          <h2 className="text-2xl font-bold mb-3 text-balance font-mono">{t("nav.welcome")}</h2>
-          <p className="text-muted-foreground text-pretty font-mono text-sm leading-relaxed">{t("nav.welcomeDesc")}</p>
+      <div className="flex min-h-full items-center justify-center px-6 py-12">
+        <div className="max-w-md text-center">
+          <div className="mb-6 font-mono text-5xl text-primary">{">"}_</div>
+          <h2 className="mb-3 font-display text-3xl font-medium leading-tight">{t("nav.welcome")}</h2>
+          <p className="text-pretty text-sm leading-6 text-muted-foreground">{t("nav.welcomeDesc")}</p>
         </div>
       </div>
     )
@@ -25,8 +25,8 @@ export function ToolDisplay({ tool }: ToolDisplayProps) {
   const ToolComponent = tool.component
 
   return (
-    <div className="w-full min-h-full p-6 bg-background">
-      <div className="max-w-7xl mx-auto">
+    <div className="tool-display min-h-full px-4 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+      <div className="mx-auto w-full max-w-[92rem]">
         <ToolComponent />
       </div>
     </div>

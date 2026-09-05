@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { useToolStorage } from "@/hooks/use-tool-storage"
@@ -314,18 +315,18 @@ export function PrimerDimerDetector() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.primer-dimer-detector.name", "Primer Dimer Detector")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.primer-dimer-detector.description", "Detect primer complementarity, calculate dimer formation free energy, visualize structures, batch analysis")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <div className="space-y-2">
-          <Label htmlFor="primers" className="font-mono">
+          <Label htmlFor="primers" className="">
             {t("tools.primer-dimer-detector.primerLabel", "Input Primers")}
           </Label>
           <Textarea
@@ -344,7 +345,7 @@ export function PrimerDimerDetector() {
         <div className="flex gap-2">
           <Button 
             onClick={analyzePrimers} 
-            className="flex-1 font-mono"
+            className="flex-1 "
             disabled={isAnalyzing || !primers.trim()}
           >
             {isAnalyzing ? t("common.loading") : t("tools.primer-dimer-detector.analyze", "Analyze Dimers")}
@@ -352,7 +353,7 @@ export function PrimerDimerDetector() {
           <Button
             onClick={clearResults}
             variant="outline"
-            className="font-mono"
+            className=""
             disabled={!primers.trim() && results.length === 0}
           >
             {t("common.clear")}
@@ -387,10 +388,10 @@ export function PrimerDimerDetector() {
 
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="overview" className="font-mono text-xs">
+                <TabsTrigger value="overview" className="text-xs">
                   {t("tools.primer-dimer-detector.overview", "Overview")}
                 </TabsTrigger>
-                <TabsTrigger value="structures" className="font-mono text-xs">
+                <TabsTrigger value="structures" className="text-xs">
                   {t("tools.primer-dimer-detector.structures", "Structures")}
                 </TabsTrigger>
               </TabsList>
@@ -462,7 +463,7 @@ export function PrimerDimerDetector() {
                   <Card key={result.id} className="border">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm font-mono flex items-center gap-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
                           {getRiskIcon(result.risk)}
                           {result.primer1Name} × {result.primer2Name}
                         </CardTitle>
@@ -490,7 +491,7 @@ export function PrimerDimerDetector() {
                           </Button>
                         </div>
                       </div>
-                      <CardDescription className="text-xs font-mono">
+                      <CardDescription className="text-xs ">
                         {t("tools.primer-dimer-detector.complementarity")}: {result.complementarity}% | 
                         ΔG: {result.freeEnergy} kcal/mol | 
                         {t("tools.primer-dimer-detector.length")}: {result.maxComplementLength}bp
@@ -518,12 +519,12 @@ export function PrimerDimerDetector() {
         {results.length > 0 && (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="font-mono text-sm">
+            <AlertDescription className="text-sm">
               {t("tools.primer-dimer-detector.warning", "High-risk dimers (ΔG < -8 kcal/mol) may interfere with PCR efficiency. Consider redesigning primers or adjusting reaction conditions.")}
             </AlertDescription>
           </Alert>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

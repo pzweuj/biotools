@@ -1,7 +1,7 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -69,16 +69,16 @@ export function AminoAcidTable() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.amino-acid-table.name")}
-        </CardTitle>
-        <CardDescription className="font-mono">{t("tools.amino-acid-table.description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </ToolPageTitle>
+        <ToolPageDescription>{t("tools.amino-acid-table.description")}</ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <div className="space-y-2">
-          <Label htmlFor="search" className="font-mono">
+          <Label htmlFor="search" className="">
             {t("common.search")}
           </Label>
           <Input
@@ -182,7 +182,7 @@ export function AminoAcidTable() {
             {t("tools.amino-acid-table.noResults")}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

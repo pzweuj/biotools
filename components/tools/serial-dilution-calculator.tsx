@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -83,21 +84,21 @@ export function SerialDilutionCalculator() {
   ]
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground flex items-center gap-2">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           <Beaker className="w-5 h-5" />
           {t("tools.serial-dilution.name", "Serial Dilution Calculator")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.serial-dilution.description", "Calculate volumes for serial dilution series - commonly used in ELISA, cell culture, and dose-response experiments")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 参数输入 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Calculator className="w-4 h-4 mr-2" />
               {t("tools.serial-dilution.parameters", "Dilution Parameters")}
             </CardTitle>
@@ -106,7 +107,7 @@ export function SerialDilutionCalculator() {
             {/* 起始浓度 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="starting-conc" className="font-mono">
+                <Label htmlFor="starting-conc" className="">
                   {t("tools.serial-dilution.startingConc", "Starting Concentration")}
                 </Label>
                 <div className="flex gap-2">
@@ -119,19 +120,19 @@ export function SerialDilutionCalculator() {
                     placeholder="1000"
                   />
                   <Select value={concUnit} onValueChange={setConcUnit}>
-                    <SelectTrigger className="font-mono w-32">
+                    <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="M" className="font-mono">M</SelectItem>
-                      <SelectItem value="mM" className="font-mono">mM</SelectItem>
-                      <SelectItem value="μM" className="font-mono">μM</SelectItem>
-                      <SelectItem value="nM" className="font-mono">nM</SelectItem>
-                      <SelectItem value="g/L" className="font-mono">g/L</SelectItem>
-                      <SelectItem value="mg/mL" className="font-mono">mg/mL</SelectItem>
-                      <SelectItem value="μg/mL" className="font-mono">μg/mL</SelectItem>
-                      <SelectItem value="ng/mL" className="font-mono">ng/mL</SelectItem>
-                      <SelectItem value="%" className="font-mono">%</SelectItem>
+                      <SelectItem value="M" className="">M</SelectItem>
+                      <SelectItem value="mM" className="">mM</SelectItem>
+                      <SelectItem value="μM" className="">μM</SelectItem>
+                      <SelectItem value="nM" className="">nM</SelectItem>
+                      <SelectItem value="g/L" className="">g/L</SelectItem>
+                      <SelectItem value="mg/mL" className="">mg/mL</SelectItem>
+                      <SelectItem value="μg/mL" className="">μg/mL</SelectItem>
+                      <SelectItem value="ng/mL" className="">ng/mL</SelectItem>
+                      <SelectItem value="%" className="">%</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -139,7 +140,7 @@ export function SerialDilutionCalculator() {
 
               {/* 稀释倍数 */}
               <div className="space-y-2">
-                <Label htmlFor="dilution-factor" className="font-mono">
+                <Label htmlFor="dilution-factor" className="">
                   {t("tools.serial-dilution.dilutionFactor", "Dilution Factor (fold)")}
                 </Label>
                 <Input
@@ -158,7 +159,7 @@ export function SerialDilutionCalculator() {
                       key={preset.value}
                       variant="outline"
                       size="sm"
-                      className="font-mono text-xs h-7"
+                      className="text-xs h-7"
                       onClick={() => setDilutionFactor(preset.value)}
                     >
                       {preset.label}
@@ -171,7 +172,7 @@ export function SerialDilutionCalculator() {
             {/* 步数和终体积 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="num-steps" className="font-mono">
+                <Label htmlFor="num-steps" className="">
                   {t("tools.serial-dilution.numberOfSteps", "Number of Steps")}
                 </Label>
                 <Input
@@ -187,7 +188,7 @@ export function SerialDilutionCalculator() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="final-volume" className="font-mono">
+                <Label htmlFor="final-volume" className="">
                   {t("tools.serial-dilution.finalVolume", "Final Volume per Step")}
                 </Label>
                 <div className="flex gap-2">
@@ -200,20 +201,20 @@ export function SerialDilutionCalculator() {
                     placeholder="100"
                   />
                   <Select value={volumeUnit} onValueChange={setVolumeUnit}>
-                    <SelectTrigger className="font-mono w-24">
+                    <SelectTrigger className="w-24">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="L" className="font-mono">L</SelectItem>
-                      <SelectItem value="mL" className="font-mono">mL</SelectItem>
-                      <SelectItem value="μL" className="font-mono">μL</SelectItem>
+                      <SelectItem value="L" className="">L</SelectItem>
+                      <SelectItem value="mL" className="">mL</SelectItem>
+                      <SelectItem value="μL" className="">μL</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             </div>
 
-            <Button onClick={clearAll} variant="outline" className="font-mono w-full">
+            <Button onClick={clearAll} variant="outline" className="w-full">
               {t("common.clear", "Clear")}
             </Button>
           </CardContent>
@@ -224,7 +225,7 @@ export function SerialDilutionCalculator() {
           <>
             <Alert>
               <Info className="h-4 w-4" />
-              <AlertDescription className="font-mono text-sm">
+              <AlertDescription className="text-sm">
                 {t("tools.serial-dilution.protocol", "Protocol")}: 
                 {t("tools.serial-dilution.protocolDesc", " For each step, transfer the specified sample volume to a new tube and add diluent to reach the final volume. Mix thoroughly before the next transfer.")}
               </AlertDescription>
@@ -232,7 +233,7 @@ export function SerialDilutionCalculator() {
 
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono">
+                <CardTitle className="text-sm ">
                   {t("tools.serial-dilution.results", "Dilution Series Results")}
                 </CardTitle>
               </CardHeader>
@@ -333,8 +334,8 @@ export function SerialDilutionCalculator() {
             </Card>
           </>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

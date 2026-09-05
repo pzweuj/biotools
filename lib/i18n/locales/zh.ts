@@ -30,8 +30,10 @@ export const zh = {
     toggleTheme: "切换主题",
     localTool: "本地",
     externalTool: "联网",
+    recentTools: "最近使用",
   },
   intro: {
+    eyebrow: "生物信息学 / 本地分析",
     subtitle: "生物信息学工具库",
     about: {
       title: "关于项目",

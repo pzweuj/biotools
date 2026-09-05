@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -135,27 +136,27 @@ export function ProteinAnalysisTool() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.protein-analysis.name", "Protein Analysis Tool")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.protein-analysis.description", "Calculate molecular weight, isoelectric point (pI), hydrophobicity, and amino acid composition")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 序列输入 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-mono flex items-center">
+            <CardTitle className="text-sm flex items-center">
               <Activity className="w-4 h-4 mr-2" />
               {t("tools.protein-analysis.input", "Protein Sequence Input")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
-              <Label htmlFor="protein-seq" className="font-mono">
+              <Label htmlFor="protein-seq" className="">
                 {t("tools.protein-analysis.sequence", "Protein Sequence")}
               </Label>
               <Textarea
@@ -168,7 +169,7 @@ export function ProteinAnalysisTool() {
               />
               <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
                 <span>{cleanSeq.length} {t("tools.protein-analysis.residues", "residues")}</span>
-                <Button onClick={clearAll} variant="outline" size="sm" className="font-mono">
+                <Button onClick={clearAll} variant="outline" size="sm" className="">
                   {t("common.clear", "Clear")}
                 </Button>
               </div>
@@ -182,7 +183,7 @@ export function ProteinAnalysisTool() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="border-2 border-dashed border-border/50">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-mono flex items-center">
+                  <CardTitle className="text-sm flex items-center">
                     <Calculator className="w-4 h-4 mr-2" />
                     {t("tools.protein-analysis.molecularWeight", "Molecular Weight")}
                   </CardTitle>
@@ -204,7 +205,7 @@ export function ProteinAnalysisTool() {
 
               <Card className="border-2 border-dashed border-border/50">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-mono flex items-center">
+                  <CardTitle className="text-sm flex items-center">
                     <Calculator className="w-4 h-4 mr-2" />
                     {t("tools.protein-analysis.isoelectric", "Isoelectric Point (pI)")}
                   </CardTitle>
@@ -223,7 +224,7 @@ export function ProteinAnalysisTool() {
 
               <Card className="border-2 border-dashed border-border/50">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-mono">
+                  <CardTitle className="text-sm ">
                     {t("tools.protein-analysis.hydrophobicity", "Hydrophobicity")}
                   </CardTitle>
                 </CardHeader>
@@ -249,7 +250,7 @@ export function ProteinAnalysisTool() {
             {/* 氨基酸组成 */}
             <Card className="border-2 border-dashed border-border/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-mono">
+                <CardTitle className="text-sm ">
                   {t("tools.protein-analysis.composition", "Amino Acid Composition")}
                 </CardTitle>
               </CardHeader>
@@ -308,14 +309,14 @@ export function ProteinAnalysisTool() {
 
             <Alert>
               <Calculator className="h-4 w-4" />
-              <AlertDescription className="font-mono text-sm">
+              <AlertDescription className="text-sm">
                 {t("tools.protein-analysis.note", "Molecular weight calculated including peptide bonds. pI calculated using Henderson-Hasselbalch equation. Hydrophobicity based on Kyte-Doolittle scale.")}
               </AlertDescription>
             </Alert>
           </>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }
 

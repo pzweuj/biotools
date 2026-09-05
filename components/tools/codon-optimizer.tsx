@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -217,35 +218,35 @@ export function CodonOptimizer() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.codon-optimizer.name", "Codon Usage Analyzer")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.codon-optimizer.description", "Analyze codon usage bias and calculate CAI for different organisms")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         {/* 输入区域 */}
         <Card className="border-2 border-dashed border-border/50">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold font-mono">
+              <Label className="text-base font-semibold ">
                 {t("tools.codon-optimizer.inputSequence", "Input DNA Sequence")}
               </Label>
               <Select value={organism} onValueChange={(value) => setOrganism(value as Organism)}>
-                <SelectTrigger className="w-40 font-mono">
+                <SelectTrigger className="w-40 ">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ecoli" className="font-mono">
+                  <SelectItem value="ecoli" className="">
                     E. coli
                   </SelectItem>
-                  <SelectItem value="human" className="font-mono">
+                  <SelectItem value="human" className="">
                     {t("tools.codon-optimizer.human", "Human")}
                   </SelectItem>
-                  <SelectItem value="yeast" className="font-mono">
+                  <SelectItem value="yeast" className="">
                     {t("tools.codon-optimizer.yeast", "Yeast")}
                   </SelectItem>
                 </SelectContent>
@@ -264,11 +265,11 @@ export function CodonOptimizer() {
               rows={8}
             />
             <div className="flex gap-2">
-              <Button onClick={analyzeSequence} className="flex-1 font-mono" disabled={!input.trim()}>
+              <Button onClick={analyzeSequence} className="flex-1 " disabled={!input.trim()}>
                 <Dna className="w-4 h-4 mr-2" />
                 {t("tools.codon-optimizer.analyze", "Analyze")}
               </Button>
-              <Button onClick={clearAll} variant="outline" className="font-mono">
+              <Button onClick={clearAll} variant="outline" className="">
                 {t("common.clear", "Clear")}
               </Button>
             </div>
@@ -279,13 +280,13 @@ export function CodonOptimizer() {
         {result && (
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview" className="font-mono">
+              <TabsTrigger value="overview" className="">
                 {t("tools.codon-optimizer.overview", "Overview")}
               </TabsTrigger>
-              <TabsTrigger value="rare-codons" className="font-mono">
+              <TabsTrigger value="rare-codons" className="">
                 {t("tools.codon-optimizer.rareCodeons", "Rare Codons")}
               </TabsTrigger>
-              <TabsTrigger value="composition" className="font-mono">
+              <TabsTrigger value="composition" className="">
                 {t("tools.codon-optimizer.composition", "Composition")}
               </TabsTrigger>
             </TabsList>
@@ -294,7 +295,7 @@ export function CodonOptimizer() {
             <TabsContent value="overview" className="space-y-4">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-mono">{result.name}</CardTitle>
+                  <CardTitle className="text-sm ">{result.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -346,7 +347,7 @@ export function CodonOptimizer() {
             <TabsContent value="rare-codons" className="space-y-4">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-mono flex items-center">
+                  <CardTitle className="text-sm flex items-center">
                     <AlertTriangle className="w-4 h-4 mr-2" />
                     {t("tools.codon-optimizer.rareCodensTitle", "Rare Codons (Frequency < 10/1000)")}
                   </CardTitle>
@@ -390,7 +391,7 @@ export function CodonOptimizer() {
                   ) : (
                     <Alert>
                       <Info className="h-4 w-4" />
-                      <AlertDescription className="font-mono text-sm">
+                      <AlertDescription className="text-sm">
                         {t("tools.codon-optimizer.noRareCodens", "No rare codons detected. Sequence is well optimized!")}
                       </AlertDescription>
                     </Alert>
@@ -403,7 +404,7 @@ export function CodonOptimizer() {
             <TabsContent value="composition" className="space-y-4">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-mono">
+                  <CardTitle className="text-sm ">
                     {t("tools.codon-optimizer.aaComposition", "Amino Acid Composition")}
                   </CardTitle>
                 </CardHeader>
@@ -429,14 +430,14 @@ export function CodonOptimizer() {
         {/* 提示信息 */}
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertDescription className="font-mono text-sm">
+          <AlertDescription className="text-sm">
             {t(
               "tools.codon-optimizer.tip",
               "CAI measures how well a gene's codon usage matches the host organism. Rare codons may slow translation or reduce expression."
             )}
           </AlertDescription>
         </Alert>
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

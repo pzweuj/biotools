@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -173,18 +174,18 @@ export function SequenceStats() {
   }
 
   return (
-    <Card className="w-full geek-card">
-      <CardHeader>
-        <CardTitle className="text-balance font-mono text-card-foreground">
+    <ToolPage>
+      <ToolPageHeader>
+        <ToolPageTitle>
           {t("tools.sequence-stats.name")}
-        </CardTitle>
-        <CardDescription className="font-mono">
+        </ToolPageTitle>
+        <ToolPageDescription>
           {t("tools.sequence-stats.description")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </ToolPageDescription>
+      </ToolPageHeader>
+      <ToolPageContent>
         <div className="space-y-2">
-          <Label htmlFor="sequences" className="font-mono">
+          <Label htmlFor="sequences" className="">
             {t("tools.sequence-stats.sequenceLabel")}
           </Label>
           <Textarea
@@ -203,7 +204,7 @@ export function SequenceStats() {
         <div className="flex gap-2">
           <Button
             onClick={analyzeSequences}
-            className="flex-1 font-mono"
+            className="flex-1 "
             disabled={isAnalyzing || !sequences.trim()}
           >
             {isAnalyzing ? t("common.loading") : t("tools.sequence-stats.analyze")}
@@ -215,7 +216,7 @@ export function SequenceStats() {
           <Button
             onClick={clearResults}
             variant="outline"
-            className="font-mono"
+            className=""
             disabled={!sequences.trim() && results.length === 0}
           >
             {t("common.clear")}
@@ -232,16 +233,16 @@ export function SequenceStats() {
 
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview" className="font-mono text-xs">
+                <TabsTrigger value="overview" className="text-xs">
                   {t("tools.sequence-stats.overview")}
                 </TabsTrigger>
-                <TabsTrigger value="composition" className="font-mono text-xs">
+                <TabsTrigger value="composition" className="text-xs">
                   {t("tools.sequence-stats.composition")}
                 </TabsTrigger>
-                <TabsTrigger value="repeats" className="font-mono text-xs">
+                <TabsTrigger value="repeats" className="text-xs">
                   {t("tools.sequence-stats.repeats")}
                 </TabsTrigger>
-                <TabsTrigger value="dinucleotide" className="font-mono text-xs">
+                <TabsTrigger value="dinucleotide" className="text-xs">
                   {t("tools.sequence-stats.dinucleotide")}
                 </TabsTrigger>
               </TabsList>
@@ -316,7 +317,7 @@ export function SequenceStats() {
                 {results.map((result) => (
                   <Card key={result.id} className="border">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-mono">{result.name}</CardTitle>
+                      <CardTitle className="text-sm ">{result.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -356,8 +357,8 @@ export function SequenceStats() {
                 {results.map((result) => (
                   <Card key={result.id} className="border">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-mono">{result.name}</CardTitle>
-                      <CardDescription className="text-xs font-mono">
+                      <CardTitle className="text-sm ">{result.name}</CardTitle>
+                      <CardDescription className="text-xs ">
                         {t("tools.sequence-stats.repeatsFound")}: {result.repeats.length}
                       </CardDescription>
                     </CardHeader>
@@ -398,8 +399,8 @@ export function SequenceStats() {
                 {results.map((result) => (
                   <Card key={result.id} className="border">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-mono">{result.name}</CardTitle>
-                      <CardDescription className="text-xs font-mono">
+                      <CardTitle className="text-sm ">{result.name}</CardTitle>
+                      <CardDescription className="text-xs ">
                         {t("tools.sequence-stats.dinucleotideFreq")}
                       </CardDescription>
                     </CardHeader>
@@ -427,7 +428,7 @@ export function SequenceStats() {
             />
           </div>
         )}
-      </CardContent>
-    </Card>
+      </ToolPageContent>
+    </ToolPage>
   )
 }

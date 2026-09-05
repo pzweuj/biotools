@@ -1,4 +1,5 @@
 "use client"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -333,11 +334,11 @@ export function TransVar() {
 
   // Main render
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("tools.transvar.name")}</CardTitle>
-          <CardDescription>{t("tools.transvar.description")}</CardDescription>
+    <ToolPage>
+
+        <ToolPageHeader>
+          <ToolPageTitle>{t("tools.transvar.name")}</ToolPageTitle>
+          <ToolPageDescription>{t("tools.transvar.description")}</ToolPageDescription>
           <Alert className="mt-4 bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900">
             <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
             <AlertDescription className="text-yellow-800 dark:text-yellow-300">
@@ -355,8 +356,8 @@ export function TransVar() {
               </span>
             </AlertDescription>
           </Alert>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        </ToolPageHeader>
+        <ToolPageContent>
           {/* Input Mode Selection */}
           <div className="space-y-2">
             <Label className="text-base font-semibold">{t("tools.transvar.inputMode")}</Label>
@@ -584,8 +585,8 @@ export function TransVar() {
               </div>
             </CardContent>
           </Card>
-        </CardContent>
-      </Card>
-    </div>
+        </ToolPageContent>
+
+    </ToolPage>
   )
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
+
 import { useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -113,13 +115,13 @@ export function TmbCalculator() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('tools.tmbCalculator.name')}</CardTitle>
-          <CardDescription>{t('tools.tmbCalculator.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <ToolPage>
+
+        <ToolPageHeader>
+          <ToolPageTitle>{t('tools.tmbCalculator.name')}</ToolPageTitle>
+          <ToolPageDescription>{t('tools.tmbCalculator.description')}</ToolPageDescription>
+        </ToolPageHeader>
+        <ToolPageContent>
           {/* Input Section */}
           <div className="space-y-4">
             <div className="space-y-2">
@@ -330,11 +332,8 @@ export function TmbCalculator() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Information Card */}
-      <Card>
+          {/* Information Card */}
+          <Card>
         <CardHeader>
           <CardTitle>{t('tools.tmbCalculator.about')}</CardTitle>
         </CardHeader>
@@ -372,7 +371,8 @@ export function TmbCalculator() {
             </div>
           </div>
         </CardContent>
-      </Card>
-    </div>
+          </Card>
+        </ToolPageContent>
+    </ToolPage>
   );
 }
