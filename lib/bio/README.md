@@ -15,11 +15,21 @@
 | `sequence.ts` | `cleanSequence` / `complement` / `reverseComplement` / `countBases` / `gcContent` / `atContent` / `shannonEntropy` / `parseFasta` / `toFasta` |
 | `coordinates.ts` | `findAllMatches` / `locateForwardPrimer` / `locateReversePrimer` / `locatePrimer` / `computeAmplicon`（引物结合区 -> 基因组坐标，1-based inclusive） |
 | `tm.ts` | `tmWallace` / `tmBasicGc` / `tmSaltAdjusted` |
+| `tm-nearest-neighbor.ts` | SantaLucia/Allawi DNA/DNA nearest-neighbor Tm (`DNA_NN3`) |
 | `codons.ts` | `STANDARD_CODE` / `VERT_MITO_CODE` / `translateDna` |
 | `index.ts` | 集中 re-export |
 
+## 近邻热力学模型
+
+`tmNearestNeighbor` 使用 Biopython `Bio.SeqUtils.MeltingTemp.DNA_NN3`（Allawi & SantaLucia 1997）参数表：相邻碱基的 ΔH/ΔS、末端初始化和自互补对称性修正均按该实现计算。盐修正采用 SantaLucia 1998 的熵修正，并使用 von Ahsen 等效单价盐近似处理 Mg²⁺ 与 dNTP：
+
+`Na_eq = (Na⁺ + K⁺) + 120 × √max(Mg²⁺ − dNTP总浓度, 0)`（各浓度为 mM）。
+
+公共接口的 Ct 是两条互补链的总浓度（nM）；非自互补序列使用 Ct/4，自互补序列使用 Ct。默认值为 Ct=250 nM、Na⁺+K⁺=50 mM、Mg²⁺=1.5 mM、dNTP=0.8 mM。该模型用于估算 DNA/DNA 熔解温度，不能替代针对具体聚合酶和缓冲液优化的 PCR 退火温度。
+
+`lib/bio/__tests__/tm.test.ts` 中的数值参考由 Biopython 1.84 `Tm_NN(..., nn_table=DNA_NN3, saltcorr=5)` 生成；非自互补样本按 `dnac1=dnac2=Ct/2`，自互补样本按 `dnac1=Ct, selfcomp=True`，并使用与界面相同的 Na、Mg²⁺、dNTP 和 Ct 条件。
+
 ## 后续 TODO
-- `tm-nearest-neighbor.ts` — 完整 SantaLucia 1998 实现（含端基/对称性修正）
 - `alignment.ts` — Smith-Waterman + k-mer 索引
 - `enzymes.ts` — 限制酶 Aho-Corasick 自动机扫描
 - `restriction.ts` — REBASE 子集

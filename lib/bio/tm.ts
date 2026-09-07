@@ -1,6 +1,5 @@
-// Tm 计算：经典经验公式
-// 注意：本模块只实现"无 dimer / hairpin 修正"的基础形式；如需精确 SantaLucia 1998
-// 双链热力学请用 lib/bio/tm-nearest-neighbor.ts（待补）。
+// Tm 计算：经典经验公式。
+// 精确的 DNA/DNA 近邻热力学模型位于 tm-nearest-neighbor.ts。
 
 import { countBases, cleanDnaStrict } from "./sequence"
 
@@ -17,14 +16,17 @@ export function tmBasicGc(seq: string): number {
   if (s.length === 0) return 0
   if (s.length < 14) return tmWallace(s)
   const c = countBases(s)
-  const gcPercent = ((c.G + c.C) / s.length) * 100
-  return 64.9 + (41 * (gcPercent - 16.4)) / s.length
+  const gcCount = c.G + c.C
+  return 64.9 + (41 * (gcCount - 16.4)) / s.length
 }
 
 /** Salt-adjusted（Marmur-Schildkraut 简化），salt 单位 mM */
 export function tmSaltAdjusted(seq: string, saltMM: number): number {
   const s = cleanDnaStrict(seq)
   if (s.length === 0) return 0
+  if (!Number.isFinite(saltMM) || saltMM <= 0) {
+    throw new RangeError("saltMM must be a finite number greater than zero")
+  }
   const c = countBases(s)
   const gcPercent = ((c.G + c.C) / s.length) * 100
   return 81.5 + 16.6 * Math.log10(saltMM / 1000) + 0.41 * gcPercent - 675 / s.length
