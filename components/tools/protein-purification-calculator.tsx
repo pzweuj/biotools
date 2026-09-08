@@ -111,9 +111,11 @@ export function ProteinPurificationCalculator() {
     
     const slope = parseFloat(curveMatch[1])
     const intercept = parseFloat(curveMatch[3]) * (curveMatch[2] === '+' ? 1 : -1)
+    if (!Number.isFinite(slope) || !Number.isFinite(intercept) || slope === 0 || dilution <= 0) return null
     
     // 浓度 = (吸光度 - 截距) / 斜率 * 稀释倍数
     const concentration = ((abs - intercept) / slope) * dilution
+    if (!Number.isFinite(concentration)) return null
     
     return {
       concentration,
@@ -130,6 +132,7 @@ export function ProteinPurificationCalculator() {
     const firstStep = purificationSteps[0]
     
     return purificationSteps.map((step, index) => {
+      if (![step.volume, step.totalProtein, step.totalActivity, firstStep.totalActivity, firstStep.totalProtein].every(Number.isFinite) || step.volume <= 0 || step.totalProtein <= 0 || firstStep.totalProtein <= 0 || firstStep.totalActivity <= 0) return null
       const concentration = step.totalProtein / step.volume // mg/mL
       const specificActivity = step.totalActivity / step.totalProtein // units/mg
       const yieldPercent = (step.totalActivity / firstStep.totalActivity) * 100 // %
@@ -142,7 +145,7 @@ export function ProteinPurificationCalculator() {
         yieldPercent,
         purificationFold
       }
-    })
+    }).filter((step): step is NonNullable<typeof step> => step !== null)
   }, [purificationSteps])
 
   // 推荐胶浓度

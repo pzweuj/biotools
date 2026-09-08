@@ -14,19 +14,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LineChart, Calculator, TrendingUp, Info } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { fitCalibration, parseCalibrationData, predictCalibration, type CalibrationFit } from "@/lib/bio"
 
 interface DataPoint {
   x: number
   y: number
 }
 
-interface FitResult {
-  type: 'linear' | 'logarithmic' | 'exponential' | 'power'
-  equation: string
-  rSquared: number
-  parameters: { [key: string]: number }
-  predictedPoints: DataPoint[]
-}
+type FitResult = CalibrationFit & { predictedPoints: DataPoint[] }
 
 export function StandardCurveFitting() {
   const { t } = useI18n()
@@ -35,188 +30,59 @@ export function StandardCurveFitting() {
   const [fitType, setFitType] = useState<'linear' | 'logarithmic' | 'exponential' | 'power'>('linear')
   const [unknownValues, setUnknownValues] = useState("")
   const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
+  const [dataError, setDataError] = useState<string | null>(null)
   
-  // 解析数据输入
-  const parseData = () => {
-    const lines = dataInput.trim().split('\n')
-    const points: DataPoint[] = []
-    
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (!trimmed || trimmed.startsWith('#')) continue
-      
-      const parts = trimmed.split(/[\t,;\s]+/)
-      if (parts.length >= 2) {
-        const x = parseFloat(parts[0])
-        const y = parseFloat(parts[1])
-        if (!isNaN(x) && !isNaN(y)) {
-          points.push({ x, y })
-        }
-      }
-    }
-    
-    setDataPoints(points)
+  const parseData = (text = dataInput) => {
+    const parsed = parseCalibrationData(text)
+    setDataPoints(parsed.points)
+    setDataError(parsed.error)
   }
   
-  // 线性拟合：y = a + bx
-  const linearFit = (points: DataPoint[]): FitResult => {
-    const n = points.length
-    const sumX = points.reduce((sum, p) => sum + p.x, 0)
-    const sumY = points.reduce((sum, p) => sum + p.y, 0)
-    const sumXY = points.reduce((sum, p) => sum + p.x * p.y, 0)
-    const sumX2 = points.reduce((sum, p) => sum + p.x * p.x, 0)
-    
-    const b = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
-    const a = (sumY - b * sumX) / n
-    
-    const predictedPoints = points.map(p => ({ x: p.x, y: a + b * p.x }))
-    const rSquared = calculateRSquared(points, predictedPoints)
-    
-    const sign = b >= 0 ? '+' : ''
-    const equation = `y = ${a.toFixed(4)} ${sign} ${b.toFixed(4)}x`
-    
-    return {
-      type: 'linear',
-      equation,
-      rSquared,
-      parameters: { a, b },
-      predictedPoints
-    }
-  }
-  
-  // 对数拟合：y = a + b*ln(x)
-  const logarithmicFit = (points: DataPoint[]): FitResult => {
-    const validPoints = points.filter(p => p.x > 0)
-    const logPoints = validPoints.map(p => ({ x: Math.log(p.x), y: p.y }))
-    const linearResult = linearFit(logPoints)
-    
-    const a = linearResult.parameters.a
-    const b = linearResult.parameters.b
-    
-    const predictedPoints = validPoints.map(p => ({ x: p.x, y: a + b * Math.log(p.x) }))
-    const rSquared = calculateRSquared(validPoints, predictedPoints)
-    
-    const sign = b >= 0 ? '+' : ''
-    const equation = `y = ${a.toFixed(4)} ${sign} ${b.toFixed(4)}*ln(x)`
-    
-    return {
-      type: 'logarithmic',
-      equation,
-      rSquared,
-      parameters: { a, b },
-      predictedPoints
-    }
-  }
-  
-  // 指数拟合：y = a * e^(bx)
-  const exponentialFit = (points: DataPoint[]): FitResult => {
-    const validPoints = points.filter(p => p.y > 0)
-    const logPoints = validPoints.map(p => ({ x: p.x, y: Math.log(p.y) }))
-    const linearResult = linearFit(logPoints)
-    
-    const a = Math.exp(linearResult.parameters.a)
-    const b = linearResult.parameters.b
-    
-    const predictedPoints = validPoints.map(p => ({ x: p.x, y: a * Math.exp(b * p.x) }))
-    const rSquared = calculateRSquared(validPoints, predictedPoints)
-    
-    const equation = `y = ${a.toFixed(4)} * e^(${b.toFixed(4)}x)`
-    
-    return {
-      type: 'exponential',
-      equation,
-      rSquared,
-      parameters: { a, b },
-      predictedPoints
-    }
-  }
-  
-  // 幂函数拟合：y = a * x^b
-  const powerFit = (points: DataPoint[]): FitResult => {
-    const validPoints = points.filter(p => p.x > 0 && p.y > 0)
-    const logPoints = validPoints.map(p => ({ x: Math.log(p.x), y: Math.log(p.y) }))
-    const linearResult = linearFit(logPoints)
-    
-    const a = Math.exp(linearResult.parameters.a)
-    const b = linearResult.parameters.b
-    
-    const predictedPoints = validPoints.map(p => ({ x: p.x, y: a * Math.pow(p.x, b) }))
-    const rSquared = calculateRSquared(validPoints, predictedPoints)
-    
-    const equation = `y = ${a.toFixed(4)} * x^${b.toFixed(4)}`
-    
-    return {
-      type: 'power',
-      equation,
-      rSquared,
-      parameters: { a, b },
-      predictedPoints
-    }
-  }
-  
-  // 计算R²
-  const calculateRSquared = (observed: DataPoint[], predicted: DataPoint[]): number => {
-    const meanY = observed.reduce((sum, p) => sum + p.y, 0) / observed.length
-    const ssTotal = observed.reduce((sum, p) => sum + Math.pow(p.y - meanY, 2), 0)
-    const ssResidual = observed.reduce((sum, p, i) => sum + Math.pow(p.y - predicted[i].y, 2), 0)
-    return 1 - (ssResidual / ssTotal)
-  }
-  
-  // 执行拟合
-  const fitResult = useMemo(() => {
-    if (dataPoints.length < 2) return null
-    
+  // 执行拟合；保留错误信息以便页面解释为什么没有结果。
+  const fitState = useMemo(() => {
+    if (dataError || dataPoints.length < 2) return { result: null, error: null as string | null }
+
     try {
-      switch (fitType) {
-        case 'linear':
-          return linearFit(dataPoints)
-        case 'logarithmic':
-          return logarithmicFit(dataPoints)
-        case 'exponential':
-          return exponentialFit(dataPoints)
-        case 'power':
-          return powerFit(dataPoints)
-        default:
-          return null
+      const fit = fitCalibration(dataPoints, fitType)
+      return {
+        result: {
+          ...fit,
+          predictedPoints: dataPoints.map((point, index) => ({ x: point.x, y: fit.predicted[index] })),
+        },
+        error: null,
       }
     } catch (error) {
-      console.error('Fitting error:', error)
-      return null
-    }
-  }, [dataPoints, fitType])
-  
-  // 预测未知值
-  const predictions = useMemo(() => {
-    if (!fitResult || !unknownValues.trim()) return []
-    
-    const values = unknownValues.split(/[,\s\n]+/).map(v => parseFloat(v.trim())).filter(v => !isNaN(v))
-    
-    return values.map(value => {
-      let predicted = 0
-      const { a, b } = fitResult.parameters
-      
-      switch (fitResult.type) {
-        case 'linear':
-          predicted = a + b * value
-          break
-        case 'logarithmic':
-          predicted = value > 0 ? a + b * Math.log(value) : NaN
-          break
-        case 'exponential':
-          predicted = a * Math.exp(b * value)
-          break
-        case 'power':
-          predicted = value > 0 ? a * Math.pow(value, b) : NaN
-          break
+      return {
+        result: null,
+        error: error instanceof Error ? error.message : "Unable to fit these data",
       }
-      
-      return { x: value, y: predicted }
-    })
+    }
+  }, [dataPoints, fitType, dataError])
+  const fitResult = fitState.result
+
+  // 预测未知值。非法 token 或不满足模型定义域时不保留同一批输入中的部分伪结果。
+  const predictionState = useMemo(() => {
+    if (!fitResult || !unknownValues.trim()) return { values: [] as DataPoint[], error: null as string | null }
+    const tokens = unknownValues.split(/[,\s\n]+/).filter(Boolean)
+    const values = tokens.map((token) => Number(token))
+    if (values.some((value) => !Number.isFinite(value))) {
+      return { values: [], error: "Unknown X values must be finite numbers" }
+    }
+    const predicted = values.map((value) => ({ x: value, y: predictCalibration(fitResult, value) }))
+    if (predicted.some((point) => point.y == null)) {
+      return { values: [], error: "One or more unknown X values are outside the selected model domain" }
+    }
+    return {
+      values: predicted.map((point) => ({ x: point.x, y: point.y as number })),
+      error: null,
+    }
   }, [fitResult, unknownValues])
+  const predictions = predictionState.values
   
   const clearAll = () => {
     setDataInput("")
     setDataPoints([])
+    setDataError(null)
     setUnknownValues("")
   }
   
@@ -230,7 +96,7 @@ export function StandardCurveFitting() {
 50	0.55
 60	0.65`
     setDataInput(example)
-    parseData()
+    parseData(example)
   }
 
   return (
@@ -262,17 +128,18 @@ export function StandardCurveFitting() {
                 id="data-input"
                 placeholder={t("tools.standard-curve.dataPlaceholder", "Enter data as X Y pairs (one per line)\nExample:\n0 0.05\n10 0.15\n20 0.25")}
                 value={dataInput}
-                onChange={(e) => setDataInput(e.target.value)}
+                    onChange={(e) => { setDataInput(e.target.value); setDataPoints([]); setDataError(null) }}
                 className="terminal-input min-h-[150px] font-mono"
                 rows={8}
               />
               <div className="text-xs text-muted-foreground font-mono">
                 {t("tools.standard-curve.formatHint", "Supports tab, comma, semicolon, or space separated values. Lines starting with # are ignored.")}
               </div>
+              {dataError && <Alert variant="destructive"><AlertDescription>{dataError}</AlertDescription></Alert>}
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={parseData} className="flex-1">
+              <Button onClick={() => parseData()} className="flex-1">
                 {t("tools.standard-curve.loadData", "Load Data")}
               </Button>
               <Button onClick={loadExample} variant="outline" className="">
@@ -291,6 +158,7 @@ export function StandardCurveFitting() {
                 </AlertDescription>
               </Alert>
             )}
+            {fitState.error && <Alert variant="destructive"><AlertDescription>{fitState.error}</AlertDescription></Alert>}
           </CardContent>
         </Card>
 
@@ -354,18 +222,18 @@ export function StandardCurveFitting() {
                       R² {t("tools.standard-curve.coefficient", "(Coefficient of Determination)")}
                     </div>
                     <div className="text-lg font-mono font-bold">
-                      {fitResult.rSquared.toFixed(6)}
-                      {fitResult.rSquared > 0.99 && (
+                      {fitResult.rSquared == null ? "undefined" : fitResult.rSquared.toFixed(6)}
+                      {fitResult.rSquared != null && fitResult.rSquared > 0.99 && (
                         <Badge variant="default" className="ml-2">
                           {t("tools.standard-curve.excellent", "Excellent")}
                         </Badge>
                       )}
-                      {fitResult.rSquared > 0.95 && fitResult.rSquared <= 0.99 && (
+                      {fitResult.rSquared != null && fitResult.rSquared > 0.95 && fitResult.rSquared <= 0.99 && (
                         <Badge variant="secondary" className="ml-2">
                           {t("tools.standard-curve.good", "Good")}
                         </Badge>
                       )}
-                      {fitResult.rSquared <= 0.95 && (
+                      {fitResult.rSquared != null && fitResult.rSquared <= 0.95 && (
                         <Badge variant="outline" className="ml-2">
                           {t("tools.standard-curve.fair", "Fair")}
                         </Badge>
@@ -394,15 +262,15 @@ export function StandardCurveFitting() {
                     <TableBody>
                       {dataPoints.map((point, index) => {
                         const predicted = fitResult.predictedPoints[index]
-                        const residual = point.y - predicted.y
+                        const residual = Number.isFinite(predicted?.y) ? point.y - predicted.y : NaN
                         return (
                           <TableRow key={index}>
                             <TableCell className="text-center font-mono">{point.x.toFixed(4)}</TableCell>
                             <TableCell className="text-center font-mono">{point.y.toFixed(4)}</TableCell>
-                            <TableCell className="text-center font-mono">{predicted.y.toFixed(4)}</TableCell>
+                            <TableCell className="text-center font-mono">{Number.isFinite(predicted?.y) ? predicted.y.toFixed(4) : "N/A"}</TableCell>
                             <TableCell className="text-center font-mono">
                               <Badge variant={Math.abs(residual) < 0.01 ? "default" : "outline"}>
-                                {residual.toFixed(4)}
+                                {Number.isFinite(residual) ? residual.toFixed(4) : "N/A"}
                               </Badge>
                             </TableCell>
                           </TableRow>
@@ -435,6 +303,8 @@ export function StandardCurveFitting() {
                   />
                 </div>
 
+                {predictionState.error && <Alert variant="destructive"><AlertDescription>{predictionState.error}</AlertDescription></Alert>}
+
                 {predictions.length > 0 && (
                   <div className="border rounded-lg overflow-hidden">
                     <Table>
@@ -454,7 +324,7 @@ export function StandardCurveFitting() {
                             <TableCell className="text-center font-mono">{pred.x.toFixed(4)}</TableCell>
                             <TableCell className="text-center">
                               <Badge variant="secondary" className="font-mono">
-                                {isNaN(pred.y) ? 'N/A' : pred.y.toFixed(4)}
+                                {pred.y.toFixed(4)}
                               </Badge>
                             </TableCell>
                           </TableRow>
@@ -465,6 +335,12 @@ export function StandardCurveFitting() {
                 )}
               </CardContent>
             </Card>
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                {t("tools.standard-curve.methodNote", "Exponential and power fits use log-linearization. Predictions are forward y-from-x only; no inverse calibration is performed.")}
+              </AlertDescription>
+            </Alert>
           </>
         )}
       </ToolPageContent>

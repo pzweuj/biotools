@@ -12,16 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Activity, Calculator } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { AMINO_ACID_WEIGHT } from "@/lib/bio"
-
-// 氨基酸pKa值 (用于pI计算)
-const AA_PKA: Record<string, { pKa?: number; charge: number }> = {
-  A: { charge: 0 }, R: { pKa: 12.48, charge: 1 }, N: { charge: 0 }, D: { pKa: 3.65, charge: -1 },
-  C: { pKa: 8.18, charge: 0 }, Q: { charge: 0 }, E: { pKa: 4.25, charge: -1 }, G: { charge: 0 },
-  H: { pKa: 6.00, charge: 1 }, I: { charge: 0 }, L: { charge: 0 }, K: { pKa: 10.53, charge: 1 },
-  M: { charge: 0 }, F: { charge: 0 }, P: { charge: 0 }, S: { charge: 0 }, T: { charge: 0 },
-  W: { charge: 0 }, Y: { pKa: 10.07, charge: 0 }, V: { charge: 0 }
-}
+import { normalizeSequence, parseSingleSequenceInput, proteinIsoelectricPoint, proteinMolecularWeight } from "@/lib/bio"
 
 // Kyte-Doolittle疏水性标度
 const HYDROPHOBICITY: Record<string, number> = {
@@ -42,63 +33,34 @@ export function ProteinAnalysisTool() {
   const { t } = useI18n()
   const [sequence, setSequence] = useState("")
 
-  const cleanSeq = useMemo(() => sequence.toUpperCase().replace(/[^ACDEFGHIKLMNPQRSTVWY]/g, ""), [sequence])
+  const parsedSequence = useMemo(() => {
+    try {
+      return { sequence: parseSingleSequenceInput(sequence).sequence, error: null as string | null }
+    } catch (error) {
+      return { sequence: "", error: error instanceof Error ? error.message : "expected exactly one FASTA record" }
+    }
+  }, [sequence])
+  const sequenceDiagnostics = useMemo(() => normalizeSequence(parsedSequence.sequence, "protein"), [parsedSequence.sequence])
+  const normalizedProtein = sequenceDiagnostics.sequence
+  const hasInternalStop = normalizedProtein.slice(0, -1).includes("*")
+  const cleanSeq = !parsedSequence.error && sequenceDiagnostics.issues.length === 0 && !hasInternalStop
+    ? normalizedProtein.endsWith("*") ? normalizedProtein.slice(0, -1) : normalizedProtein
+    : ""
+  const inputError = parsedSequence.error ?? (sequenceDiagnostics.issues.length > 0
+    ? `Invalid character "${sequenceDiagnostics.issues[0].character}" at sequence position ${sequenceDiagnostics.issues[0].position}`
+    : hasInternalStop
+      ? "An internal stop symbol cannot be part of a complete protein sequence"
+    : null)
 
   // 分子量计算
-  const molecularWeight = useMemo(() => {
-    if (!cleanSeq) return 0
-    
-    let weight = 18.015 // 水分子 (H2O)
-    for (const aa of cleanSeq) {
-      weight += AMINO_ACID_WEIGHT[aa] || 0
+  const molecularWeight = useMemo<number | null>(() => {
+    if (!cleanSeq) return null
+    try {
+      return proteinMolecularWeight(cleanSeq)
+    } catch {
+      return null
     }
-    
-    // 减去肽键形成过程中失去的水分子
-    if (cleanSeq.length > 1) {
-      weight -= (cleanSeq.length - 1) * 18.015
-    }
-    
-    return weight
   }, [cleanSeq])
-
-  // 等电点计算
-  const calculatePI = (seq: string): number => {
-    if (!seq) return 0
-    
-    const calculateCharge = (pH: number): number => {
-      let charge = 0
-      
-      // N端和C端
-      charge += 1 / (1 + Math.pow(10, pH - 9.69)) // N端 pKa = 9.69
-      charge -= 1 / (1 + Math.pow(10, 2.34 - pH)) // C端 pKa = 2.34
-      
-      // 侧链
-      for (const aa of seq) {
-        const data = AA_PKA[aa]
-        if (data?.pKa) {
-          if (data.charge > 0) {
-            charge += data.charge / (1 + Math.pow(10, pH - data.pKa))
-          } else {
-            charge += data.charge / (1 + Math.pow(10, data.pKa - pH))
-          }
-        }
-      }
-      return charge
-    }
-
-    // 二分法求解pI
-    let low = 0, high = 14
-    while (high - low > 0.01) {
-      const mid = (low + high) / 2
-      const charge = calculateCharge(mid)
-      if (charge > 0) {
-        low = mid
-      } else {
-        high = mid
-      }
-    }
-    return (low + high) / 2
-  }
 
   // 疏水性分析
   const hydrophobicityAnalysis = useMemo(() => {
@@ -129,7 +91,14 @@ export function ProteinAnalysisTool() {
     return { counts, categories, total: cleanSeq.length }
   }, [cleanSeq])
 
-  const pI = useMemo(() => calculatePI(cleanSeq), [cleanSeq])
+  const pI = useMemo<number | null>(() => {
+    if (!cleanSeq) return null
+    try {
+      return proteinIsoelectricPoint(cleanSeq)
+    } catch {
+      return null
+    }
+  }, [cleanSeq])
 
   const clearAll = () => {
     setSequence("")
@@ -167,12 +136,16 @@ export function ProteinAnalysisTool() {
                 className="terminal-input min-h-[120px] font-mono"
                 rows={6}
               />
+              <div className="text-xs text-muted-foreground font-mono">
+                {t("tools.protein-analysis.sequenceHint", "Plain multi-line input is one protein; FASTA input must contain exactly one record.")}
+              </div>
               <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
                 <span>{cleanSeq.length} {t("tools.protein-analysis.residues", "residues")}</span>
                 <Button onClick={clearAll} variant="outline" size="sm" className="">
                   {t("common.clear", "Clear")}
                 </Button>
               </div>
+              {inputError && <Alert variant="destructive"><AlertDescription>{inputError}</AlertDescription></Alert>}
             </div>
           </CardContent>
         </Card>
@@ -191,13 +164,13 @@ export function ProteinAnalysisTool() {
                 <CardContent>
                   <div className="text-center">
                     <div className="text-3xl font-mono font-bold text-primary">
-                      {molecularWeight.toFixed(2)}
+                      {molecularWeight == null ? "N/A" : molecularWeight.toFixed(2)}
                     </div>
                     <div className="text-xs text-muted-foreground font-mono mt-1">
                       {t("tools.protein-analysis.daltons", "Daltons (Da)")}
                     </div>
                     <div className="text-xs text-muted-foreground font-mono">
-                      {(molecularWeight / 1000).toFixed(2)} kDa
+                      {molecularWeight == null ? "N/A" : `${(molecularWeight / 1000).toFixed(2)} kDa`}
                     </div>
                   </div>
                 </CardContent>
@@ -213,7 +186,7 @@ export function ProteinAnalysisTool() {
                 <CardContent>
                   <div className="text-center">
                     <div className="text-3xl font-mono font-bold text-primary">
-                      {pI.toFixed(2)}
+                      {pI == null ? "N/A" : pI.toFixed(2)}
                     </div>
                     <div className="text-xs text-muted-foreground font-mono mt-1">
                       {t("tools.protein-analysis.piUnit", "pH units")}
@@ -310,7 +283,7 @@ export function ProteinAnalysisTool() {
             <Alert>
               <Calculator className="h-4 w-4" />
               <AlertDescription className="text-sm">
-                {t("tools.protein-analysis.note", "Molecular weight calculated including peptide bonds. pI calculated using Henderson-Hasselbalch equation. Hydrophobicity based on Kyte-Doolittle scale.")}
+                {t("tools.protein-analysis.note", "Molecular weight uses free amino-acid average masses and peptide-bond water loss. pI uses a fixed pKa approximation and Henderson-Hasselbalch charge model. Hydrophobicity based on Kyte-Doolittle scale.")}
               </AlertDescription>
             </Alert>
           </>

@@ -21,9 +21,9 @@ describe("tmBasicGc", () => {
   it("uses GC formula for ≥ 14 bp", () => {
     // 20 bp, 50% GC: 64.9 + 41*(50-16.4)/20 = 64.9 + 68.88 = 133.78... wait that's high
     // Actually formula assumes [Na+] is fixed, output should be reasonable for ~20-30 bp primers
-    const seq20 = "ACGTACGTACGTACGTACGT" // 20 bp, GC = 10/20 = 50%
+    const seq20 = "ACGTACGTACGTACGTACGT" // 20 bp, GC-base count = 10 (50%)
     const tm = tmBasicGc(seq20)
-    expect(tm).toBeCloseTo(64.9 + (41 * (50 - 16.4)) / 20, 6)
+    expect(tm).toBeCloseTo(64.9 + (41 * (10 - 16.4)) / 20, 6)
   })
 })
 

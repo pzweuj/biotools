@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
 import { useI18n } from "@/lib/i18n"
-import { reverseComplement, cleanDnaStrict } from "@/lib/bio"
+import { findSgRnaCandidates, reverseComplement, normalizeSequence, parseFasta, SG_PAM_LENGTH, SG_SPACER_LENGTH } from "@/lib/bio"
 import { Scissors, AlertTriangle, CheckCircle2, Info, XCircle } from "lucide-react"
 
 type PAMType = "NGG" | "NG" | "NRG" | "NNGRRT"
@@ -33,27 +33,8 @@ export function SgRNADesigner() {
   const [input, setInput] = useState("")
   const [pamType, setPamType] = useState<PAMType>("NGG")
   const [results, setResults] = useState<SgRNAResult[]>([])
-
-  // PAM序列正则表达式
-  const getPAMRegex = (type: PAMType): RegExp => {
-    switch (type) {
-      case "NGG":
-        return /[ATCG]GG/g
-      case "NG":
-        return /[ATCG]G/g
-      case "NRG":
-        return /[ATCG][AG]G/g
-      case "NNGRRT":
-        return /[ATCG]{2}G[AG][AG]T/g
-      default:
-        return /[ATCG]GG/g
-    }
-  }
-
-  // 获取sgRNA长度
-  const getSgRNALength = (type: PAMType): number => {
-    return type === "NNGRRT" ? 24 : 20
-  }
+  const [inputError, setInputError] = useState<string | null>(null)
+  const [skippedUnknown, setSkippedUnknown] = useState(0)
 
   // 计算GC含量
   const calculateGC = (seq: string): number => {
@@ -125,76 +106,36 @@ export function SgRNADesigner() {
   const findSgRNAs = () => {
     if (!input.trim()) return
 
-    const sequence = cleanDnaStrict(
-      input
-        .split("\n")
-        .filter((line) => !line.startsWith(">"))
-        .join(""),
-    )
-
-    if (sequence.length < 23) {
+    const records = input.includes(">") ? parseFasta(input) : [{ id: "", description: "", sequence: input }]
+    if (records.length !== 1) {
+      setInputError("Enter exactly one sequence for sgRNA design")
+      setResults([])
+      return
+    }
+    const diagnostics = normalizeSequence(records[0].sequence, "iupac-dna")
+    if (diagnostics.issues.length > 0) {
+      const issue = diagnostics.issues[0]
+      setInputError(`Invalid character "${issue.character}" at sequence position ${issue.position}`)
+      setResults([])
+      return
+    }
+    const sequence = diagnostics.sequence
+    setInputError(null)
+    const sgRNALength = SG_SPACER_LENGTH[pamType]
+    const pamLength = SG_PAM_LENGTH[pamType]
+    if (sequence.length < sgRNALength + pamLength) {
+      setInputError(`Sequence must be at least ${sgRNALength + pamLength} bases for ${pamType}`)
+      setResults([])
       return
     }
 
-    const pamRegex = getPAMRegex(pamType)
-    const sgRNALength = getSgRNALength(pamType)
-    const pamLength = pamType === "NNGRRT" ? 6 : pamType === "NG" ? 2 : 3
-    const foundResults: SgRNAResult[] = []
-
-    // 正向链查找
-    let match
-    pamRegex.lastIndex = 0
-    while ((match = pamRegex.exec(sequence)) !== null) {
-      const pamPosition = match.index
-      const sgRNAStart = pamPosition - sgRNALength
-
-      if (sgRNAStart >= 0) {
-        const sgRNASeq = sequence.substring(sgRNAStart, pamPosition)
-        const pam = match[0]
-        const gcContent = calculateGC(sgRNASeq)
-        const { score, issues, rating } = scoreSgRNA(sgRNASeq, gcContent)
-
-        foundResults.push({
-          sequence: sgRNASeq,
-          position: sgRNAStart + 1,
-          strand: "+",
-          pam,
-          gcContent,
-          score,
-          issues,
-          rating,
-        })
-      }
-    }
-
-    // 反向链查找
-    const rcSequence = reverseComplement(sequence)
-    pamRegex.lastIndex = 0
-    while ((match = pamRegex.exec(rcSequence)) !== null) {
-      const pamPosition = match.index
-      const sgRNAStart = pamPosition - sgRNALength
-
-      if (sgRNAStart >= 0) {
-        const sgRNASeq = rcSequence.substring(sgRNAStart, pamPosition)
-        const pam = match[0]
-        const gcContent = calculateGC(sgRNASeq)
-        const { score, issues, rating } = scoreSgRNA(sgRNASeq, gcContent)
-
-        // 转换回正向链坐标
-        const originalPosition = sequence.length - pamPosition
-
-        foundResults.push({
-          sequence: sgRNASeq,
-          position: originalPosition,
-          strand: "-",
-          pam,
-          gcContent,
-          score,
-          issues,
-          rating,
-        })
-      }
-    }
+    const scan = findSgRnaCandidates(sequence, pamType)
+    setSkippedUnknown(scan.skippedUnknown)
+    const foundResults: SgRNAResult[] = scan.candidates.map((candidate) => {
+      const gcContent = calculateGC(candidate.sequence)
+      const { score, issues, rating } = scoreSgRNA(candidate.sequence, gcContent)
+      return { ...candidate, gcContent, score, issues, rating }
+    })
 
     // 按评分排序
     foundResults.sort((a, b) => b.score - a.score)
@@ -204,6 +145,8 @@ export function SgRNADesigner() {
   const clearAll = () => {
     setInput("")
     setResults([])
+    setInputError(null)
+    setSkippedUnknown(0)
   }
 
   // 获取评级样式
@@ -257,7 +200,7 @@ export function SgRNADesigner() {
               </Label>
               <div className="flex items-center gap-2">
                 <Label className="text-xs whitespace-nowrap">{t("tools.sgrna-designer.pamType", "PAM Type")}:</Label>
-                <Select value={pamType} onValueChange={(value) => setPamType(value as PAMType)}>
+                <Select value={pamType} onValueChange={(value) => { setPamType(value as PAMType); setResults([]); setInputError(null); setSkippedUnknown(0) }}>
                   <SelectTrigger className="w-[180px] ">
                     <SelectValue />
                   </SelectTrigger>
@@ -286,10 +229,12 @@ export function SgRNADesigner() {
                 "Enter target DNA sequence (FASTA format or plain text):\n>Target_Gene\nATGGCTAGCTAGCTAGC..."
               )}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => { setInput(e.target.value); setResults([]); setInputError(null); setSkippedUnknown(0) }}
               className="terminal-input min-h-[150px] font-mono"
               rows={8}
             />
+            {inputError && <Alert variant="destructive"><AlertDescription>{inputError}</AlertDescription></Alert>}
+            {skippedUnknown > 0 && <Alert><Info className="h-4 w-4" /><AlertDescription>{skippedUnknown} {t("tools.sgrna-designer.unknownSkipped", "candidate binding region(s) contained unknown or ambiguous bases and were skipped.")}</AlertDescription></Alert>}
             <div className="flex gap-2">
               <Button onClick={findSgRNAs} className="flex-1 " disabled={!input.trim()}>
                 <Scissors className="w-4 h-4 mr-2" />

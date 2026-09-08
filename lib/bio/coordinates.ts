@@ -97,6 +97,17 @@ export interface PrimerLocation {
   /** 实际匹配链向是否与期望一致（false = 仅在反向搜索中命中，提示用户方向可能填反） */
   orientationMatches: boolean
   hits: PrimerHit[]
+  /** Candidate windows containing an ambiguous/unknown template base. */
+  skippedUnknown: number
+}
+
+function countUnknownBindingWindows(template: string, primerLength: number): number {
+  if (primerLength <= 0 || primerLength > template.length) return 0
+  let skipped = 0
+  for (let index = 0; index <= template.length - primerLength; index++) {
+    if (!/^[ACGT]+$/.test(template.slice(index, index + primerLength))) skipped++
+  }
+  return skipped
 }
 
 /** 高层定位 API：先按期望链向搜索；若 0 命中则回退到反向搜索。
@@ -107,12 +118,13 @@ export function locatePrimer(
   expectedStrand: PrimerStrand,
   genomicStart = 1,
 ): PrimerLocation {
+  const skippedUnknown = countUnknownBindingWindows(template.toUpperCase().replace(/\s+/g, ""), primer.length)
   const primary =
     expectedStrand === "+"
       ? locateForwardPrimer(template, primer, { genomicStart })
       : locateReversePrimer(template, primer, { genomicStart })
   if (primary.length > 0) {
-    return { primer, expectedStrand, strand: expectedStrand, orientationMatches: true, hits: primary }
+    return { primer, expectedStrand, strand: expectedStrand, orientationMatches: true, hits: primary, skippedUnknown }
   }
   // 回退：尝试反向搜索
   const fallback =
@@ -120,9 +132,9 @@ export function locatePrimer(
       ? locateReversePrimer(template, primer, { genomicStart })
       : locateForwardPrimer(template, primer, { genomicStart })
   if (fallback.length === 0) {
-    return { primer, expectedStrand, strand: expectedStrand, orientationMatches: true, hits: [] }
+    return { primer, expectedStrand, strand: expectedStrand, orientationMatches: true, hits: [], skippedUnknown }
   }
-  return { primer, expectedStrand, strand: fallback[0].strand, orientationMatches: false, hits: fallback }
+  return { primer, expectedStrand, strand: fallback[0].strand, orientationMatches: false, hits: fallback, skippedUnknown }
 }
 
 export interface Amplicon {

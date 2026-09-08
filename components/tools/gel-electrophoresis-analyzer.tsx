@@ -14,17 +14,20 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart3, Ruler, Zap, Plus, Trash2 } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import {
+  fitGelStandardCurve,
+  parseGelStandardData,
+  parseIntensityData,
+  predictConcentration,
+  predictGelSize,
+} from "@/lib/bio"
 
 type MarkerBand = {
   size: number // bp or kDa
   distance: number // migration distance in mm
 }
 
-type StandardCurve = {
-  slope: number
-  intercept: number
-  rSquared: number
-}
+type StandardCurve = ReturnType<typeof fitGelStandardCurve>
 
 type UnknownBand = {
   id: string
@@ -72,95 +75,6 @@ export function GelElectrophoresisAnalyzer() {
   const [standardInput, setStandardInput] = useState("")
   const [intensityStandards, setIntensityStandards] = useState("")
 
-  // 解析标准曲线数据
-  const parseStandardData = (text: string): MarkerBand[] => {
-    const lines = text.trim().split('\n').filter(line => line.trim())
-    const data: MarkerBand[] = []
-    
-    for (const line of lines) {
-      const parts = line.split(/[\t,]/).map(p => p.trim())
-      if (parts.length >= 2) {
-        const size = parseFloat(parts[0])
-        const distance = parseFloat(parts[1])
-        if (!isNaN(size) && !isNaN(distance)) {
-          data.push({ size, distance })
-        }
-      }
-    }
-    return data.sort((a, b) => b.size - a.size) // 按分子量降序排列
-  }
-
-  // 线性回归计算
-  const calculateStandardCurve = (bands: MarkerBand[]): StandardCurve => {
-    if (bands.length < 2) return { slope: 0, intercept: 0, rSquared: 0 }
-
-    // 使用对数分子量 vs 迁移距离
-    const points = bands.map(b => ({ x: b.distance, y: Math.log10(b.size) }))
-    const n = points.length
-    
-    const sumX = points.reduce((sum, p) => sum + p.x, 0)
-    const sumY = points.reduce((sum, p) => sum + p.y, 0)
-    const sumXY = points.reduce((sum, p) => sum + p.x * p.y, 0)
-    const sumXX = points.reduce((sum, p) => sum + p.x * p.x, 0)
-    const sumYY = points.reduce((sum, p) => sum + p.y * p.y, 0)
-
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
-    const intercept = (sumY - slope * sumX) / n
-
-    // 计算R²
-    const yMean = sumY / n
-    const ssRes = points.reduce((sum, p) => {
-      const predicted = slope * p.x + intercept
-      return sum + Math.pow(p.y - predicted, 2)
-    }, 0)
-    const ssTot = points.reduce((sum, p) => sum + Math.pow(p.y - yMean, 2), 0)
-    const rSquared = 1 - (ssRes / ssTot)
-
-    return { slope, intercept, rSquared }
-  }
-
-  // 估算未知条带大小
-  const estimateBandSize = (distance: number, curve: StandardCurve): number => {
-    const logSize = curve.slope * distance + curve.intercept
-    return Math.pow(10, logSize)
-  }
-
-  // 解析浓度标准数据
-  const parseIntensityData = (text: string) => {
-    const lines = text.trim().split('\n').filter(line => line.trim())
-    const data: { concentration: number; intensity: number }[] = []
-    
-    for (const line of lines) {
-      const parts = line.split(/[\t,]/).map(p => p.trim())
-      if (parts.length >= 2) {
-        const concentration = parseFloat(parts[0])
-        const intensity = parseFloat(parts[1])
-        if (!isNaN(concentration) && !isNaN(intensity)) {
-          data.push({ concentration, intensity })
-        }
-      }
-    }
-    return data
-  }
-
-  // 浓度定量分析
-  const quantifyConcentration = (intensity: number, standards: { concentration: number; intensity: number }[]): number => {
-    if (standards.length < 2) return 0
-
-    // 线性回归: intensity = slope * concentration + intercept
-    const n = standards.length
-    const sumX = standards.reduce((sum, s) => sum + s.concentration, 0)
-    const sumY = standards.reduce((sum, s) => sum + s.intensity, 0)
-    const sumXY = standards.reduce((sum, s) => sum + s.concentration * s.intensity, 0)
-    const sumXX = standards.reduce((sum, s) => sum + s.concentration * s.concentration, 0)
-
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
-    const intercept = (sumY - slope * sumX) / n
-
-    // 根据强度计算浓度
-    return (intensity - intercept) / slope
-  }
-
   // 选择预设标准
   const selectPresetMarker = (markerName: string) => {
     const marker = gelType === 'dna' 
@@ -170,10 +84,10 @@ export function GelElectrophoresisAnalyzer() {
     if (marker) {
       const bands = marker.bands.map((size, index) => ({
         size,
-        distance: 10 + index * 5 // 示例距离，用户需要实际测量
+      distance: 0 // The user must enter the measured migration distance.
       }))
       setMarkerBands(bands)
-      setStandardInput(bands.map(b => `${b.size}\t${b.distance}`).join('\n'))
+      setStandardInput(bands.map(b => `${b.size}\t`).join('\n'))
     }
   }
 
@@ -201,19 +115,23 @@ export function GelElectrophoresisAnalyzer() {
     ))
   }
 
+  const parsedStandard = useMemo(() => standardInput
+    ? parseGelStandardData(standardInput)
+    : { bands: markerBands, error: null }, [standardInput, markerBands])
   const standardCurve = useMemo(() => {
-    const bands = standardInput ? parseStandardData(standardInput) : markerBands
-    return calculateStandardCurve(bands)
-  }, [standardInput, markerBands])
+    if (parsedStandard.error) return null
+    return fitGelStandardCurve(parsedStandard.bands)
+  }, [parsedStandard.bands, parsedStandard.error])
 
-  const intensityData = useMemo(() => parseIntensityData(intensityStandards), [intensityStandards])
+  const parsedIntensity = useMemo(() => parseIntensityData(intensityStandards), [intensityStandards])
+  const intensityData = useMemo(() => parsedIntensity.error ? [] : parsedIntensity.standards, [parsedIntensity.error, parsedIntensity.standards])
 
   // 计算未知条带的估算大小和浓度
   const processedUnknownBands = useMemo(() => {
     return unknownBands.map(band => {
-      const estimatedSize = band.distance > 0 ? estimateBandSize(band.distance, standardCurve) : undefined
-      const concentration = band.intensity && intensityData.length >= 2 
-        ? quantifyConcentration(band.intensity, intensityData) 
+      const estimatedSize = band.distance > 0 && standardCurve ? predictGelSize(band.distance, standardCurve) ?? undefined : undefined
+      const concentration = band.intensity != null && intensityData.length >= 2
+        ? predictConcentration(band.intensity, intensityData) ?? undefined
         : undefined
       
       return {
@@ -319,7 +237,14 @@ export function GelElectrophoresisAnalyzer() {
                   />
                 </div>
 
-                {standardCurve.rSquared > 0 && (
+                {parsedStandard.error && <Alert variant="destructive"><AlertDescription>{parsedStandard.error}</AlertDescription></Alert>}
+                {!parsedStandard.error && standardInput.trim() && parsedStandard.bands.length < 2 && (
+                  <Alert variant="destructive"><AlertDescription>{t("tools.gel-electrophoresis.needTwoBands", "Enter at least two valid ladder bands with measured distances.")}</AlertDescription></Alert>
+                )}
+                {!parsedStandard.error && standardInput.trim() && parsedStandard.bands.length >= 2 && !standardCurve && (
+                  <Alert variant="destructive"><AlertDescription>{t("tools.gel-electrophoresis.distinctDistances", "Measured migration distances must contain at least two distinct values.")}</AlertDescription></Alert>
+                )}
+                {standardCurve && Number.isFinite(standardCurve.slope) && Number.isFinite(standardCurve.intercept) && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <h4 className="font-medium">{t("tools.gel-electrophoresis.curveParameters", "Curve Parameters")}</h4>
@@ -334,8 +259,8 @@ export function GelElectrophoresisAnalyzer() {
                         </div>
                         <div className="flex justify-between">
                           <span>R²:</span>
-                          <span className={standardCurve.rSquared >= 0.99 ? 'text-green-600' : standardCurve.rSquared >= 0.95 ? 'text-yellow-600' : 'text-red-600'}>
-                            {standardCurve.rSquared.toFixed(4)}
+                          <span className={standardCurve.rSquared != null && standardCurve.rSquared >= 0.99 ? 'text-green-600' : standardCurve.rSquared != null && standardCurve.rSquared >= 0.95 ? 'text-yellow-600' : 'text-red-600'}>
+                            {standardCurve.rSquared == null ? "undefined" : standardCurve.rSquared.toFixed(4)}
                           </span>
                         </div>
                       </div>
@@ -411,7 +336,7 @@ export function GelElectrophoresisAnalyzer() {
                   ))}
                 </div>
 
-                {processedUnknownBands.some(b => b.estimatedSize) && (
+                {processedUnknownBands.some(b => b.estimatedSize != null) && (
                   <div className="border rounded-lg overflow-hidden">
                     <Table>
                       <TableHeader>
@@ -428,13 +353,13 @@ export function GelElectrophoresisAnalyzer() {
                             <TableCell className="font-mono font-bold">{band.name}</TableCell>
                             <TableCell className="font-mono">{band.distance}</TableCell>
                             <TableCell className="font-mono">
-                              {band.estimatedSize ? (
+                              {band.estimatedSize != null ? (
                                 <Badge variant="outline">
                                   {band.estimatedSize.toFixed(0)} {gelType === 'dna' ? 'bp' : 'kDa'}
                                 </Badge>
                               ) : '-'}
                             </TableCell>
-                            <TableCell className="font-mono">{band.intensity || '-'}</TableCell>
+                            <TableCell className="font-mono">{band.intensity ?? '-'}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -470,9 +395,10 @@ export function GelElectrophoresisAnalyzer() {
                   <div className="text-xs text-muted-foreground font-mono">
                     {intensityData.length} {t("tools.gel-electrophoresis.standardPoints", "standard points loaded")}
                   </div>
+                  {parsedIntensity.error && <Alert variant="destructive"><AlertDescription>{parsedIntensity.error}</AlertDescription></Alert>}
                 </div>
 
-                {processedUnknownBands.some(b => b.concentration) && (
+                {processedUnknownBands.some(b => b.concentration != null) && (
                   <div className="border rounded-lg overflow-hidden">
                     <Table>
                       <TableHeader>
@@ -483,12 +409,12 @@ export function GelElectrophoresisAnalyzer() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {processedUnknownBands.filter(b => b.intensity).map((band) => (
+                        {processedUnknownBands.filter((band) => band.intensity != null).map((band) => (
                           <TableRow key={band.id}>
                             <TableCell className="font-mono font-bold">{band.name}</TableCell>
                             <TableCell className="font-mono">{band.intensity}</TableCell>
                             <TableCell className="font-mono">
-                              {band.concentration ? (
+                              {band.concentration != null ? (
                                 <Badge variant="default">
                                   {band.concentration.toFixed(1)} ng/μL
                                 </Badge>

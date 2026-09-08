@@ -10,8 +10,10 @@ import {
   atContent,
   shannonEntropy,
   parseFasta,
+  parseSingleSequenceInput,
   toFasta,
   gcSkewWindows,
+  normalizeSequence,
 } from "../sequence"
 
 describe("cleanSequence", () => {
@@ -31,6 +33,15 @@ describe("cleanDnaStrict", () => {
   it("strips U and ambiguity codes", () => {
     expect(cleanDnaStrict("AUNC")).toBe("AC")
     expect(cleanDnaStrict("acgtRY")).toBe("ACGT")
+  })
+})
+
+describe("normalizeSequence", () => {
+  it("retains IUPAC symbols and reports invalid positions", () => {
+    expect(normalizeSequence("a c\nN!g", "iupac-dna")).toEqual({
+      sequence: "ACNG",
+      issues: [{ character: "!", position: 4 }],
+    })
   })
 })
 
@@ -102,6 +113,9 @@ describe("shannonEntropy", () => {
   it("is 1 bit for two equally frequent bases", () => {
     expect(shannonEntropy("AAAATTTT")).toBeCloseTo(1.0, 6)
   })
+  it("normalizes entropy over determined ACGT bases when N is present", () => {
+    expect(shannonEntropy("AATTNN")).toBeCloseTo(1.0, 6)
+  })
 })
 
 describe("parseFasta / toFasta", () => {
@@ -128,6 +142,12 @@ describe("parseFasta / toFasta", () => {
     expect(recs).toHaveLength(1)
     expect(recs[0].id).toBe("")
     expect(recs[0].sequence).toBe("ACGTGCGC")
+  })
+  it("parses one FASTA record for single-sequence tools and rejects multiple records", () => {
+    expect(parseSingleSequenceInput(">one description\nAA\nCC").sequence).toBe("AACC")
+    expect(parseSingleSequenceInput("AA\nCC").sequence).toBe("AACC")
+    expect(parseSingleSequenceInput("; comment\nAA\nCC").sequence).toBe("AACC")
+    expect(() => parseSingleSequenceInput(">one\nAA\n>two\nCC")).toThrow(/exactly one FASTA record/)
   })
   it("round-trips via toFasta", () => {
     const recs = parseFasta(">a desc\nACGT")

@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { TrendingUp, Info, Dna } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { cleanDnaStrict, gcSkewWindows } from "@/lib/bio"
+import { gcSkewWindows, normalizeSequence, parseFasta } from "@/lib/bio"
 
 interface GCSkewResult {
   position: number
@@ -29,6 +29,7 @@ export function GcSkewAnalyzer() {
   const [stepSize, setStepSize] = useState("10")
   const [results, setResults] = useState<GCSkewResult[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [inputError, setInputError] = useState<string | null>(null)
 
   // 滑动窗口分析
   const analyzeSequence = async () => {
@@ -37,7 +38,23 @@ export function GcSkewAnalyzer() {
     setIsAnalyzing(true)
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    const cleanSeq = cleanDnaStrict(sequence)
+    const records = sequence.includes(">") ? parseFasta(sequence) : [{ id: "", description: "", sequence }]
+    if (records.length !== 1) {
+      setInputError("Enter exactly one sequence for sliding-window analysis")
+      setResults([])
+      setIsAnalyzing(false)
+      return
+    }
+    const diagnostics = normalizeSequence(records[0].sequence, "iupac-dna")
+    if (diagnostics.issues.length > 0) {
+      const issue = diagnostics.issues[0]
+      setInputError(`Invalid character "${issue.character}" at sequence position ${issue.position}`)
+      setResults([])
+      setIsAnalyzing(false)
+      return
+    }
+    const cleanSeq = diagnostics.sequence
+    setInputError(null)
     const window = parseInt(windowSize) || 100
     const step = parseInt(stepSize) || 10
     
@@ -79,6 +96,7 @@ export function GcSkewAnalyzer() {
   const clearAll = () => {
     setSequence("")
     setResults([])
+    setInputError(null)
   }
   
   const loadExample = () => {
@@ -124,10 +142,11 @@ GCTAGCTAGCGCGCTAGCTAGCGCGATCGATCGCTAGCTAGCGCGCTAGCTAGCGCGATC`
                 id="sequence"
                 placeholder={t("tools.gc-skew.sequencePlaceholder", "Enter DNA sequence (FASTA format or plain text)\nExample:\n>Sequence\nATCGATCGATCG...")}
                 value={sequence}
-                onChange={(e) => setSequence(e.target.value)}
+                onChange={(e) => { setSequence(e.target.value); setResults([]); setInputError(null) }}
                 className="terminal-input min-h-[150px] font-mono"
                 rows={8}
               />
+              {inputError && <Alert variant="destructive"><AlertDescription>{inputError}</AlertDescription></Alert>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

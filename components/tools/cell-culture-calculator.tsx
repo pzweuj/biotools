@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calculator, FlaskConical, Microscope, Activity } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { calculateMediaRecipe } from "@/lib/bio"
 
 type MediaComponent = {
   name: string
@@ -57,7 +58,7 @@ export function CellCultureCalculator() {
   // 培养基配制
   const [mediaVolume, setMediaVolume] = useState("500")
   const [mediaComponents, setMediaComponents] = useState<MediaComponent[]>([
-    { name: "FBS", concentration: "10%", volume: 0, finalConcentration: "10%" },
+    { name: "FBS", concentration: "100%", volume: 0, finalConcentration: "10%" },
     { name: "Penicillin/Streptomycin", concentration: "100×", volume: 0, finalConcentration: "1×" },
     { name: "L-Glutamine", concentration: "200mM", volume: 0, finalConcentration: "2mM" }
   ])
@@ -123,33 +124,15 @@ export function CellCultureCalculator() {
 
   // 培养基配制计算
   const mediaPreparation = useMemo(() => {
-    const totalVol = parseFloat(mediaVolume)
-    if (isNaN(totalVol)) return []
-    
-    return mediaComponents.map(component => {
-      let volume = 0
-      
-      // 解析浓度格式
-      if (component.concentration.includes('%')) {
-        const percent = parseFloat(component.concentration.replace('%', ''))
-        const finalPercent = parseFloat(component.finalConcentration.replace('%', ''))
-        volume = (totalVol * finalPercent) / percent
-      } else if (component.concentration.includes('×')) {
-        const stockConc = parseFloat(component.concentration.replace('×', ''))
-        const finalConc = parseFloat(component.finalConcentration.replace('×', ''))
-        volume = (totalVol * finalConc) / stockConc
-      } else if (component.concentration.includes('mM') && component.finalConcentration.includes('mM')) {
-        const stockConc = parseFloat(component.concentration.replace('mM', ''))
-        const finalConc = parseFloat(component.finalConcentration.replace('mM', ''))
-        volume = (totalVol * finalConc) / stockConc
-      }
-      
-      return {
-        ...component,
-        volume: volume
-      }
-    })
+    const totalVol = mediaVolume.trim() === "" ? Number.NaN : Number(mediaVolume)
+    const recipe = calculateMediaRecipe(totalVol, mediaComponents.map((component) => ({ name: component.name, stock: component.concentration, final: component.finalConcentration })))
+    return recipe.components.map((component, index) => ({ ...mediaComponents[index], volume: component.volume }))
   }, [mediaVolume, mediaComponents])
+
+  const mediaRecipe = useMemo(() => {
+    const totalVol = mediaVolume.trim() === "" ? Number.NaN : Number(mediaVolume)
+    return calculateMediaRecipe(totalVol, mediaComponents.map((component) => ({ name: component.name, stock: component.concentration, final: component.finalConcentration })))
+  }, [mediaComponents, mediaVolume])
 
   // 细胞活力统计
   const viabilityStats = useMemo(() => {
@@ -445,7 +428,7 @@ export function CellCultureCalculator() {
                   />
                 </div>
 
-                <div className="border rounded-lg overflow-hidden">
+                {mediaRecipe.valid && <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -456,6 +439,12 @@ export function CellCultureCalculator() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
+                      <TableRow>
+                        <TableCell className="font-mono font-bold">Base medium</TableCell>
+                        <TableCell className="font-mono">—</TableCell>
+                        <TableCell className="font-mono">to final volume</TableCell>
+                        <TableCell className="font-mono"><Badge variant="outline">{Math.max(0, mediaRecipe.baseMediumVolume).toFixed(2)}</Badge></TableCell>
+                      </TableRow>
                       {mediaPreparation.map((component, index) => (
                         <TableRow key={index}>
                           <TableCell className="font-mono font-bold">{component.name}</TableCell>
@@ -470,7 +459,13 @@ export function CellCultureCalculator() {
                       ))}
                     </TableBody>
                   </Table>
-                </div>
+                </div>}
+
+                {!mediaRecipe.valid && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{mediaRecipe.reason ?? t("tools.cell-culture-calculator.mediaInvalid", "Component volumes exceed the final volume. Increase the final volume or lower a target concentration.")}</AlertDescription>
+                  </Alert>
+                )}
 
                 <Alert>
                   <FlaskConical className="h-4 w-4" />

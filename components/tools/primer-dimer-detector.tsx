@@ -1,7 +1,7 @@
 "use client"
-import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 
 import { useState } from "react"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
 import { useToolStorage } from "@/hooks/use-tool-storage"
 import { TryExample } from "@/components/try-example"
 import { ResultActions } from "@/components/result-actions"
@@ -13,32 +13,10 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Progress } from "@/components/ui/progress"
-import { Copy, Check, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
+import { Copy, Check, AlertTriangle } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { reverseComplement, complement, cleanDnaStrict, copyText } from "@/lib/bio"
-
-// 热力学参数 (简化版，基于最近邻模型)
-const THERMODYNAMIC_PARAMS = {
-  // 相邻碱基对的焓变 (kcal/mol)
-  enthalpy: {
-    'AA': -7.9, 'AT': -7.2, 'AC': -8.4, 'AG': -7.8,
-    'TA': -7.2, 'TT': -7.9, 'TC': -8.2, 'TG': -8.5,
-    'CA': -8.5, 'CT': -7.8, 'CC': -8.0, 'CG': -10.6,
-    'GA': -8.2, 'GT': -8.4, 'GC': -9.8, 'GG': -8.0,
-  },
-  // 相邻碱基对的熵变 (cal/mol·K)
-  entropy: {
-    'AA': -22.2, 'AT': -20.4, 'AC': -22.4, 'AG': -21.0,
-    'TA': -21.3, 'TT': -22.2, 'TC': -22.2, 'TG': -22.7,
-    'CA': -22.7, 'CT': -21.0, 'CC': -19.9, 'CG': -27.2,
-    'GA': -22.2, 'GT': -22.4, 'GC': -24.4, 'GG': -19.9,
-  },
-  // 末端惩罚
-  terminal: { enthalpy: 0.1, entropy: -2.8 },
-  // 对称性惩罚
-  symmetry: { enthalpy: 0, entropy: -1.4 }
-}
+import { findBestPrimerDimerAlignment, parseFasta, copyText } from "@/lib/bio"
+import type { PrimerDimerAlignment } from "@/lib/bio"
 
 interface DimerResult {
   id: string
@@ -46,18 +24,18 @@ interface DimerResult {
   primer2: string
   primer1Name: string
   primer2Name: string
+  pairCount: number
   complementarity: number
-  maxComplementLength: number
-  freeEnergy: number
+  longestRun: number
+  primer1ThreePrimeRun: number
+  primer2ThreePrimeRun: number
   structure: string
-  alignment: {
-    primer1Aligned: string
-    matchString: string
-    primer2Aligned: string
-    startPos1: number
-    startPos2: number
-  }
-  risk: 'low' | 'medium' | 'high'
+  alignment: PrimerDimerAlignment
+}
+
+function formatAlignment(alignment: PrimerDimerAlignment): string {
+  const pad = " ".repeat(Math.max(alignment.primer1Aligned.length, alignment.primer2Aligned.length) - alignment.primer1Aligned.length)
+  return `5′ ${alignment.primer1Aligned}${pad} 3′\n   ${alignment.matchString}\n3′ ${alignment.primer2Aligned} 5′`
 }
 
 export function PrimerDimerDetector() {
@@ -66,220 +44,77 @@ export function PrimerDimerDetector() {
   const [results, setResults] = useState<DimerResult[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // 计算两个序列的最佳对齐
-  const findBestAlignment = (seq1: string, seq2: string) => {
-    let bestScore = 0
-    let bestAlignment = {
-      primer1Aligned: '',
-      matchString: '',
-      primer2Aligned: '',
-      startPos1: 0,
-      startPos2: 0,
-      score: 0,
-      length: 0
-    }
-
-    // 尝试所有可能的对齐位置
-    for (let i = 0; i < seq1.length; i++) {
-      for (let j = 0; j < seq2.length; j++) {
-        const alignment = alignSequences(seq1, seq2, i, j)
-        if (alignment.score > bestScore) {
-          bestScore = alignment.score
-          bestAlignment = alignment
-        }
-      }
-    }
-
-    return bestAlignment
-  }
-
-  // 对齐两个序列
-  const alignSequences = (seq1: string, seq2: string, start1: number, start2: number) => {
-    const maxLen = Math.min(seq1.length - start1, seq2.length - start2)
-    let score = 0
-    let matches = 0
-    let primer1Aligned = ''
-    let primer2Aligned = ''
-    let matchString = ''
-
-    for (let i = 0; i < maxLen; i++) {
-      const base1 = seq1[start1 + i]
-      const base2 = seq2[start2 + i]
-      const isMatch = base1.toUpperCase() === complement(base2.toUpperCase())
-      
-      primer1Aligned += base1
-      primer2Aligned += base2
-      matchString += isMatch ? '|' : ' '
-      
-      if (isMatch) {
-        matches++
-        score += isMatch ? 2 : 0
-      }
-    }
-
-    return {
-      primer1Aligned,
-      matchString,
-      primer2Aligned,
-      startPos1: start1,
-      startPos2: start2,
-      score,
-      length: maxLen
-    }
-  }
-
-  // 计算自由能 (简化计算)
-  const calculateFreeEnergy = (alignment: any): number => {
-    if (alignment.length < 3) return 0
-
-    let deltaH = 0
-    let deltaS = 0
-    let consecutiveMatches = 0
-
-    // 计算连续匹配的热力学参数
-    for (let i = 0; i < alignment.length - 1; i++) {
-      if (alignment.matchString[i] === '|' && alignment.matchString[i + 1] === '|') {
-        const dinuc1 = alignment.primer1Aligned.substring(i, i + 2).toUpperCase()
-        const dinuc2 = reverseComplement(alignment.primer2Aligned.substring(i, i + 2)).toUpperCase()
-        
-        if (THERMODYNAMIC_PARAMS.enthalpy[dinuc1 as keyof typeof THERMODYNAMIC_PARAMS.enthalpy]) {
-          deltaH += THERMODYNAMIC_PARAMS.enthalpy[dinuc1 as keyof typeof THERMODYNAMIC_PARAMS.enthalpy]
-          deltaS += THERMODYNAMIC_PARAMS.entropy[dinuc1 as keyof typeof THERMODYNAMIC_PARAMS.entropy]
-        }
-        consecutiveMatches++
-      }
-    }
-
-    // 添加末端和对称性修正
-    deltaH += THERMODYNAMIC_PARAMS.terminal.enthalpy
-    deltaS += THERMODYNAMIC_PARAMS.terminal.entropy
-
-    // 计算自由能 ΔG = ΔH - T*ΔS (T = 298K)
-    const temperature = 298 // K
-    const deltaG = deltaH - (temperature * deltaS / 1000)
-
-    return Math.round(deltaG * 100) / 100
-  }
-
-  // 评估二聚体风险
-  const assessRisk = (complementarity: number, freeEnergy: number, maxLength: number): 'low' | 'medium' | 'high' => {
-    if (freeEnergy < -8 || (complementarity > 70 && maxLength >= 6)) {
-      return 'high'
-    } else if (freeEnergy < -5 || (complementarity > 50 && maxLength >= 4)) {
-      return 'medium'
-    }
-    return 'low'
-  }
-
-  // 分析引物二聚体
   const analyzePrimers = async () => {
     if (!primers.trim()) return
-
     setIsAnalyzing(true)
-    await new Promise(resolve => setTimeout(resolve, 100))
-
-    const primerLines = primers
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
-
+    setError(null)
+    await new Promise((resolve) => setTimeout(resolve, 20))
     const primerList: { name: string; sequence: string }[] = []
-
-    // 解析引物（支持FASTA格式或纯序列）
-    primerLines.forEach((line, index) => {
-      if (line.startsWith('>')) {
-        const name = line.substring(1).trim() || `Primer ${index + 1}`
-        return
-      }
-
-      const prevLine = index > 0 ? primerLines[index - 1] : ''
-      const name = prevLine.startsWith('>') 
-        ? prevLine.substring(1).trim() || `Primer ${index + 1}`
-        : `Primer ${primerList.length + 1}`
-
-      const cleanSeq = cleanDnaStrict(line)
-      if (cleanSeq.length > 0) {
-        primerList.push({ name, sequence: cleanSeq })
-      }
-    })
-
-    const newResults: DimerResult[] = []
-
-    // 分析所有引物对
-    for (let i = 0; i < primerList.length; i++) {
-      for (let j = i; j < primerList.length; j++) {
-        const primer1 = primerList[i]
-        const primer2 = primerList[j]
-
-        // 自身二聚体检测
-        if (i === j) {
-          const selfAlignment = findBestAlignment(primer1.sequence, reverseComplement(primer1.sequence))
-          if (selfAlignment.score > 0) {
-            const complementarity = Math.round((selfAlignment.score / (primer1.sequence.length * 2)) * 100)
-            const freeEnergy = calculateFreeEnergy(selfAlignment)
-            const risk = assessRisk(complementarity, freeEnergy, selfAlignment.length)
-
-            newResults.push({
-              id: `${i}-${j}-self`,
-              primer1: primer1.sequence,
-              primer2: reverseComplement(primer1.sequence),
-              primer1Name: primer1.name,
-              primer2Name: `${primer1.name} (RC)`,
-              complementarity,
-              maxComplementLength: selfAlignment.length,
-              freeEnergy,
-              structure: `${selfAlignment.primer1Aligned}\n${selfAlignment.matchString}\n${selfAlignment.primer2Aligned}`,
-              alignment: selfAlignment,
-              risk
-            })
-          }
-        } else {
-          // 异源二聚体检测
-          const alignment1 = findBestAlignment(primer1.sequence, reverseComplement(primer2.sequence))
-          const alignment2 = findBestAlignment(reverseComplement(primer1.sequence), primer2.sequence)
-          
-          const bestAlignment = alignment1.score > alignment2.score ? alignment1 : alignment2
-          
-          if (bestAlignment.score > 0) {
-            const complementarity = Math.round((bestAlignment.score / Math.max(primer1.sequence.length, primer2.sequence.length)) * 100)
-            const freeEnergy = calculateFreeEnergy(bestAlignment)
-            const risk = assessRisk(complementarity, freeEnergy, bestAlignment.length)
-
-            newResults.push({
-              id: `${i}-${j}-hetero`,
-              primer1: primer1.sequence,
-              primer2: primer2.sequence,
-              primer1Name: primer1.name,
-              primer2Name: primer2.name,
-              complementarity,
-              maxComplementLength: bestAlignment.length,
-              freeEnergy,
-              structure: `${bestAlignment.primer1Aligned}\n${bestAlignment.matchString}\n${bestAlignment.primer2Aligned}`,
-              alignment: bestAlignment,
-              risk
-            })
-          }
+    if (primers.includes(">")) {
+      for (const record of parseFasta(primers)) {
+        const sequence = record.sequence.toUpperCase().replace(/\s+/g, "")
+        if (!sequence) continue
+        if (!/^[ACGT]+$/.test(sequence)) {
+          const invalid = [...sequence].findIndex((character) => !/[ACGT]/.test(character))
+          setError(`Primer ${record.id || primerList.length + 1}: invalid character "${sequence[invalid]}" at sequence position ${invalid + 1}`)
+          setResults([])
+          setIsAnalyzing(false)
+          return
         }
+        primerList.push({ name: record.id || record.description || `Primer ${primerList.length + 1}`, sequence })
+      }
+    } else {
+      for (const [index, line] of primers.split(/\r?\n/).map((value) => value.trim()).filter(Boolean).entries()) {
+        const sequence = line.toUpperCase().replace(/\s+/g, "")
+        if (!/^[ACGT]+$/.test(sequence)) {
+          const invalid = [...sequence].findIndex((character) => !/[ACGT]/.test(character))
+          setError(`Primer ${index + 1}: invalid character "${sequence[invalid]}" at sequence position ${invalid + 1}`)
+          setResults([])
+          setIsAnalyzing(false)
+          return
+        }
+        primerList.push({ name: `Primer ${index + 1}`, sequence })
       }
     }
-
-    // 按风险和自由能排序
-    newResults.sort((a, b) => {
-      const riskOrder = { high: 3, medium: 2, low: 1 }
-      if (riskOrder[a.risk] !== riskOrder[b.risk]) {
-        return riskOrder[b.risk] - riskOrder[a.risk]
+    if (primerList.length === 0) {
+      setError("No primer sequence was found")
+      setResults([])
+      setIsAnalyzing(false)
+      return
+    }
+    const next: DimerResult[] = []
+    for (let i = 0; i < primerList.length; i++) {
+      for (let j = i; j < primerList.length; j++) {
+        const first = primerList[i]
+        const second = primerList[j]
+        const alignment = findBestPrimerDimerAlignment(first.sequence, second.sequence)
+        next.push({
+          id: `${i}-${j}`,
+          primer1: first.sequence,
+          primer2: second.sequence,
+          primer1Name: first.name,
+          primer2Name: second.name,
+          pairCount: alignment.pairCount,
+          complementarity: alignment.complementarity,
+          longestRun: alignment.longestRun,
+          primer1ThreePrimeRun: alignment.primer1ThreePrimeRun,
+          primer2ThreePrimeRun: alignment.primer2ThreePrimeRun,
+          structure: formatAlignment(alignment),
+          alignment,
+        })
       }
-      return a.freeEnergy - b.freeEnergy
-    })
-
-    setResults(newResults)
+    }
+    next.sort((a, b) => b.primer1ThreePrimeRun + b.primer2ThreePrimeRun - a.primer1ThreePrimeRun - a.primer2ThreePrimeRun || b.longestRun - a.longestRun || b.pairCount - a.pairCount)
+    setResults(next)
     setIsAnalyzing(false)
   }
 
   const clearResults = () => {
     setPrimers("")
     setResults([])
+    setError(null)
   }
 
   const copyToClipboard = async (text: string) => {
@@ -287,242 +122,60 @@ export function PrimerDimerDetector() {
       await copyText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error('Failed to copy text: ', err)
+    } catch {
+      // The result remains visible when clipboard access is unavailable.
     }
-  }
-
-  const getRiskIcon = (risk: string) => {
-    switch (risk) {
-      case 'high': return <XCircle className="w-4 h-4 text-red-500" />
-      case 'medium': return <AlertTriangle className="w-4 h-4 text-yellow-500" />
-      case 'low': return <CheckCircle className="w-4 h-4 text-green-500" />
-      default: return null
-    }
-  }
-
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      default: return ''
-    }
-  }
-
-  const handleTryExample = (example: Record<string, unknown>) => {
-    if (typeof example.primers === "string") setPrimers(example.primers)
   }
 
   return (
     <ToolPage>
       <ToolPageHeader>
-        <ToolPageTitle>
-          {t("tools.primer-dimer-detector.name", "Primer Dimer Detector")}
-        </ToolPageTitle>
-        <ToolPageDescription>
-          {t("tools.primer-dimer-detector.description", "Detect primer complementarity, calculate dimer formation free energy, visualize structures, batch analysis")}
-        </ToolPageDescription>
+        <ToolPageTitle>{t("tools.primer-dimer-detector.name", "Primer Dimer Detector")}</ToolPageTitle>
+        <ToolPageDescription>{t("tools.primer-dimer-detector.description", "Screen primer pairs for Watson–Crick complementarity and 3′-end pairing")}</ToolPageDescription>
       </ToolPageHeader>
       <ToolPageContent>
         <div className="space-y-2">
-          <Label htmlFor="primers" className="">
-            {t("tools.primer-dimer-detector.primerLabel", "Input Primers")}
-          </Label>
-          <Textarea
-            id="primers"
-            placeholder={t("tools.primer-dimer-detector.primerPlaceholder", "Enter primer sequences, one per line or FASTA format\nExample:\n>Forward Primer\nATCGATCGATCG\n>Reverse Primer\nGCTAGCTAGCTA")}
-            value={primers}
-            onChange={(e) => setPrimers(e.target.value)}
-            className="terminal-input min-h-[120px] font-mono"
-            rows={6}
-          />
-          <div className="text-xs text-muted-foreground font-mono">
-            {t("tools.primer-dimer-detector.formatHint", "💡 Supports FASTA format and plain sequences. Self-dimers and hetero-dimers will be analyzed.")}
-          </div>
+          <Label htmlFor="primers">{t("tools.primer-dimer-detector.primerLabel", "Input Primers")}</Label>
+          <Textarea id="primers" placeholder={t("tools.primer-dimer-detector.primerPlaceholder", "Enter primer sequences, one per line or FASTA format")} value={primers} onChange={(event) => { setPrimers(event.target.value); setResults([]); setError(null) }} className="terminal-input min-h-[120px] font-mono" rows={6} />
+          <div className="text-xs text-muted-foreground font-mono">{t("tools.primer-dimer-detector.formatHint", "The screen reports pair count, longest run, overall complementarity, and 3′-end pairing. It is not a thermodynamic ΔG prediction.")}</div>
         </div>
-
         <div className="flex gap-2">
-          <Button 
-            onClick={analyzePrimers} 
-            className="flex-1 "
-            disabled={isAnalyzing || !primers.trim()}
-          >
-            {isAnalyzing ? t("common.loading") : t("tools.primer-dimer-detector.analyze", "Analyze Dimers")}
-          </Button>
-          <Button
-            onClick={clearResults}
-            variant="outline"
-            className=""
-            disabled={!primers.trim() && results.length === 0}
-          >
-            {t("common.clear")}
-          </Button>
-          <TryExample
-            example={{ primers: ">Forward_Primer\nATCGTACGTTAGCATCG\n>Reverse_Primer\nCGATGCTAACGTACGAT\n>Probe\nTAGCTAGCTAGCTAGCT" }}
-            onApply={handleTryExample}
-          />
+          <Button onClick={analyzePrimers} className="flex-1" disabled={isAnalyzing || !primers.trim()}>{isAnalyzing ? t("common.loading") : t("tools.primer-dimer-detector.analyze", "Analyze Primers")}</Button>
+          <Button onClick={clearResults} variant="outline" disabled={!primers.trim() && results.length === 0}>{t("common.clear")}</Button>
+          <TryExample example={{ primers: ">Forward_Primer\nATCGTACGTTAGCATCG\n>Reverse_Primer\nCGATGCTAACGTACGAT" }} onApply={(example) => { if (typeof example.primers === "string") setPrimers(example.primers) }} />
         </div>
-
+        {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
         {results.length > 0 && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="text-sm font-mono text-muted-foreground">
-                {t("tools.primer-dimer-detector.results", "Analysis Results")} ({results.length} {t("tools.primer-dimer-detector.dimers", "dimers detected")})
-              </div>
-              <div className="flex gap-2 text-xs font-mono">
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3 text-green-500" />
-                  <span>{t("tools.primer-dimer-detector.lowRisk", "Low Risk")}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3 text-yellow-500" />
-                  <span>{t("tools.primer-dimer-detector.mediumRisk", "Medium Risk")}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <XCircle className="w-3 h-3 text-red-500" />
-                  <span>{t("tools.primer-dimer-detector.highRisk", "High Risk")}</span>
-                </div>
-              </div>
-            </div>
-
+            <div className="text-sm font-mono text-muted-foreground">{t("tools.primer-dimer-detector.results", "Analysis Results")} ({results.length} {t("tools.primer-dimer-detector.pairs", "pairs")})</div>
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="overview" className="text-xs">
-                  {t("tools.primer-dimer-detector.overview", "Overview")}
-                </TabsTrigger>
-                <TabsTrigger value="structures" className="text-xs">
-                  {t("tools.primer-dimer-detector.structures", "Structures")}
-                </TabsTrigger>
-              </TabsList>
-
+              <TabsList className="grid w-full grid-cols-2"><TabsTrigger value="overview">{t("tools.primer-dimer-detector.overview", "Overview")}</TabsTrigger><TabsTrigger value="structures">{t("tools.primer-dimer-detector.structures", "Alignments")}</TabsTrigger></TabsList>
               <TabsContent value="overview" className="space-y-3">
                 <div className="border rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="font-mono font-bold w-16">{t("tools.primer-dimer-detector.risk", "Risk")}</TableHead>
-                        <TableHead className="font-mono font-bold">{t("tools.primer-dimer-detector.primerPair", "Primer Pair")}</TableHead>
-                        <TableHead className="font-mono font-bold text-center w-24">{t("tools.primer-dimer-detector.complementarity", "Complement %")}</TableHead>
-                        <TableHead className="font-mono font-bold text-center w-24">{t("tools.primer-dimer-detector.freeEnergy", "ΔG (kcal/mol)")}</TableHead>
-                        <TableHead className="font-mono font-bold text-center w-20">{t("tools.primer-dimer-detector.length", "Length")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {results.map((result) => (
-                        <TableRow key={result.id} className="hover:bg-muted/50 transition-colors">
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              {getRiskIcon(result.risk)}
-                              <Badge variant="outline" className={`font-mono text-xs ${getRiskColor(result.risk)}`}>
-                                {t(`tools.primer-dimer-detector.${result.risk}Risk`, result.risk)}
-                              </Badge>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-mono">
-                            <div className="space-y-1">
-                              <div className="font-medium">{result.primer1Name} × {result.primer2Name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {result.primer1} × {result.primer2.substring(0, 20)}{result.primer2.length > 20 ? '...' : ''}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="outline" className="font-mono">
-                              {result.complementarity}%
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge 
-                              variant="outline" 
-                              className={`font-mono ${
-                                result.freeEnergy < -8 
-                                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" 
-                                  : result.freeEnergy < -5
-                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                                  : ""
-                              }`}
-                            >
-                              {result.freeEnergy}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="outline" className="font-mono">
-                              {result.maxComplementLength}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <Table><TableHeader><TableRow>
+                    <TableHead>{t("tools.primer-dimer-detector.primerPair", "Primer Pair")}</TableHead>
+                    <TableHead className="text-center">{t("tools.primer-dimer-detector.pairCount", "Pairs")}</TableHead>
+                    <TableHead className="text-center">{t("tools.primer-dimer-detector.complementarity", "Complement %")}</TableHead>
+                    <TableHead className="text-center">{t("tools.primer-dimer-detector.longestRun", "Longest run")}</TableHead>
+                    <TableHead className="text-center">{t("tools.primer-dimer-detector.threePrimeRun", "3′ runs")}</TableHead>
+                  </TableRow></TableHeader><TableBody>
+                    {results.map((result) => <TableRow key={result.id}>
+                      <TableCell className="font-mono">{result.primer1Name} × {result.primer2Name}</TableCell>
+                      <TableCell className="text-center"><Badge variant="outline">{result.pairCount}</Badge></TableCell>
+                      <TableCell className="text-center"><Badge variant="outline">{result.complementarity.toFixed(1)}%</Badge></TableCell>
+                      <TableCell className="text-center"><Badge variant="outline">{result.longestRun} bp</Badge></TableCell>
+                      <TableCell className="text-center"><Badge variant="outline">{result.primer1ThreePrimeRun} / {result.primer2ThreePrimeRun} bp</Badge></TableCell>
+                    </TableRow>)}
+                  </TableBody></Table>
                 </div>
               </TabsContent>
-
               <TabsContent value="structures" className="space-y-4">
-                {results.map((result) => (
-                  <Card key={result.id} className="border">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          {getRiskIcon(result.risk)}
-                          {result.primer1Name} × {result.primer2Name}
-                        </CardTitle>
-                        <div className="flex items-center gap-2">
-                          <Badge className={`font-mono text-xs ${getRiskColor(result.risk)}`}>
-                            {t(`tools.primer-dimer-detector.${result.risk}Risk`, result.risk)}
-                          </Badge>
-                          <Button
-                            onClick={() => copyToClipboard(result.structure)}
-                            variant="ghost"
-                            size="sm"
-                            className="font-mono h-6 px-2"
-                          >
-                            {copied ? (
-                              <>
-                                <Check className="w-3 h-3 mr-1" />
-                                {t("common.copied")}
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3 mr-1" />
-                                {t("common.copy")}
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                      <CardDescription className="text-xs ">
-                        {t("tools.primer-dimer-detector.complementarity")}: {result.complementarity}% | 
-                        ΔG: {result.freeEnergy} kcal/mol | 
-                        {t("tools.primer-dimer-detector.length")}: {result.maxComplementLength}bp
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="bg-muted/30 rounded p-3 font-mono text-sm overflow-x-auto">
-                        <pre className="whitespace-pre-wrap">
-                          {result.structure}
-                        </pre>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {results.map((result) => <Card key={result.id} className="border"><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle className="text-sm">{result.primer1Name} × {result.primer2Name}</CardTitle><Button onClick={() => copyToClipboard(result.structure)} variant="ghost" size="sm">{copied ? <><Check className="w-3 h-3 mr-1" />{t("common.copied")}</> : <><Copy className="w-3 h-3 mr-1" />{t("common.copy")}</>}</Button></div><CardDescription>{result.pairCount} paired bases · {result.longestRun} bp longest run · 3′ runs {result.primer1ThreePrimeRun}/{result.primer2ThreePrimeRun} bp</CardDescription></CardHeader><CardContent><pre className="bg-muted/30 rounded p-3 font-mono text-sm overflow-x-auto whitespace-pre-wrap">{result.structure}</pre></CardContent></Card>)}
               </TabsContent>
             </Tabs>
-
-            <ResultActions
-              rows={results}
-              filename="primer-dimer-results"
-            />
+            <ResultActions rows={results} filename="primer-dimer-results" />
+            <Alert><AlertTriangle className="h-4 w-4" /><AlertDescription>{t("tools.primer-dimer-detector.warning", "Complementarity is a screening signal. Confirm primer performance with an appropriate thermodynamic tool and experiment.")}</AlertDescription></Alert>
           </div>
-        )}
-
-        {results.length > 0 && (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              {t("tools.primer-dimer-detector.warning", "High-risk dimers (ΔG < -8 kcal/mol) may interfere with PCR efficiency. Consider redesigning primers or adjusting reaction conditions.")}
-            </AlertDescription>
-          </Alert>
         )}
       </ToolPageContent>
     </ToolPage>

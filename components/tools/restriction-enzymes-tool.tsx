@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Beaker, Scissors } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { cleanDnaStrict } from "@/lib/bio"
+import { DNA_IUPAC, findRestrictionSites, normalizeSequence, parseSingleSequenceInput, restrictionFragments } from "@/lib/bio"
 
 // Minimal client-side enzyme database (extendable)
 // pattern uses IUPAC codes; we compile to regex for search on both strands
@@ -32,11 +32,7 @@ const ENZYMES: Array<{
   { name: "SmaI", site: "CCCGGG", cuts: { top: 3, bottom: 3 }, overhang: "blunt" },
 ]
 
-const IUPAC: Record<string, string> = {
-  A: "A", C: "C", G: "G", T: "T",
-  R: "AG", Y: "CT", S: "GC", W: "AT", K: "GT", M: "AC",
-  B: "CGT", D: "AGT", H: "ACT", V: "ACG", N: "ACGT",
-}
+const IUPAC = DNA_IUPAC
 
 function rc(seq: string): string {
   const map: any = { A: "T", T: "A", G: "C", C: "G", a: "t", t: "a", g: "c", c: "g" }
@@ -76,72 +72,37 @@ export function RestrictionEnzymesTool() {
   const [vectorEnz, setVectorEnz] = useState("EcoRI")
   const [insertEnz, setInsertEnz] = useState("EcoRI")
 
-  const cleanSeq = useMemo(() => cleanDnaStrict(sequence), [sequence])
+  const parsedSequence = useMemo(() => {
+    try {
+      return { sequence: parseSingleSequenceInput(sequence).sequence, error: null as string | null }
+    } catch (error) {
+      return { sequence: "", error: error instanceof Error ? error.message : "expected exactly one FASTA record" }
+    }
+  }, [sequence])
+  const sequenceDiagnostics = useMemo(() => normalizeSequence(parsedSequence.sequence, "iupac-dna"), [parsedSequence.sequence])
+  const cleanSeq = sequenceDiagnostics.sequence
+  const sequenceValid = !parsedSequence.error && (cleanSeq.length === 0 || sequenceDiagnostics.issues.length === 0)
+  const sequenceError = parsedSequence.error ?? (sequenceDiagnostics.issues.length > 0
+    ? `Invalid character "${sequenceDiagnostics.issues[0].character}" at sequence position ${sequenceDiagnostics.issues[0].position}`
+    : null)
 
   const sites: CutSite[] = useMemo(() => {
-    const res: CutSite[] = []
-    if (!cleanSeq) return res
-    ENZYMES.filter(e => selected.includes(e.name)).forEach((e) => {
-      const re = compilePattern(e.site)
-      // forward strand
-      let m: RegExpExecArray | null
-      while ((m = re.exec(cleanSeq)) !== null) {
-        const start = m.index
-        const end = start + e.site.length
-        res.push({
-          enzyme: e.name,
-          start,
-          end,
-          topCut: start + e.cuts.top,
-          bottomCut: start + e.cuts.bottom,
-          strand: "+",
-          overhang: e.overhang,
-        })
-        // avoid infinite loops for zero-length
-        if (re.lastIndex === m.index) re.lastIndex++
-      }
-      // reverse complement strand: find on rc and map back
-      const seqRC = rc(cleanSeq)
-      const reRC = compilePattern(e.site)
-      while ((m = reRC.exec(seqRC)) !== null) {
-        const rcStart = m.index
-        const rcEnd = rcStart + e.site.length
-        // map RC indices back to forward coordinates
-        const start = cleanSeq.length - rcEnd
-        const end = cleanSeq.length - rcStart
-        // cut offsets mirror on reverse
-        const topCut = start + (e.site.length - 1 - e.cuts.bottom)
-        const bottomCut = start + (e.site.length - 1 - e.cuts.top)
-        res.push({ enzyme: e.name, start, end, topCut, bottomCut, strand: "-", overhang: e.overhang })
-        if (reRC.lastIndex === m.index) reRC.lastIndex++
-      }
-    })
-    // sort by position
-    return res.sort((a, b) => a.topCut - b.topCut)
-  }, [cleanSeq, selected])
+    if (!cleanSeq || !sequenceValid) return []
+    try {
+      return ENZYMES
+        .filter((enzyme) => selected.includes(enzyme.name))
+        .flatMap((enzyme) => findRestrictionSites(cleanSeq, enzyme, isCircular))
+        .sort((a, b) => a.topCut - b.topCut)
+    } catch {
+      return []
+    }
+  }, [cleanSeq, selected, isCircular, sequenceValid])
 
   const fragments: Fragment[] = useMemo(() => {
-    const cuts = sites.map(s => s.topCut).sort((a, b) => a - b)
     const L = cleanSeq.length
-    if (L === 0) return []
-    if (cuts.length === 0) return [{ start: 0, end: L, length: L }]
-    const frags: Fragment[] = []
-    if (isCircular) {
-      for (let i = 0; i < cuts.length; i++) {
-        const a = cuts[i]
-        const b = cuts[(i + 1) % cuts.length]
-        const len = (b - a + L) % L
-        frags.push({ start: a, end: b, length: len || L })
-      }
-    } else {
-      frags.push({ start: 0, end: cuts[0], length: cuts[0] })
-      for (let i = 0; i < cuts.length - 1; i++) {
-        frags.push({ start: cuts[i], end: cuts[i + 1], length: cuts[i + 1] - cuts[i] })
-      }
-      frags.push({ start: cuts[cuts.length - 1], end: L, length: L - cuts[cuts.length - 1] })
-    }
-    return frags.sort((a, b) => b.length - a.length)
-  }, [sites, isCircular, cleanSeq])
+    if (L === 0 || !sequenceValid) return []
+    return restrictionFragments(L, sites.map((site) => site.topCut), isCircular)
+  }, [sites, isCircular, cleanSeq, sequenceValid])
 
   // Simple SVG circular map
   const MapSVG = () => {
@@ -191,9 +152,12 @@ export function RestrictionEnzymesTool() {
   }
 
   function checkCloningCompatibility() {
-    const v = cleanDnaStrict(vectorSeq)
-    const ins = cleanDnaStrict(insertSeq)
+    const v = vectorSeq.toUpperCase().replace(/\s+/g, "")
+    const ins = insertSeq.toUpperCase().replace(/\s+/g, "")
     if (!v || !ins) return { ok: false, reason: t("tools.restriction-enzymes.tool.needSeq", "Provide sequences") }
+    if (![...v, ...ins].every((base) => base === "A" || base === "C" || base === "G" || base === "T")) {
+      return { ok: false, reason: t("tools.restriction-enzymes.invalidSequence", "Sequences may contain only A, C, G and T for cloning-end checks.") }
+    }
     const vEnd = digestEnds(v, vectorEnz)
     const iEnd = digestEnds(ins, insertEnz)
     if (!vEnd || !iEnd) return { ok: false, reason: t("tools.restriction-enzymes.tool.noSite", "Site not found in sequence") }
@@ -229,8 +193,10 @@ export function RestrictionEnzymesTool() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="md:col-span-2">
                 <Label className="">{t("tools.restriction-enzymes.sequence", "Input DNA Sequence")}</Label>
-                <Textarea value={sequence} onChange={(e) => setSequence(e.target.value)} rows={6} className="terminal-input font-mono" placeholder="ATGC..." />
+                <Textarea value={sequence} onChange={(e) => setSequence(e.target.value)} rows={6} className="terminal-input font-mono" placeholder=">Template\nATGC..." />
                 <div className="text-xs text-muted-foreground font-mono mt-1">{cleanSeq.length} bp</div>
+                <div className="text-xs text-muted-foreground font-mono">{t("tools.restriction-enzymes.sequenceHint", "Plain multi-line input is one sequence; FASTA input must contain exactly one record.")}</div>
+                {!sequenceValid && <Alert variant="destructive"><AlertDescription>{sequenceError ?? t("tools.restriction-enzymes.invalidSequence", "Sequence may contain DNA/IUPAC symbols only; invalid characters are not silently removed.")}</AlertDescription></Alert>}
               </div>
               <div className="space-y-2">
                 <Label className="">{t("tools.restriction-enzymes.enzymes", "Select Enzymes")}</Label>
@@ -261,7 +227,7 @@ export function RestrictionEnzymesTool() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="font-mono">{t("tools.restriction-enzymes.enzyme", "Enzyme")}</TableHead>
-                      <TableHead className="font-mono text-center">{t("tools.restriction-enzymes.position", "Position")}</TableHead>
+                      <TableHead className="font-mono text-center">{t("tools.restriction-enzymes.cutCoordinate", "Cut coordinate (0-based inter-base)")}</TableHead>
                       <TableHead className="font-mono text-center">{t("tools.restriction-enzymes.strand", "Strand")}</TableHead>
                       <TableHead className="font-mono text-center">{t("tools.restriction-enzymes.overhang", "Overhang")}</TableHead>
                     </TableRow>
@@ -270,7 +236,7 @@ export function RestrictionEnzymesTool() {
                     {sites.map((s, i) => (
                       <TableRow key={`${s.enzyme}-${s.topCut}-${i}`}>
                         <TableCell className="font-mono">{s.enzyme}</TableCell>
-                        <TableCell className="font-mono text-center">{s.topCut + 1}</TableCell>
+                        <TableCell className="font-mono text-center">{s.topCut}</TableCell>
                         <TableCell className="font-mono text-center">{s.strand}</TableCell>
                         <TableCell className="font-mono text-center">{s.overhang}</TableCell>
                       </TableRow>

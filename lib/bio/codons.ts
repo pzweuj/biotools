@@ -37,17 +37,24 @@ export const CODON_TABLES: Readonly<Record<string, CodonTable>> = Object.freeze(
   vertebrate_mito: VERT_MITO_CODE,
 })
 
-/** 氨基酸残基平均分子量 (Da) */
-export const AMINO_ACID_WEIGHT: Readonly<Record<string, number>> = Object.freeze({
-  A: 89.09, R: 174.20, N: 132.12, D: 133.10, C: 121.15,
-  E: 147.13, Q: 146.15, G: 75.07, H: 155.16, I: 131.17,
-  L: 131.17, K: 146.19, M: 149.21, F: 165.19, P: 115.13,
-  S: 105.09, T: 119.12, W: 204.23, Y: 181.19, V: 117.15,
+/** 游离氨基酸平均质量 (Da；形成肽键前的单体质量)。
+ *
+ * 保留足够的小数位，避免在扣除肽键失水后把 AA/MM 等短肽舍入到错误的
+ * 百分位。展示层再按需要舍入到两位小数。
+ */
+export const AMINO_ACID_FREE_MASS: Readonly<Record<string, number>> = Object.freeze({
+  A: 89.0935, R: 174.2017, N: 132.1179, D: 133.1027, C: 121.1596,
+  E: 147.1293, Q: 146.1445, G: 75.0669, H: 155.1546, I: 131.1750,
+  L: 131.1750, K: 146.1893, M: 149.2113, F: 165.1900, P: 115.1326,
+  S: 105.0930, T: 119.1197, W: 204.2252, Y: 181.1885, V: 117.1469,
 })
+
+/** @deprecated Use AMINO_ACID_FREE_MASS. */
+export const AMINO_ACID_WEIGHT = AMINO_ACID_FREE_MASS
 
 /** 翻译 DNA 序列为氨基酸；非 3 倍数尾部丢弃；未知三联体记为 'X' */
 export function translateDna(seq: string, table: CodonTable = STANDARD_CODE): string {
-  const dna = seq.toUpperCase().replace(/U/g, "T")
+  const dna = seq.toUpperCase().replace(/\s+/g, "").replace(/U/g, "T")
   const len = dna.length - (dna.length % 3)
   let out = ""
   for (let i = 0; i < len; i += 3) {

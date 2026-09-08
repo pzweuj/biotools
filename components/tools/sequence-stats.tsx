@@ -9,12 +9,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useI18n } from "@/lib/i18n"
 import { useToolStorage } from "@/hooks/use-tool-storage"
 import { TryExample } from "@/components/try-example"
 import { ResultActions } from "@/components/result-actions"
-import { findRepeats } from "@/lib/bio"
+import { findRepeats, normalizeSequence, parseFasta, shannonEntropy } from "@/lib/bio"
 import type { RepeatInfo } from "@/lib/bio"
 
 interface BaseStats {
@@ -46,24 +47,11 @@ export function SequenceStats() {
   const [sequences, setSequences] = useToolStorage("sequence-stats:input", "")
   const [results, setResults] = useState<SequenceResult[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [inputError, setInputError] = useState<string | null>(null)
 
   // 计算序列复杂度 (Shannon entropy)
   const calculateComplexity = (sequence: string): number => {
-    const bases = ['A', 'T', 'G', 'C']
-    const length = sequence.length
-    if (length === 0) return 0
-
-    let entropy = 0
-    bases.forEach(base => {
-      const count = (sequence.match(new RegExp(base, 'g')) || []).length
-      if (count > 0) {
-        const probability = count / length
-        entropy -= probability * Math.log2(probability)
-      }
-    })
-
-    // 归一化到0-100范围
-    return Math.round((entropy / 2) * 100)
+    return Math.round((shannonEntropy(sequence) / 2) * 100)
   }
 
   // 检测重复序列 — 使用 lib/bio 集中实现
@@ -95,29 +83,22 @@ export function SequenceStats() {
     // 添加延迟以显示加载状态
     await new Promise(resolve => setTimeout(resolve, 100))
 
-    const sequenceLines = sequences
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
+    const records = sequences.includes(">")
+      ? parseFasta(sequences).map((record, index) => ({ name: record.id || record.description || `Sequence ${index + 1}`, sequence: record.sequence }))
+      : sequences.split('\n').map((line, index) => ({ name: `Sequence ${index + 1}`, sequence: line.trim() })).filter((record) => record.sequence.length > 0)
 
     const newResults: SequenceResult[] = []
+    let invalidMessage: string | null = null
 
-    sequenceLines.forEach((line, index) => {
-      let name = `Sequence ${index + 1}`
-      let sequence = line
-
-      // 检查是否是FASTA格式
-      if (line.startsWith('>')) {
-        name = line.substring(1).trim() || name
-        return // FASTA header行，跳过
+    records.forEach((record, index) => {
+      const name = record.name || `Sequence ${index + 1}`
+      const diagnostics = normalizeSequence(record.sequence, "iupac-dna")
+      if (diagnostics.issues.length > 0) {
+        const issue = diagnostics.issues[0]
+        invalidMessage = `${name}: invalid character "${issue.character}" at sequence position ${issue.position}`
+        return
       }
-
-      // 如果前一行是FASTA header，使用它作为名称
-      if (index > 0 && sequenceLines[index - 1].startsWith('>')) {
-        name = sequenceLines[index - 1].substring(1).trim() || name
-      }
-
-      const cleanSeq = sequence.toUpperCase().replace(/[^ATCGN]/g, "")
+      const cleanSeq = diagnostics.sequence
       if (cleanSeq.length === 0) return
 
       const length = cleanSeq.length
@@ -151,7 +132,7 @@ export function SequenceStats() {
       newResults.push({
         id: index + 1,
         name,
-        originalSequence: sequence,
+        originalSequence: record.sequence,
         cleanSequence: cleanSeq,
         length,
         gcContent,
@@ -165,12 +146,14 @@ export function SequenceStats() {
     })
 
     setResults(newResults)
+    setInputError(invalidMessage)
     setIsAnalyzing(false)
   }
 
   const clearResults = () => {
     setSequences("")
     setResults([])
+    setInputError(null)
   }
 
   return (
@@ -192,13 +175,14 @@ export function SequenceStats() {
             id="sequences"
             placeholder={t("tools.sequence-stats.sequencePlaceholder")}
             value={sequences}
-            onChange={(e) => setSequences(e.target.value)}
+            onChange={(e) => { setSequences(e.target.value); setResults([]); setInputError(null) }}
             className="terminal-input min-h-[120px] font-mono"
             rows={6}
           />
           <div className="text-xs text-muted-foreground font-mono">
             {t("tools.sequence-stats.formatHint")}
           </div>
+          {inputError && <Alert variant="destructive"><AlertDescription>{inputError}</AlertDescription></Alert>}
         </div>
 
         <div className="flex gap-2">
@@ -311,6 +295,9 @@ export function SequenceStats() {
                     </TableBody>
                   </Table>
                 </div>
+                <p className="text-xs text-muted-foreground font-mono">
+                  {t("tools.sequence-stats.denominatorNote", "GC% and AT% use total sequence length as the denominator; unknown/IUPAC bases are reported separately and excluded from Shannon entropy.")}
+                </p>
               </TabsContent>
 
               <TabsContent value="composition" className="space-y-4">

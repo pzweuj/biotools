@@ -21,7 +21,7 @@ import { MapPin, ArrowRight, AlertTriangle, Info } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import {
   parseFasta,
-  cleanDnaStrict,
+  normalizeSequence,
   locatePrimer,
   computeAmplicon,
   type PrimerLocation,
@@ -51,6 +51,7 @@ const emptyLocation = (expectedStrand: PrimerStrand): PrimerLocation => ({
   strand: expectedStrand,
   orientationMatches: true,
   hits: [],
+  skippedUnknown: 0,
 })
 
 export function PrimerCoordinateCalculator() {
@@ -71,21 +72,31 @@ export function PrimerCoordinateCalculator() {
   const calculate = () => {
     // 解析模板：取第一条 FASTA 记录；无 header 时整体作为序列
     const records = parseFasta(template)
-    let seq: string
-    let name: string
-    if (records.length > 0) {
-      seq = cleanDnaStrict(records[0].sequence)
-      name = records[0].id || records[0].description || "template"
-    } else {
-      seq = cleanDnaStrict(template)
-      name = "template"
-    }
-
-    if (seq.length === 0) {
-      setError("emptyTemplate")
+    if (records.length > 1) {
+      setError("Enter exactly one FASTA record for coordinate calculation")
       setResult(null)
       return
     }
+    let seq: string
+    let name: string
+    if (records.length > 0) {
+      seq = records[0].sequence.toUpperCase().replace(/\s+/g, "")
+      name = records[0].id || records[0].description || "template"
+    } else {
+      seq = template.toUpperCase().replace(/\s+/g, "")
+      name = "template"
+    }
+
+    const templateDiagnostics = normalizeSequence(seq, "iupac-dna")
+    if (templateDiagnostics.issues.length > 0 || templateDiagnostics.sequence.length === 0) {
+      if (templateDiagnostics.issues.length > 0) {
+        const issue = templateDiagnostics.issues[0]
+        setError(`Invalid character "${issue.character}" at sequence position ${issue.position}`)
+      } else setError("emptyTemplate")
+      setResult(null)
+      return
+    }
+    seq = templateDiagnostics.sequence
 
     const g = Number.parseInt(genomicStart, 10)
     if (!Number.isFinite(g) || g < 1) {
@@ -94,8 +105,13 @@ export function PrimerCoordinateCalculator() {
       return
     }
 
-    const fClean = cleanDnaStrict(fPrimer)
-    const rClean = cleanDnaStrict(rPrimer)
+    const fClean = fPrimer.toUpperCase().replace(/\s+/g, "")
+    const rClean = rPrimer.toUpperCase().replace(/\s+/g, "")
+    if ((fClean && !/^[ACGT]+$/.test(fClean)) || (rClean && !/^[ACGT]+$/.test(rClean))) {
+      setError("Primers may contain only A, C, G and T")
+      setResult(null)
+      return
+    }
     if (fClean.length === 0 && rClean.length === 0) {
       setError("emptyPrimer")
       setResult(null)
@@ -212,6 +228,14 @@ export function PrimerCoordinateCalculator() {
             {t("tools.primer-coordinate-calculator.multipleHitsHint")}
           </div>
         )}
+        {location.skippedUnknown > 0 && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              {location.skippedUnknown} {t("tools.primer-coordinate-calculator.unknownSkipped", "candidate binding window(s) containing unknown or ambiguous bases were skipped.")}
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
     )
   }
@@ -271,7 +295,7 @@ export function PrimerCoordinateCalculator() {
             id="template"
             placeholder={t("tools.primer-coordinate-calculator.templatePlaceholder")}
             value={template}
-            onChange={(e) => setTemplate(e.target.value)}
+            onChange={(e) => { setTemplate(e.target.value); setResult(null); setError(null) }}
             className="terminal-input min-h-[120px] font-mono"
             rows={5}
           />
@@ -288,7 +312,7 @@ export function PrimerCoordinateCalculator() {
               type="number"
               min={1}
               value={genomicStart}
-              onChange={(e) => setGenomicStart(e.target.value)}
+              onChange={(e) => { setGenomicStart(e.target.value); setResult(null); setError(null) }}
               placeholder={t("tools.primer-coordinate-calculator.genomicStartPlaceholder")}
               className="terminal-input font-mono"
             />
@@ -300,7 +324,7 @@ export function PrimerCoordinateCalculator() {
             <Input
               id="ref-name"
               value={refName}
-              onChange={(e) => setRefName(e.target.value)}
+              onChange={(e) => { setRefName(e.target.value); setResult(null); setError(null) }}
               placeholder={t("tools.primer-coordinate-calculator.refNamePlaceholder")}
               className="terminal-input font-mono"
             />
@@ -319,7 +343,7 @@ export function PrimerCoordinateCalculator() {
             <Input
               id="f-primer"
               value={fPrimer}
-              onChange={(e) => setFPrimer(e.target.value.toUpperCase())}
+              onChange={(e) => { setFPrimer(e.target.value.toUpperCase()); setResult(null); setError(null) }}
               placeholder={t("tools.primer-coordinate-calculator.fPrimerPlaceholder")}
               className="terminal-input font-mono"
             />
@@ -331,7 +355,7 @@ export function PrimerCoordinateCalculator() {
             <Input
               id="r-primer"
               value={rPrimer}
-              onChange={(e) => setRPrimer(e.target.value.toUpperCase())}
+              onChange={(e) => { setRPrimer(e.target.value.toUpperCase()); setResult(null); setError(null) }}
               placeholder={t("tools.primer-coordinate-calculator.rPrimerPlaceholder")}
               className="terminal-input font-mono"
             />
@@ -376,7 +400,7 @@ export function PrimerCoordinateCalculator() {
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              {t(`tools.primer-coordinate-calculator.${error}`)}
+              {error.includes(" ") ? error : t(`tools.primer-coordinate-calculator.${error}`)}
             </AlertDescription>
           </Alert>
         )}

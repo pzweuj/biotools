@@ -22,4 +22,7 @@ describe("translateDna", () => {
   it("unknown codon becomes X", () => {
     expect(translateDna("NNN")).toBe("X")
   })
+  it("merges line breaks before translating", () => {
+    expect(translateDna("ATG\nGCT\nTAA")).toBe("MA*")
+  })
 })

@@ -14,21 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Calculator, Beaker, Dna } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-
-// 分子量常数 (g/mol)
-const MOLECULAR_WEIGHTS = {
-  dna: { A: 331.2, T: 322.2, G: 347.2, C: 307.2, N: 327.0 },
-  rna: { A: 347.2, U: 324.2, G: 363.2, C: 323.2, N: 339.5 },
-  protein: {
-    A: 89.1, R: 174.2, N: 132.1, D: 133.1, C: 121.2, E: 147.1, Q: 146.2, G: 75.1,
-    H: 155.2, I: 131.2, L: 131.2, K: 146.2, M: 149.2, F: 165.2, P: 115.1,
-    S: 105.1, T: 119.1, W: 204.2, Y: 181.2, V: 117.1, X: 137.0
-  },
-  modified: {
-    'm6A': 361.2, 'm5C': 337.2, 'pseudoU': 324.2, 'inosine': 348.2,
-    'FAM': 472.4, 'TAMRA': 430.5, 'ROX': 580.7, 'Cy3': 767.9, 'Cy5': 792.0
-  }
-}
+import { calculateConcentration, normalizeSequence, nucleicAcidMolecularWeight, parseFasta, proteinMolecularWeight } from "@/lib/bio"
 
 interface MWResult {
   sequence: string
@@ -44,6 +30,7 @@ export function MolecularWeightCalculator() {
   const [sequences, setSequences] = useState("")
   const [sequenceType, setSequenceType] = useState<'dna' | 'rna' | 'protein'>('dna')
   const [mwResults, setMwResults] = useState<MWResult[]>([])
+  const [mwError, setMwError] = useState<string | null>(null)
 
   // 浓度转换状态
   const [mass, setMass] = useState("")
@@ -52,6 +39,7 @@ export function MolecularWeightCalculator() {
   const [massUnit, setMassUnit] = useState("ng")
   const [volumeUnit, setVolumeUnit] = useState("μL")
   const [concentrationResult, setConcentrationResult] = useState<any>(null)
+  const [concentrationError, setConcentrationError] = useState<string | null>(null)
 
   // 稀释计算状态
   const [c1, setC1] = useState("")
@@ -60,43 +48,23 @@ export function MolecularWeightCalculator() {
   const [v2, setV2] = useState("")
   const [dilutionResult, setDilutionResult] = useState<any>(null)
 
-  const convertMassToGrams = (value: number, unit: string): number => {
-    const conversions = { 'g': 1, 'mg': 1e-3, 'μg': 1e-6, 'ng': 1e-9, 'pg': 1e-12 }
-    return value * (conversions[unit as keyof typeof conversions] || 1)
-  }
-
-  const convertVolumeToLiters = (value: number, unit: string): number => {
-    const conversions = { 'L': 1, 'mL': 1e-3, 'μL': 1e-6, 'nL': 1e-9 }
-    return value * (conversions[unit as keyof typeof conversions] || 1)
-  }
-
   const calculateMolecularWeight = (sequence: string, type: 'dna' | 'rna' | 'protein') => {
-    const cleanSeq = sequence.toUpperCase().replace(/[^A-Z]/g, '')
-    const weights = MOLECULAR_WEIGHTS[type]
+    const cleanSeq = sequence.toUpperCase().replace(/\s+/g, '')
     const composition: { [key: string]: number } = {}
-    let totalWeight = 0
-
-    for (const char of cleanSeq) {
-      if (weights[char as keyof typeof weights]) {
-        composition[char] = (composition[char] || 0) + 1
-        totalWeight += weights[char as keyof typeof weights]
-      }
-    }
-
-    if (type === 'dna' || type === 'rna') {
-      const length = cleanSeq.length
-      if (length > 1) totalWeight -= (length - 1) * 18.015
-    }
-
-    if (type === 'protein') {
-      const length = cleanSeq.length
-      if (length > 1) totalWeight -= (length - 1) * 18.015
-    }
-
+    for (const char of cleanSeq) composition[char] = (composition[char] || 0) + 1
+    const totalWeight = type === 'protein'
+      ? proteinMolecularWeight(cleanSeq)
+      : nucleicAcidMolecularWeight(cleanSeq, type)
     return { mw: totalWeight, composition }
   }
 
   const parseSequences = (text: string) => {
+    if (text.includes('>')) {
+      return parseFasta(text).map((record, index) => ({
+        name: record.id || record.description || `Sequence ${index + 1}`,
+        sequence: record.sequence,
+      }))
+    }
     const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0)
     const sequences: { name: string; sequence: string }[] = []
     let currentName = ''
@@ -107,9 +75,9 @@ export function MolecularWeightCalculator() {
         currentName = line.substring(1).trim() || `Sequence ${sequences.length + 1}`
       } else {
         const name = currentName || `Sequence ${sequences.length + 1}`
-        const cleanSeq = line.replace(/[^A-Za-z]/g, '')
-        if (cleanSeq.length > 0) {
-          sequences.push({ name, sequence: cleanSeq })
+        const sequence = line.replace(/\s+/g, '')
+        if (sequence.length > 0) {
+          sequences.push({ name, sequence })
         }
         currentName = ''
       }
@@ -121,45 +89,58 @@ export function MolecularWeightCalculator() {
     if (!sequences.trim()) return
     const sequenceList = parseSequences(sequences)
     const results: MWResult[] = []
-
+    const errors: string[] = []
     sequenceList.forEach(seq => {
-      const { mw, composition } = calculateMolecularWeight(seq.sequence, sequenceType)
-      results.push({
-        sequence: seq.sequence,
-        name: seq.name,
-        length: seq.sequence.length,
-        molecularWeight: mw,
-        type: sequenceType,
-        composition
-      })
+      try {
+        const alphabet = sequenceType === "protein" ? "protein" : sequenceType === "rna" ? "rna" : "dna"
+        const diagnostics = normalizeSequence(seq.sequence, alphabet)
+        if (diagnostics.issues.length > 0) {
+          const issue = diagnostics.issues[0]
+          throw new TypeError(`invalid character "${issue.character}" at sequence position ${issue.position}`)
+        }
+        const normalized = diagnostics.sequence
+        if (!normalized) throw new RangeError("sequence is empty")
+        const { mw, composition } = calculateMolecularWeight(normalized, sequenceType)
+        results.push({
+          sequence: normalized,
+          name: seq.name,
+          length: normalized.length,
+          molecularWeight: mw,
+          type: sequenceType,
+          composition
+        })
+      } catch (error) {
+        errors.push(`${seq.name}: ${error instanceof Error ? error.message : "invalid sequence"}`)
+      }
     })
     setMwResults(results)
+    setMwError(errors.length > 0 ? errors.join("; ") : null)
   }
 
-  const calculateConcentration = () => {
-    const massVal = parseFloat(mass)
-    const volumeVal = parseFloat(volume)
-    const mwVal = parseFloat(molecularWeight)
+  const calculateConcentrationResult = () => {
+    const parseNumber = (value: string) => value.trim() === "" ? null : Number(value)
+    const massVal = parseNumber(mass)
+    const volumeVal = parseNumber(volume)
+    const mwVal = parseNumber(molecularWeight)
 
-    if (isNaN(massVal) || isNaN(volumeVal) || isNaN(mwVal)) return
-
-    const massInGrams = convertMassToGrams(massVal, massUnit)
-    const volumeInLiters = convertVolumeToLiters(volumeVal, volumeUnit)
-    
-    const moles = massInGrams / mwVal
-    const calculatedMolarity = moles / volumeInLiters
-    const concentration = massInGrams / volumeInLiters * 1000
-
-    const avogadro = 6.022e23
-    const copies = moles * avogadro
-
-    setConcentrationResult({
+    setConcentrationResult(null)
+    setConcentrationError(null)
+    if (massVal == null || volumeVal == null || mwVal == null || ![massVal, volumeVal, mwVal].every(Number.isFinite)) {
+      setConcentrationError("Mass, volume, and molecular weight must be finite numbers")
+      return
+    }
+    const result = calculateConcentration({
       mass: massVal,
+      massUnit: massUnit as "g" | "mg" | "μg" | "ng" | "pg",
       volume: volumeVal,
-      concentration,
-      molarity: calculatedMolarity,
-      copies: sequenceType !== 'protein' ? copies : undefined
+      volumeUnit: volumeUnit as "L" | "mL" | "μL" | "nL",
+      molecularWeight: mwVal,
+      includeCopies: sequenceType !== "protein",
     })
+    if (!result) {
+      setConcentrationError("Mass must be non-negative; volume and molecular weight must be positive")
+    }
+    setConcentrationResult(result)
   }
 
   // 检查稀释计算字段状态
@@ -192,17 +173,21 @@ export function MolecularWeightCalculator() {
     const v2Val = parseFloat(v2)
 
     let result: any = null
+    if ([c1Val, v1Val, c2Val, v2Val].some((value) => Number.isFinite(value) && value < 0)) {
+      setDilutionResult(null)
+      return
+    }
 
-    if (!isNaN(c1Val) && !isNaN(v1Val) && !isNaN(c2Val) && (isNaN(v2Val) || v2 === '')) {
+    if (c1Val > 0 && v1Val > 0 && c2Val > 0 && !isNaN(c1Val) && !isNaN(v1Val) && !isNaN(c2Val) && (isNaN(v2Val) || v2 === '')) {
       const calculatedV2 = (c1Val * v1Val) / c2Val
       result = { c1: c1Val, v1: v1Val, c2: c2Val, v2: calculatedV2, dilutionFactor: c1Val / c2Val }
-    } else if (!isNaN(c1Val) && !isNaN(v1Val) && (isNaN(c2Val) || c2 === '') && !isNaN(v2Val)) {
+    } else if (c1Val > 0 && v1Val > 0 && v2Val > 0 && !isNaN(c1Val) && !isNaN(v1Val) && (isNaN(c2Val) || c2 === '') && !isNaN(v2Val)) {
       const calculatedC2 = (c1Val * v1Val) / v2Val
       result = { c1: c1Val, v1: v1Val, c2: calculatedC2, v2: v2Val, dilutionFactor: c1Val / calculatedC2 }
-    } else if (!isNaN(c1Val) && (isNaN(v1Val) || v1 === '') && !isNaN(c2Val) && !isNaN(v2Val)) {
+    } else if (c1Val > 0 && c2Val > 0 && v2Val > 0 && !isNaN(c1Val) && (isNaN(v1Val) || v1 === '') && !isNaN(c2Val) && !isNaN(v2Val)) {
       const calculatedV1 = (c2Val * v2Val) / c1Val
       result = { c1: c1Val, v1: calculatedV1, c2: c2Val, v2: v2Val, dilutionFactor: c1Val / c2Val }
-    } else if ((isNaN(c1Val) || c1 === '') && !isNaN(v1Val) && !isNaN(c2Val) && !isNaN(v2Val)) {
+    } else if (v1Val > 0 && c2Val > 0 && v2Val > 0 && (isNaN(c1Val) || c1 === '') && !isNaN(v1Val) && !isNaN(c2Val) && !isNaN(v2Val)) {
       const calculatedC1 = (c2Val * v2Val) / v1Val
       result = { c1: calculatedC1, v1: v1Val, c2: c2Val, v2: v2Val, dilutionFactor: calculatedC1 / c2Val }
     }
@@ -223,10 +208,12 @@ export function MolecularWeightCalculator() {
   const clearAll = () => {
     setSequences("")
     setMwResults([])
+    setMwError(null)
     setMass("")
     setVolume("")
     setMolecularWeight("")
     setConcentrationResult(null)
+    setConcentrationError(null)
     setC1("")
     setV1("")
     setC2("")
@@ -268,7 +255,7 @@ export function MolecularWeightCalculator() {
                 </Label>
                 <div className="flex items-center gap-2">
                   <Label className="text-xs">{t("tools.molecular-weight-calculator.sequenceType", "Type")}:</Label>
-                  <Select value={sequenceType} onValueChange={(value) => setSequenceType(value as any)}>
+                  <Select value={sequenceType} onValueChange={(value) => { setSequenceType(value as any); setMwResults([]); setMwError(null); setConcentrationResult(null); setConcentrationError(null) }}>
                     <SelectTrigger className="w-24">
                       <SelectValue />
                     </SelectTrigger>
@@ -285,10 +272,13 @@ export function MolecularWeightCalculator() {
                 id="sequences"
                 placeholder={t("tools.molecular-weight-calculator.sequencePlaceholder", "Enter sequences in FASTA format or plain text\nExample:\n>Sequence 1\nATCGATCGATCG\n>Sequence 2\nGCTAGCTAGCTA")}
                 value={sequences}
-                onChange={(e) => setSequences(e.target.value)}
+                onChange={(e) => { setSequences(e.target.value); setMwResults([]); setMwError(null) }}
                 className="terminal-input min-h-[120px] font-mono"
                 rows={6}
               />
+              <div className="text-xs text-muted-foreground font-mono">
+                {t("tools.molecular-weight-calculator.sequenceFormatHint", "FASTA records are calculated separately; without FASTA headers, each non-empty line is one sequence.")}
+              </div>
 
               <div className="flex gap-2">
                 <Button onClick={calculateMW} className="flex-1 " disabled={!sequences.trim()}>
@@ -298,6 +288,7 @@ export function MolecularWeightCalculator() {
                   {t("common.clear")}
                 </Button>
               </div>
+              {mwError && <Alert variant="destructive"><AlertDescription>{mwError}</AlertDescription></Alert>}
             </div>
 
             {mwResults.length > 0 && (
@@ -375,18 +366,18 @@ export function MolecularWeightCalculator() {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-xs">{t("tools.molecular-weight-calculator.mass", "Mass")}</Label>
-                    <Input placeholder="100" value={mass} onChange={(e) => setMass(e.target.value)} className="font-mono" />
+                    <Input placeholder="100" value={mass} onChange={(e) => { setMass(e.target.value); setConcentrationResult(null); setConcentrationError(null) }} className="font-mono" />
                   </div>
                   <div>
                     <Label className="text-xs">{t("tools.molecular-weight-calculator.unit", "Unit")}</Label>
-                    <Select value={massUnit} onValueChange={setMassUnit}>
+                    <Select value={massUnit} onValueChange={(value) => { setMassUnit(value); setConcentrationResult(null); setConcentrationError(null) }}>
                       <SelectTrigger className=""><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="g" className="">g</SelectItem>
                         <SelectItem value="mg" className="">mg</SelectItem>
                         <SelectItem value="μg" className="">μg</SelectItem>
                         <SelectItem value="ng" className="">ng</SelectItem>
-                        <SelectItem value="pg" className="">pg</SelectItem>
+                      <SelectItem value="pg" className="">pg</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -395,11 +386,11 @@ export function MolecularWeightCalculator() {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-xs">{t("tools.molecular-weight-calculator.volume", "Volume")}</Label>
-                    <Input placeholder="10" value={volume} onChange={(e) => setVolume(e.target.value)} className="font-mono" />
+                    <Input placeholder="10" value={volume} onChange={(e) => { setVolume(e.target.value); setConcentrationResult(null); setConcentrationError(null) }} className="font-mono" />
                   </div>
                   <div>
                     <Label className="text-xs">{t("tools.molecular-weight-calculator.unit", "Unit")}</Label>
-                    <Select value={volumeUnit} onValueChange={setVolumeUnit}>
+                    <Select value={volumeUnit} onValueChange={(value) => { setVolumeUnit(value); setConcentrationResult(null); setConcentrationError(null) }}>
                       <SelectTrigger className=""><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="L" className="">L</SelectItem>
@@ -413,12 +404,14 @@ export function MolecularWeightCalculator() {
 
                 <div>
                   <Label className="text-xs">{t("tools.molecular-weight-calculator.molecularWeightLabel", "MW (g/mol)")}</Label>
-                  <Input placeholder="10000" value={molecularWeight} onChange={(e) => setMolecularWeight(e.target.value)} className="font-mono" />
+                    <Input placeholder="10000" value={molecularWeight} onChange={(e) => { setMolecularWeight(e.target.value); setConcentrationResult(null); setConcentrationError(null) }} className="font-mono" />
                 </div>
 
-                <Button onClick={calculateConcentration} className="w-full ">
+                <Button onClick={calculateConcentrationResult} className="w-full ">
                   {t("tools.molecular-weight-calculator.calculate", "Calculate")}
                 </Button>
+
+                {concentrationError && <Alert variant="destructive"><AlertDescription>{concentrationError}</AlertDescription></Alert>}
 
                 {concentrationResult && (
                   <div className="space-y-3 mt-6">
@@ -432,7 +425,7 @@ export function MolecularWeightCalculator() {
                         <span>{t("tools.molecular-weight-calculator.molarity", "Molarity")}:</span>
                         <span>{formatNumber(concentrationResult.molarity)} M</span>
                       </div>
-                      {concentrationResult.copies && (
+                      {concentrationResult.copies != null && (
                         <div className="flex justify-between">
                           <span>{t("tools.molecular-weight-calculator.copies", "Copies")}:</span>
                           <span>{formatNumber(concentrationResult.copies, 2)}</span>
@@ -537,7 +530,7 @@ export function MolecularWeightCalculator() {
         <Alert>
           <Calculator className="h-4 w-4" />
           <AlertDescription className="text-sm">
-            {t("tools.molecular-weight-calculator.tip", "Molecular weights include phosphate groups for DNA/RNA. Protein calculations account for peptide bond formation.")}
+            {t("tools.molecular-weight-calculator.tip", "DNA/RNA values use the average mass of unmodified, linear, single-stranded 5′OH/3′OH oligonucleotides. Protein values use free amino-acid average masses with peptide-bond water loss.")}
           </AlertDescription>
         </Alert>
       </ToolPageContent>

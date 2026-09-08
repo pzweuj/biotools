@@ -16,7 +16,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Copy, Check, Dna } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { reverseComplement, cleanDnaStrict, copyText, STANDARD_CODE, VERT_MITO_CODE, AMINO_ACID_WEIGHT } from "@/lib/bio"
+import { normalizeSequence, parseSingleSequenceInput, reverseComplement, copyText, STANDARD_CODE, VERT_MITO_CODE, proteinMolecularWeight } from "@/lib/bio"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 // 遗传密码表（RNA 键，由库中共用的 DNA 表派生）
 const toRnaTable = (t: Readonly<Record<string, string>>): Record<string, string> =>
@@ -36,7 +37,7 @@ interface ORF {
   proteinSequence: string
   startCodon: string
   stopCodon: string
-  molecularWeight: number
+  molecularWeight: number | null
   strand: '+' | '-'
 }
 
@@ -50,7 +51,7 @@ function transcribeDNAtoRNA(seq: string) {
 }
 
 function cleanRNA(seq: string) {
-  return seq.toUpperCase().replace(/[^ACGU]/g, "")
+  return seq.toUpperCase().replace(/[^ACGURYSWKMBDHVN]/g, "")
 }
 
 function translateRNA(rna: string, codeKey: string, frame: number, stopMode: "asterisk" | "stop" | "truncate") {
@@ -71,14 +72,16 @@ function translateRNA(rna: string, codeKey: string, frame: number, stopMode: "as
   return protein.join("")
 }
 
-function calculateMolecularWeight(proteinSeq: string): number {
-  let weight = 18.015
-  for (const aa of proteinSeq) {
-    if (aa !== '*' && aa !== 'X') {
-      weight += AMINO_ACID_WEIGHT[aa] || 0
-    }
+function calculateMolecularWeight(proteinSeq: string): number | null {
+  try {
+    return Math.round(proteinMolecularWeight(proteinSeq) * 100) / 100
+  } catch {
+    return null
   }
-  return Math.round(weight * 100) / 100
+}
+
+function readSingleSequence(text: string): string {
+  return parseSingleSequenceInput(text).sequence
 }
 
 export function SequenceTranslationOrf() {
@@ -102,6 +105,7 @@ export function SequenceTranslationOrf() {
   const [startCodons, setStartCodons] = useToolStorage("sequence-translation-orf:start-codons", "ATG")
   const [orfResults, setOrfResults] = useState<{ name: string; sequence: string; orfs: ORF[] }[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [inputError, setInputError] = useState<string | null>(null)
 
   // 六框翻译模式
   const [sixFrameInput, setSixFrameInput] = useToolStorage("sequence-translation-orf:six-frame-input", "")
@@ -111,22 +115,81 @@ export function SequenceTranslationOrf() {
 
   // 简单翻译功能
   const handleTranscribe = () => {
-    const cleaned = input.replace(/[^ATUGCNatugcn]/g, "")
-    setOutput(transcribeDNAtoRNA(cleaned))
+    let sequence: string
+    try {
+      sequence = readSingleSequence(input)
+    } catch (error) {
+      setInputError(error instanceof Error ? error.message : "expected exactly one FASTA record")
+      setOutput("")
+      return
+    }
+    const diagnostics = normalizeSequence(sequence, "iupac-dna")
+    if (diagnostics.issues.length > 0) {
+      setInputError(`Invalid character "${diagnostics.issues[0].character}" at sequence position ${diagnostics.issues[0].position}`)
+      setOutput("")
+      return
+    }
+    setInputError(null)
+    setOutput(transcribeDNAtoRNA(diagnostics.sequence))
   }
 
   const handleTranslate = () => {
-    const rna = inputType === "DNA" ? transcribeDNAtoRNA(input) : input
+    let sequence: string
+    try {
+      sequence = readSingleSequence(input)
+    } catch (error) {
+      setInputError(error instanceof Error ? error.message : "expected exactly one FASTA record")
+      setOutput("")
+      return
+    }
+    const diagnostics = normalizeSequence(sequence, inputType === "DNA" ? "iupac-dna" : "iupac-rna")
+    if (diagnostics.issues.length > 0) {
+      setInputError(`Invalid character "${diagnostics.issues[0].character}" at sequence position ${diagnostics.issues[0].position}`)
+      setOutput("")
+      return
+    }
+    setInputError(null)
+    const rna = inputType === "DNA" ? transcribeDNAtoRNA(diagnostics.sequence) : diagnostics.sequence
     setOutput(translateRNA(rna, geneticCode, frame, stopMode))
   }
 
   const handleReverseComplement = () => {
-    setOutput(reverseComplement(input))
+    let sequence: string
+    try {
+      sequence = readSingleSequence(input)
+    } catch (error) {
+      setInputError(error instanceof Error ? error.message : "expected exactly one FASTA record")
+      setOutput("")
+      return
+    }
+    const diagnostics = normalizeSequence(sequence, "iupac-dna")
+    if (diagnostics.issues.length > 0) {
+      setInputError(`Invalid character "${diagnostics.issues[0].character}" at sequence position ${diagnostics.issues[0].position}`)
+      setOutput("")
+      return
+    }
+    setInputError(null)
+    setOutput(reverseComplement(diagnostics.sequence))
   }
 
   // 六框翻译
   const handleSixFrameTranslation = () => {
-    const cleanSeq = sixFrameInput.toUpperCase().replace(/[^ATCG]/g, "")
+    let sequence: string
+    try {
+      sequence = readSingleSequence(sixFrameInput)
+    } catch (error) {
+      setInputError(error instanceof Error ? error.message : "expected exactly one FASTA record")
+      setSixFrameResults([])
+      return
+    }
+    const diagnostics = normalizeSequence(sequence, "iupac-dna")
+    if (diagnostics.issues.length > 0) {
+      setInputError(`Invalid character "${diagnostics.issues[0].character}" at sequence position ${diagnostics.issues[0].position}`)
+      setSixFrameResults([])
+      return
+    }
+    setInputError(null)
+    const cleanSeq = diagnostics.sequence
     if (!cleanSeq) return
 
     const reverseComp = reverseComplement(cleanSeq)
@@ -218,7 +281,24 @@ export function SequenceTranslationOrf() {
     const minLen = parseInt(minLength) || 30
     const startCodonList = startCodons.split(',').map(s => s.trim().toUpperCase())
     
-    const cleanSeq = orfSequence.toUpperCase().replace(/[^ATCG]/g, "")
+    let sequence: string
+    try {
+      sequence = readSingleSequence(orfSequence)
+    } catch (error) {
+      setInputError(error instanceof Error ? error.message : "expected exactly one FASTA record")
+      setOrfResults([])
+      setIsAnalyzing(false)
+      return
+    }
+    const diagnostics = normalizeSequence(sequence, "iupac-dna")
+    if (diagnostics.issues.length > 0) {
+      setInputError(`Invalid character "${diagnostics.issues[0].character}" at sequence position ${diagnostics.issues[0].position}`)
+      setOrfResults([])
+      setIsAnalyzing(false)
+      return
+    }
+    setInputError(null)
+    const cleanSeq = diagnostics.sequence
     const reverseComp = reverseComplement(cleanSeq)
     const allOrfs: ORF[] = []
 
@@ -253,6 +333,7 @@ export function SequenceTranslationOrf() {
     setSixFrameInput("")
     setSixFrameResults([])
     setCopied(false)
+    setInputError(null)
   }
 
   const copyToClipboard = async () => {
@@ -288,6 +369,7 @@ export function SequenceTranslationOrf() {
         </ToolPageDescription>
       </ToolPageHeader>
       <ToolPageContent>
+        {inputError && <Alert variant="destructive"><AlertDescription>{inputError}</AlertDescription></Alert>}
         {/* 模式选择 */}
         <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -307,7 +389,7 @@ export function SequenceTranslationOrf() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="space-y-2">
                 <Label className="">{t("tools.sequence-translation.inputType", "Input Type")}</Label>
-                <Select value={inputType} onValueChange={(v) => setInputType(v as any)}>
+                <Select value={inputType} onValueChange={(v) => { setInputType(v as any); setOutput(""); setInputError(null) }}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
@@ -320,7 +402,7 @@ export function SequenceTranslationOrf() {
 
               <div className="space-y-2">
                 <Label className="">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
-                <Select value={geneticCode} onValueChange={setGeneticCode}>
+                <Select value={geneticCode} onValueChange={(v) => { setGeneticCode(v); setOutput(""); setInputError(null) }}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
@@ -334,7 +416,7 @@ export function SequenceTranslationOrf() {
 
               <div className="space-y-2">
                 <Label className="">{t("tools.sequence-translation.frame", "Reading Frame")}</Label>
-                <Select value={String(frame)} onValueChange={(v) => setFrame(Number(v) as 1 | 2 | 3)}>
+                <Select value={String(frame)} onValueChange={(v) => { setFrame(Number(v) as 1 | 2 | 3); setOutput(""); setInputError(null) }}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
@@ -348,7 +430,7 @@ export function SequenceTranslationOrf() {
 
               <div className="space-y-2">
                 <Label className="">{t("tools.sequence-translation.stopMode", "Stop Codon")}</Label>
-                <Select value={stopMode} onValueChange={(v) => setStopMode(v as any)}>
+                <Select value={stopMode} onValueChange={(v) => { setStopMode(v as any); setOutput(""); setInputError(null) }}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
@@ -369,10 +451,13 @@ export function SequenceTranslationOrf() {
                 id="sequence-input"
                 placeholder={t("tools.sequence-translation.inputPlaceholder", "Paste DNA or RNA sequence")}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => { setInput(e.target.value); setOutput(""); setInputError(null) }}
                 className="terminal-input min-h-[120px] font-mono"
                 rows={5}
               />
+              <div className="text-xs text-muted-foreground font-mono">
+                {t("sequence-translation.sequenceHint", "Plain multi-line input is one sequence; FASTA input must contain exactly one record.")}
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -396,7 +481,6 @@ export function SequenceTranslationOrf() {
                 {t("common.clear")}
               </Button>
             </div>
-
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="sequence-output" className="">
@@ -418,7 +502,7 @@ export function SequenceTranslationOrf() {
                   </Button>
                 )}
               </div>
-              <Textarea
+                <Textarea
                 id="sequence-output"
                 value={output}
                 readOnly
@@ -433,7 +517,7 @@ export function SequenceTranslationOrf() {
           <TabsContent value="six-frame" className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label className="">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
-              <Select value={geneticCode} onValueChange={setGeneticCode}>
+              <Select value={geneticCode} onValueChange={(v) => { setGeneticCode(v); setSixFrameResults([]); setInputError(null) }}>
                 <SelectTrigger className="">
                   <SelectValue />
                 </SelectTrigger>
@@ -453,10 +537,13 @@ export function SequenceTranslationOrf() {
                 id="six-frame-input"
                 placeholder={t("tools.sequence-translation-orf.sixFramePlaceholder", "Enter DNA sequence for six-frame translation")}
                 value={sixFrameInput}
-                onChange={(e) => setSixFrameInput(e.target.value)}
+                onChange={(e) => { setSixFrameInput(e.target.value); setSixFrameResults([]); setInputError(null) }}
                 className="terminal-input min-h-[120px] font-mono"
-                rows={5}
-              />
+                  rows={5}
+                />
+                <div className="text-xs text-muted-foreground font-mono">
+                  {t("sequence-translation.sequenceHint", "Plain multi-line input is one sequence; FASTA input must contain exactly one record.")}
+                </div>
             </div>
 
             <div className="flex gap-2">
@@ -509,14 +596,17 @@ export function SequenceTranslationOrf() {
               <Label htmlFor="orf-sequence" className="">
                 {t("tools.orf-finder.sequenceLabel", "DNA Sequence")}
               </Label>
-              <Textarea
+                <Textarea
                 id="orf-sequence"
                 placeholder={t("tools.orf-finder.sequencePlaceholder", "Enter DNA sequence")}
                 value={orfSequence}
-                onChange={(e) => setOrfSequence(e.target.value)}
+                onChange={(e) => { setOrfSequence(e.target.value); setOrfResults([]); setInputError(null) }}
                 className="terminal-input min-h-[120px] font-mono"
-                rows={6}
-              />
+                  rows={6}
+                />
+                <div className="text-xs text-muted-foreground font-mono">
+                  {t("sequence-translation.sequenceHint", "Plain multi-line input is one sequence; FASTA input must contain exactly one record.")}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -528,7 +618,7 @@ export function SequenceTranslationOrf() {
                   id="min-length"
                   type="number"
                   value={minLength}
-                  onChange={(e) => setMinLength(e.target.value)}
+                  onChange={(e) => { setMinLength(e.target.value); setOrfResults([]); setInputError(null) }}
                   className="terminal-input"
                   min="3"
                   step="3"
@@ -542,14 +632,14 @@ export function SequenceTranslationOrf() {
                 <Input
                   id="start-codons"
                   value={startCodons}
-                  onChange={(e) => setStartCodons(e.target.value)}
+                  onChange={(e) => { setStartCodons(e.target.value); setOrfResults([]); setInputError(null) }}
                   className="terminal-input"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label className="">{t("tools.sequence-translation.geneticCode", "Genetic Code")}</Label>
-                <Select value={geneticCode} onValueChange={setGeneticCode}>
+                <Select value={geneticCode} onValueChange={(v) => { setGeneticCode(v); setOrfResults([]); setInputError(null) }}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
@@ -606,7 +696,7 @@ export function SequenceTranslationOrf() {
                             <Badge variant="secondary" className="font-mono">{orf.length} bp</Badge>
                           </TableCell>
                           <TableCell className="text-center font-mono text-sm">
-                            {orf.molecularWeight.toLocaleString()}
+                            {orf.molecularWeight == null ? "N/A" : orf.molecularWeight.toLocaleString()}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -618,7 +708,7 @@ export function SequenceTranslationOrf() {
                   rows={orfResults[0].orfs}
                   fasta={orfResults[0].orfs.map((orf, i) => ({
                     id: `ORF_${i + 1}_${orf.frame > 0 ? "+" : ""}${orf.frame}_${orf.start}-${orf.end}`,
-                    description: `${orf.length}bp, MW=${orf.molecularWeight}Da, ${orf.strand} strand`,
+                    description: `${orf.length}bp, MW=${orf.molecularWeight == null ? "N/A" : `${orf.molecularWeight}Da`}, ${orf.strand} strand`,
                     sequence: orf.dnaSequence,
                   }))}
                   filename="orf-finder-results"

@@ -116,6 +116,12 @@ describe("locatePrimer (orientation fallback)", () => {
     expect(loc.hits).toEqual([])
     expect(loc.orientationMatches).toBe(true)
   })
+
+  it("reports candidate windows skipped because of ambiguous template bases", () => {
+    const loc = locatePrimer("AAAANAAA", "AAAA", "+")
+    expect(loc.hits).toHaveLength(1)
+    expect(loc.skippedUnknown).toBe(4)
+  })
 })
 
 describe("computeAmplicon", () => {

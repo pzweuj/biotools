@@ -14,12 +14,13 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart3, Calculator, TrendingUp } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { calculateDeltaDeltaCt as calculateDeltaDeltaCtCore, linearRegression, normalizeGroup } from "@/lib/bio"
 
 type CtData = {
   sample: string
   target: string
   ct: number
-  group: 'control' | 'treatment'
+  group: string
 }
 
 type StandardCurvePoint = {
@@ -31,8 +32,8 @@ type StandardCurvePoint = {
 type StandardCurveResult = {
   slope: number
   intercept: number
-  rSquared: number
-  efficiency: number
+  rSquared: number | null
+  efficiency: number | null
 }
 
 export function QpcrDataAnalyzer() {
@@ -44,140 +45,76 @@ export function QpcrDataAnalyzer() {
   const [treatmentGroup, setTreatmentGroup] = useState("treatment")
 
   // 解析Ct数据
-  const parseCtData = (text: string): CtData[] => {
+  const parseCtData = (text: string): { data: CtData[]; error: string | null } => {
     const lines = text.trim().split('\n').filter(line => line.trim())
     const data: CtData[] = []
+    let error: string | null = null
     
     for (const line of lines) {
       const parts = line.split(/[\t,]/).map(p => p.trim())
       if (parts.length >= 4) {
         const [sample, target, ctStr, group] = parts
-        const ct = parseFloat(ctStr)
-        if (!isNaN(ct)) {
+        const ct = Number(ctStr)
+        if (sample && target && Number.isFinite(ct) && group) {
           data.push({
             sample,
             target,
             ct,
-            group: group.toLowerCase() === 'treatment' ? 'treatment' : 'control'
+            group: group.trim()
           })
-        }
-      }
+        } else if (!error) error = `Invalid Ct row: ${line}`
+      } else if (!error) error = `Invalid Ct row: ${line}`
     }
-    return data
+    return { data, error }
   }
 
   // 解析标准曲线数据
-  const parseStandardCurve = (text: string): StandardCurvePoint[] => {
+  const parseStandardCurve = (text: string): { data: StandardCurvePoint[]; error: string | null } => {
     const lines = text.trim().split('\n').filter(line => line.trim())
     const data: StandardCurvePoint[] = []
+    let error: string | null = null
     
     for (const line of lines) {
       const parts = line.split(/[\t,]/).map(p => p.trim())
       if (parts.length >= 2) {
         const [dilutionStr, ctStr] = parts
-        const dilution = parseFloat(dilutionStr)
-        const ct = parseFloat(ctStr)
-        if (!isNaN(dilution) && !isNaN(ct) && dilution > 0) {
+        const dilution = Number(dilutionStr)
+        const ct = Number(ctStr)
+        if (Number.isFinite(dilution) && Number.isFinite(ct) && dilution > 0) {
           data.push({
             dilution,
             logDilution: Math.log10(dilution),
             ct
           })
-        }
-      }
+        } else if (!error) error = `Invalid standard-curve row: ${line}`
+      } else if (!error) error = `Invalid standard-curve row: ${line}`
     }
-    return data.sort((a, b) => a.logDilution - b.logDilution)
+    return { data: data.sort((a, b) => a.logDilution - b.logDilution), error }
   }
 
-  // 线性回归计算
-  const linearRegression = (points: StandardCurvePoint[]): StandardCurveResult => {
-    const n = points.length
-    if (n < 2) return { slope: 0, intercept: 0, rSquared: 0, efficiency: 0 }
-
-    const sumX = points.reduce((sum, p) => sum + p.logDilution, 0)
-    const sumY = points.reduce((sum, p) => sum + p.ct, 0)
-    const sumXY = points.reduce((sum, p) => sum + p.logDilution * p.ct, 0)
-    const sumXX = points.reduce((sum, p) => sum + p.logDilution * p.logDilution, 0)
-    const sumYY = points.reduce((sum, p) => sum + p.ct * p.ct, 0)
-
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
-    const intercept = (sumY - slope * sumX) / n
-
-    // 计算R²
-    const yMean = sumY / n
-    const ssRes = points.reduce((sum, p) => {
-      const predicted = slope * p.logDilution + intercept
-      return sum + Math.pow(p.ct - predicted, 2)
-    }, 0)
-    const ssTot = points.reduce((sum, p) => sum + Math.pow(p.ct - yMean, 2), 0)
-    const rSquared = 1 - (ssRes / ssTot)
-
-    // 计算PCR效率: E = 10^(-1/slope) - 1
-    const efficiency = Math.pow(10, -1 / slope) - 1
-
-    return { slope, intercept, rSquared, efficiency }
-  }
-
-  // ΔΔCt分析
-  const calculateDeltaDeltaCt = (data: CtData[]) => {
-    const results: any[] = []
-    const targets = [...new Set(data.map(d => d.target))].filter(t => t !== referenceGene)
-    
-    for (const target of targets) {
-      const targetData = data.filter(d => d.target === target)
-      const refData = data.filter(d => d.target === referenceGene)
-      
-      // 按样本分组计算ΔCt
-      const samples = [...new Set(targetData.map(d => d.sample))]
-      
-      for (const sample of samples) {
-        const targetCt = targetData.find(d => d.sample === sample)?.ct
-        const refCt = refData.find(d => d.sample === sample)?.ct
-        const group = targetData.find(d => d.sample === sample)?.group
-        
-        if (targetCt !== undefined && refCt !== undefined) {
-          const deltaCt = targetCt - refCt
-          results.push({
-            sample,
-            target,
-            group,
-            targetCt,
-            refCt,
-            deltaCt
-          })
-        }
-      }
+  const parsedCtData = useMemo(() => parseCtData(ctInput), [ctInput])
+  const ctData = parsedCtData.data
+  const parsedStandardCurve = useMemo(() => parseStandardCurve(standardCurveInput), [standardCurveInput])
+  const standardCurveData = parsedStandardCurve.data
+  const curveResult = useMemo<StandardCurveResult | null>(() => {
+    if (parsedStandardCurve.error || standardCurveData.length < 2) return null
+    try {
+      const fit = linearRegression(standardCurveData.map((point) => ({ x: point.logDilution, y: point.ct })))
+      return { slope: fit.slope, intercept: fit.intercept, rSquared: fit.rSquared, efficiency: fit.slope === 0 ? null : 10 ** (-1 / fit.slope) - 1 }
+    } catch {
+      return null
     }
-
-    // 计算ΔΔCt和fold change
-    const finalResults = results.map(r => {
-      // 找到对照组的平均ΔCt
-      const controlDeltas = results.filter(cr => 
-        cr.target === r.target && cr.group === 'control'
-      ).map(cr => cr.deltaCt)
-      
-      const controlMeanDeltaCt = controlDeltas.length > 0 
-        ? controlDeltas.reduce((sum, ct) => sum + ct, 0) / controlDeltas.length 
-        : 0
-
-      const deltaDeltaCt = r.deltaCt - controlMeanDeltaCt
-      const foldChange = Math.pow(2, -deltaDeltaCt)
-
-      return {
-        ...r,
-        controlMeanDeltaCt,
-        deltaDeltaCt,
-        foldChange
-      }
-    })
-
-    return finalResults
-  }
-
-  const ctData = useMemo(() => parseCtData(ctInput), [ctInput])
-  const standardCurveData = useMemo(() => parseStandardCurve(standardCurveInput), [standardCurveInput])
-  const curveResult = useMemo(() => linearRegression(standardCurveData), [standardCurveData])
-  const deltaDeltaCtResults = useMemo(() => calculateDeltaDeltaCt(ctData), [ctData, referenceGene])
+  }, [parsedStandardCurve.error, standardCurveData])
+  const curveError = parsedStandardCurve.error
+    ?? (standardCurveData.length >= 2 && curveResult == null ? "Standard-curve X values must contain at least two distinct finite values" : null)
+  const ctGroupError = useMemo(() => {
+    const allowed = new Set([controlGroup.trim().toLocaleLowerCase(), treatmentGroup.trim().toLocaleLowerCase()])
+    const unknown = ctData.find((item) => !allowed.has(item.group.trim().toLocaleLowerCase()))
+    return parsedCtData.error ?? (unknown ? `Unknown group "${unknown.group}". Use the configured control or treatment group.` : null)
+  }, [ctData, controlGroup, treatmentGroup, parsedCtData.error])
+  const deltaDeltaCtResults = useMemo(() => ctGroupError
+    ? []
+    : calculateDeltaDeltaCtCore(ctData, referenceGene, controlGroup), [ctData, referenceGene, controlGroup, ctGroupError])
 
   const clearAll = () => {
     setCtInput("")
@@ -259,6 +196,7 @@ export function QpcrDataAnalyzer() {
                   <div className="text-xs text-muted-foreground font-mono">
                     {ctData.length} {t("tools.qpcr-data-analyzer.dataPoints", "data points loaded")}
                   </div>
+                  {ctGroupError && <Alert variant="destructive"><AlertDescription>{ctGroupError}</AlertDescription></Alert>}
                 </div>
 
                 {deltaDeltaCtResults.length > 0 && (
@@ -269,6 +207,7 @@ export function QpcrDataAnalyzer() {
                           <TableHead className="font-mono">{t("tools.qpcr-data-analyzer.sample", "Sample")}</TableHead>
                           <TableHead className="font-mono">{t("tools.qpcr-data-analyzer.target", "Target")}</TableHead>
                           <TableHead className="font-mono">{t("tools.qpcr-data-analyzer.group", "Group")}</TableHead>
+                          <TableHead className="font-mono">{t("tools.qpcr-data-analyzer.replicates", "Replicates (target/reference)")}</TableHead>
                           <TableHead className="font-mono">ΔCt</TableHead>
                           <TableHead className="font-mono">ΔΔCt</TableHead>
                           <TableHead className="font-mono">{t("tools.qpcr-data-analyzer.foldChange", "Fold Change")}</TableHead>
@@ -280,14 +219,15 @@ export function QpcrDataAnalyzer() {
                             <TableCell className="font-mono">{result.sample}</TableCell>
                             <TableCell className="font-mono">{result.target}</TableCell>
                             <TableCell>
-                              <Badge variant={result.group === 'control' ? 'secondary' : 'default'}>
+                              <Badge variant={normalizeGroup(result.group) === normalizeGroup(controlGroup) ? 'secondary' : 'default'}>
                                 {result.group}
                               </Badge>
                             </TableCell>
-                            <TableCell className="font-mono">{result.deltaCt.toFixed(2)}</TableCell>
-                            <TableCell className="font-mono">{result.deltaDeltaCt.toFixed(2)}</TableCell>
+                            <TableCell className="font-mono">{result.technicalReplicates}/{result.referenceReplicates}</TableCell>
+                            <TableCell className="font-mono">{result.deltaCt == null ? "N/A" : result.deltaCt.toFixed(2)}</TableCell>
+                            <TableCell className="font-mono">{result.deltaDeltaCt == null ? "N/A" : result.deltaDeltaCt.toFixed(2)}</TableCell>
                             <TableCell className="font-mono font-bold">
-                              {result.foldChange.toFixed(2)}×
+                              {result.foldChange == null ? (result.reason ?? "N/A") : `${result.foldChange.toFixed(2)}×`}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -321,9 +261,11 @@ export function QpcrDataAnalyzer() {
                   <div className="text-xs text-muted-foreground font-mono">
                     {standardCurveData.length} {t("tools.qpcr-data-analyzer.curvePoints", "curve points loaded")}
                   </div>
+                  {parsedStandardCurve.error && <Alert variant="destructive"><AlertDescription>{parsedStandardCurve.error}</AlertDescription></Alert>}
+                  {!parsedStandardCurve.error && curveError && <Alert variant="destructive"><AlertDescription>{curveError}</AlertDescription></Alert>}
                 </div>
 
-                {standardCurveData.length >= 2 && (
+                {standardCurveData.length >= 2 && curveResult && Number.isFinite(curveResult.slope) && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <h4 className="font-medium">{t("tools.qpcr-data-analyzer.curveParameters", "Curve Parameters")}</h4>
@@ -338,14 +280,14 @@ export function QpcrDataAnalyzer() {
                         </div>
                         <div className="flex justify-between">
                           <span>R²:</span>
-                          <span className={curveResult.rSquared >= 0.99 ? 'text-green-600' : curveResult.rSquared >= 0.95 ? 'text-yellow-600' : 'text-red-600'}>
-                            {curveResult.rSquared.toFixed(4)}
+                          <span className={curveResult.rSquared != null && curveResult.rSquared >= 0.99 ? 'text-green-600' : 'text-red-600'}>
+                            {curveResult.rSquared == null ? "undefined" : curveResult.rSquared.toFixed(4)}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>{t("tools.qpcr-data-analyzer.efficiency", "Efficiency")}:</span>
-                          <span className={curveResult.efficiency >= 0.9 && curveResult.efficiency <= 1.1 ? 'text-green-600' : 'text-yellow-600'}>
-                            {(curveResult.efficiency * 100).toFixed(1)}%
+                          <span className={curveResult.efficiency != null && curveResult.efficiency >= 0.9 && curveResult.efficiency <= 1.1 ? 'text-green-600' : 'text-yellow-600'}>
+                            {curveResult.efficiency == null ? "N/A" : `${(curveResult.efficiency * 100).toFixed(1)}%`}
                           </span>
                         </div>
                       </div>

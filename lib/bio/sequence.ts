@@ -3,7 +3,7 @@
 
 import { DNA_COMPLEMENT_IUPAC, RNA_COMPLEMENT_IUPAC } from "./alphabet"
 
-/** 清洗序列：保留 ACGTU 与 IUPAC 简并字符；去除空白与非法符号 */
+/** Legacy cleaning helper: uppercase and drop unsupported symbols. New tools should use normalizeSequence. */
 export function cleanSequence(seq: string, options?: { keepIupac?: boolean }): string {
   const allow = options?.keepIupac
     ? /[^ACGTURYSWKMBDHVN]/gi
@@ -14,6 +14,44 @@ export function cleanSequence(seq: string, options?: { keepIupac?: boolean }): s
 /** 仅保留 DNA（ACGT，去除 U 与简并） */
 export function cleanDnaStrict(seq: string): string {
   return seq.toUpperCase().replace(/[^ACGT]/g, "")
+}
+
+export interface SequenceIssue {
+  character: string
+  /** 1-based position among non-whitespace input characters. */
+  position: number
+}
+
+export interface NormalizedSequence {
+  sequence: string
+  issues: SequenceIssue[]
+}
+
+/** Normalize case/whitespace while retaining a diagnostic for every invalid character. */
+export function normalizeSequence(
+  input: string,
+  alphabet: "dna" | "rna" | "iupac-dna" | "iupac-rna" | "protein" = "iupac-dna",
+): NormalizedSequence {
+  const allowed = alphabet === "protein"
+    ? new Set("ACDEFGHIKLMNPQRSTVWY*")
+    : alphabet === "rna"
+      ? new Set("ACGUN")
+      : alphabet === "iupac-rna"
+        ? new Set("ACGURYSWKMBDHVN")
+      : alphabet === "dna"
+        ? new Set("ACGTN")
+        : new Set("ACGTRYSWKMBDHVN")
+  const chars: string[] = []
+  const issues: SequenceIssue[] = []
+  let sequencePosition = 0
+  for (const character of input) {
+    if (/\s/.test(character)) continue
+    sequencePosition++
+    const upper = character.toUpperCase()
+    if (allowed.has(upper)) chars.push(upper)
+    else issues.push({ character, position: sequencePosition })
+  }
+  return { sequence: chars.join(""), issues }
 }
 
 /** 互补（不反转）：默认 DNA；rna=true 则使用 RNA 互补表 */
@@ -93,10 +131,10 @@ export function atContent(seq: string): number {
 /** Shannon 熵（基于 ACGT 频率，bits/base，最大值 2） */
 export function shannonEntropy(seq: string): number {
   const c = countBases(seq)
-  const n = c.A + c.C + c.G + c.T + c.U
+  const n = c.A + c.C + c.G + c.T
   if (n === 0) return 0
   let entropy = 0
-  for (const k of [c.A, c.C, c.G, c.T + c.U] as const) {
+  for (const k of [c.A, c.C, c.G, c.T] as const) {
     if (k > 0) {
       const p = k / n
       entropy -= p * Math.log2(p)
@@ -141,8 +179,38 @@ export function parseFasta(text: string): FastaRecord[] {
   return records
 }
 
+/** Parse a plain single sequence or exactly one FASTA record.
+ * Plain multi-line input is treated as one sequence; FASTA titles are metadata
+ * and never enter the sequence calculation. Multiple FASTA records are rejected
+ * so single-sequence tools cannot silently concatenate independent records.
+ */
+export function parseSingleSequenceInput(text: string): FastaRecord {
+  const firstContentLine = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line.length > 0 && !line.startsWith(";"))
+
+  if (firstContentLine?.startsWith(">")) {
+    const records = parseFasta(text)
+    if (records.length !== 1) {
+      throw new RangeError("expected exactly one FASTA record")
+    }
+    return records[0]
+  }
+
+  return {
+    id: "",
+    description: "",
+    sequence: text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith(";"))
+      .join(""),
+  }
+}
+
 function buildRecord(c: { header: string; chunks: string[] }): FastaRecord {
-  const idx = c.header.indexOf(" ")
+  const idx = c.header.search(/\s/)
   const id = idx === -1 ? c.header : c.header.slice(0, idx)
   const description = idx === -1 ? "" : c.header.slice(idx + 1).trim()
   return {

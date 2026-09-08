@@ -14,50 +14,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Copy, Check, AlertTriangle, CheckCircle, XCircle, Target, Dna, Plus, Trash2 } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { reverseComplement, copyText } from "@/lib/bio"
-
-interface Template {
-  name: string
-  sequence: string
-  length: number
-}
-
-interface PrimerMatch {
-  position: number
-  strand: 'forward' | 'reverse'
-  mismatches: number
-  sequence: string
-  matchedSequence: string
-}
-
-interface PrimerPair {
-  id: string
-  forwardName: string
-  forwardSequence: string
-  reverseName: string
-  reverseSequence: string
-}
-
-interface PCRResult {
-  id: string
-  templateName: string
-  primerPairId: string
-  forwardPrimer: string
-  reversePrimer: string
-  forwardPrimerName: string
-  reversePrimerName: string
-  forwardMatches: PrimerMatch[]
-  reverseMatches: PrimerMatch[]
-  products: {
-    startPos: number
-    endPos: number
-    size: number
-    forwardMatch: PrimerMatch
-    reverseMatch: PrimerMatch
-    specificity: 'specific' | 'multiple' | 'none'
-  }[]
-  specificity: 'high' | 'medium' | 'low' | 'none'
-}
+import {
+  calculatePcrProducts,
+  normalizeSequence,
+  parseFasta as parseSharedFasta,
+  copyText,
+  type PcrTemplate as Template,
+  type PcrPrimerPair as PrimerPair,
+  type PcrResult as PCRResult,
+} from "@/lib/bio"
 
 export function PCRProductCalculator() {
   const { t } = useI18n()
@@ -74,45 +39,18 @@ export function PCRProductCalculator() {
   const [results, setResults] = useState<PCRResult[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [inputError, setInputError] = useState<string | null>(null)
 
   // 解析FASTA格式
   const parseFasta = (text: string): Template[] => {
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0)
-    const templates: Template[] = []
-    let currentName = ''
-    let currentSequence = ''
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
-      if (line.startsWith('>')) {
-        // 保存前一个序列
-        if (currentName && currentSequence) {
-          const cleanSeq = currentSequence.toUpperCase().replace(/[^ATGCN]/g, '')
-          templates.push({
-            name: currentName,
-            sequence: cleanSeq,
-            length: cleanSeq.length
-          })
-        }
-        // 开始新序列
-        currentName = line.substring(1).trim() || `Template ${templates.length + 1}`
-        currentSequence = ''
-      } else {
-        currentSequence += line
+    return parseSharedFasta(text).map((record, index) => {
+      const diagnostics = normalizeSequence(record.sequence, "iupac-dna")
+      if (diagnostics.issues.length > 0) {
+        const issue = diagnostics.issues[0]
+        throw new TypeError(`${record.id || `Template ${index + 1}`}: invalid character "${issue.character}" at sequence position ${issue.position}`)
       }
-    }
-
-    // 保存最后一个序列
-    if (currentName && currentSequence) {
-      const cleanSeq = currentSequence.toUpperCase().replace(/[^ATGCN]/g, '')
-      templates.push({
-        name: currentName,
-        sequence: cleanSeq,
-        length: cleanSeq.length
-      })
-    }
-
-    return templates
+      return { name: record.id || record.description || `Template ${index + 1}`, sequence: diagnostics.sequence, length: diagnostics.sequence.length }
+    }).filter((template) => template.length > 0)
   }
 
   // 添加新的引物对
@@ -147,133 +85,8 @@ export function PCRProductCalculator() {
     setPrimerPairs(primerPairs.map(pair => 
       pair.id === id ? { ...pair, [field]: value } : pair
     ))
-  }
-
-  // 在序列中查找引物匹配位置
-  const findPrimerMatches = (template: string, primer: string, maxMismatches: number = 2): PrimerMatch[] => {
-    const matches: PrimerMatch[] = []
-    const primerLength = primer.length
-    
-    // 正向匹配
-    for (let i = 0; i <= template.length - primerLength; i++) {
-      const targetSeq = template.substring(i, i + primerLength)
-      const mismatches = countMismatches(primer, targetSeq)
-      
-      if (mismatches <= maxMismatches) {
-        matches.push({
-          position: i + 1, // 1-based position
-          strand: 'forward',
-          mismatches,
-          sequence: primer,
-          matchedSequence: targetSeq
-        })
-      }
-    }
-
-    // 反向匹配 (引物的反向互补与模板匹配)
-    const primerRC = reverseComplement(primer)
-    for (let i = 0; i <= template.length - primerLength; i++) {
-      const targetSeq = template.substring(i, i + primerLength)
-      const mismatches = countMismatches(primerRC, targetSeq)
-      
-      if (mismatches <= maxMismatches) {
-        matches.push({
-          position: i + 1, // 1-based position
-          strand: 'reverse',
-          mismatches,
-          sequence: primer,
-          matchedSequence: targetSeq
-        })
-      }
-    }
-
-    return matches.sort((a, b) => a.mismatches - b.mismatches || a.position - b.position)
-  }
-
-  // 计算错配数量
-  const countMismatches = (seq1: string, seq2: string): number => {
-    if (seq1.length !== seq2.length) return Math.abs(seq1.length - seq2.length)
-    
-    let mismatches = 0
-    for (let i = 0; i < seq1.length; i++) {
-      if (seq1[i] !== 'N' && seq2[i] !== 'N' && seq1[i] !== seq2[i]) {
-        mismatches++
-      }
-    }
-    return mismatches
-  }
-
-  // 计算PCR产物
-  const calculatePCRProducts = (
-    template: Template,
-    primerPair: PrimerPair
-  ): PCRResult => {
-    const forwardMatches = findPrimerMatches(template.sequence, primerPair.forwardSequence)
-    const reverseMatches = findPrimerMatches(template.sequence, primerPair.reverseSequence)
-
-    const products: PCRResult['products'] = []
-
-    // 寻找有效的引物对组合
-    forwardMatches.forEach(fMatch => {
-      if (fMatch.strand !== 'forward') return
-      
-      reverseMatches.forEach(rMatch => {
-        if (rMatch.strand !== 'reverse') return
-        
-        // 反向引物应该在正向引物的下游
-        const forwardEnd = fMatch.position + primerPair.forwardSequence.length - 1
-        const reverseStart = rMatch.position
-        
-        if (reverseStart > forwardEnd) {
-          const productSize = reverseStart + primerPair.reverseSequence.length - fMatch.position
-          products.push({
-            startPos: fMatch.position,
-            endPos: rMatch.position + primerPair.reverseSequence.length - 1,
-            size: productSize,
-            forwardMatch: fMatch,
-            reverseMatch: rMatch,
-            specificity: 'specific'
-          })
-        }
-      })
-    })
-
-    // 评估特异性
-    let specificity: PCRResult['specificity'] = 'none'
-    if (products.length === 0) {
-      specificity = 'none'
-    } else if (products.length === 1 && products[0].forwardMatch.mismatches === 0 && products[0].reverseMatch.mismatches === 0) {
-      specificity = 'high'
-    } else if (products.length === 1) {
-      specificity = 'medium'
-    } else {
-      specificity = 'low'
-    }
-
-    // 更新产物特异性
-    products.forEach(product => {
-      if (products.length > 1) {
-        product.specificity = 'multiple'
-      } else if (product.forwardMatch.mismatches > 0 || product.reverseMatch.mismatches > 0) {
-        product.specificity = 'multiple'
-      } else {
-        product.specificity = 'specific'
-      }
-    })
-
-    return {
-      id: `${template.name}-${primerPair.id}`,
-      templateName: template.name,
-      primerPairId: primerPair.id,
-      forwardPrimer: primerPair.forwardSequence,
-      reversePrimer: primerPair.reverseSequence,
-      forwardPrimerName: primerPair.forwardName,
-      reversePrimerName: primerPair.reverseName,
-      forwardMatches,
-      reverseMatches,
-      products: products.sort((a, b) => a.size - b.size),
-      specificity
-    }
+    setResults([])
+    setInputError(null)
   }
 
   // 分析PCR产物
@@ -287,10 +100,26 @@ export function PCRProductCalculator() {
     
     if (validPairs.length === 0) return
 
+    const invalidPrimer = validPairs.flatMap((pair) => [pair.forwardSequence, pair.reverseSequence]).find((primer) => !/^[ACGT]+$/i.test(primer.replace(/\s+/g, "")))
+    if (invalidPrimer) {
+      setInputError("Primers may contain only A, C, G and T")
+      setResults([])
+      return
+    }
+
     setIsAnalyzing(true)
     await new Promise(resolve => setTimeout(resolve, 100))
 
-    const templateList = parseFasta(templates)
+    let templateList: Template[]
+    try {
+      templateList = parseFasta(templates)
+    } catch (error) {
+      setInputError(error instanceof Error ? error.message : "Invalid template sequence")
+      setResults([])
+      setIsAnalyzing(false)
+      return
+    }
+    setInputError(null)
 
     if (templateList.length === 0) {
       setIsAnalyzing(false)
@@ -302,7 +131,7 @@ export function PCRProductCalculator() {
     // 分析每个模板与所有有效的引物对
     templateList.forEach(template => {
       validPairs.forEach(primerPair => {
-        const result = calculatePCRProducts(template, primerPair)
+        const result = calculatePcrProducts(template, primerPair)
         newResults.push(result)
       })
     })
@@ -333,6 +162,7 @@ export function PCRProductCalculator() {
       reverseSequence: ''
     }])
     setResults([])
+    setInputError(null)
   }
 
   const copyToClipboard = async (text: string) => {
@@ -385,10 +215,11 @@ export function PCRProductCalculator() {
             id="templates"
             placeholder={t("tools.pcr-product-calculator.templatePlaceholder", "Enter template sequences in FASTA format\nExample:\n>Template 1\nATCGATCGATCGATCGATCG\n>Template 2\nGCTAGCTAGCTAGCTAGCTA")}
             value={templates}
-            onChange={(e) => setTemplates(e.target.value)}
+            onChange={(e) => { setTemplates(e.target.value); setResults([]); setInputError(null) }}
             className="terminal-input min-h-[120px] font-mono"
             rows={6}
           />
+          {inputError && <Alert variant="destructive"><AlertDescription>{inputError}</AlertDescription></Alert>}
         </div>
 
         {/* 引物对输入 */}
@@ -578,6 +409,7 @@ export function PCRProductCalculator() {
                         {t("tools.pcr-product-calculator.forwardMatches", "Forward matches")}: {result.forwardMatches.length} | 
                         {t("tools.pcr-product-calculator.reverseMatches", "Reverse matches")}: {result.reverseMatches.length} | 
                         {t("tools.pcr-product-calculator.products", "Products")}: {result.products.length}
+                        {result.skippedUnknown > 0 && ` | ${result.skippedUnknown} ${t("tools.pcr-product-calculator.ambiguousSkipped", "ambiguous binding regions skipped")}`}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
