@@ -9,44 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useI18n } from "@/lib/i18n"
 import { copyText } from "@/lib/bio"
+import { convertAminoAcidVariant, type AminoAcidConversionMode, type StopCodonFormat } from "@/lib/bio/amino-acid-converter"
 import { Copy, ArrowLeftRight } from "lucide-react"
-
-// 氨基酸映射表
-const aminoAcidMap: { [key: string]: { three: string; one: string } } = {
-  "Ala": { three: "Ala", one: "A" },
-  "Arg": { three: "Arg", one: "R" },
-  "Asn": { three: "Asn", one: "N" },
-  "Asp": { three: "Asp", one: "D" },
-  "Cys": { three: "Cys", one: "C" },
-  "Gln": { three: "Gln", one: "Q" },
-  "Glu": { three: "Glu", one: "E" },
-  "Gly": { three: "Gly", one: "G" },
-  "His": { three: "His", one: "H" },
-  "Ile": { three: "Ile", one: "I" },
-  "Leu": { three: "Leu", one: "L" },
-  "Lys": { three: "Lys", one: "K" },
-  "Met": { three: "Met", one: "M" },
-  "Phe": { three: "Phe", one: "F" },
-  "Pro": { three: "Pro", one: "P" },
-  "Ser": { three: "Ser", one: "S" },
-  "Thr": { three: "Thr", one: "T" },
-  "Trp": { three: "Trp", one: "W" },
-  "Tyr": { three: "Tyr", one: "Y" },
-  "Val": { three: "Val", one: "V" },
-}
-
-// 终止密码子映射
-const stopCodonMap: { [key: string]: string[] } = {
-  "Ter": ["Ter", "*", "X"],
-  "*": ["Ter", "*", "X"],
-  "X": ["Ter", "*", "X"],
-}
-
-// 创建反向映射（单字母到三字母）
-const oneToThreeMap: { [key: string]: string } = {}
-Object.entries(aminoAcidMap).forEach(([three, { one }]) => {
-  oneToThreeMap[one] = three
-})
 
 const MAX_LINES = 1000 // 最大行数限制
 
@@ -54,106 +18,20 @@ export function AaConverter() {
   const { t } = useI18n()
   const [input, setInput] = useState("")
   const [output, setOutput] = useState("")
-  const [conversionMode, setConversionMode] = useState<"toOne" | "toThree">("toOne") // 转换方向
-  const [stopCodonFormat, setStopCodonFormat] = useState<"Ter" | "*" | "X">("Ter") // 终止密码子格式
+  const [conversionMode, setConversionMode] = useState<AminoAcidConversionMode>("toOne") // 转换方向
+  const [stopCodonFormat, setStopCodonFormat] = useState<StopCodonFormat>("Ter") // 终止密码子格式
   const [copied, setCopied] = useState(false)
 
   // 计算当前行数
   const lineCount = input.trim() ? input.split("\n").length : 0
   const isOverLimit = lineCount > MAX_LINES
 
-  // 转换单个变异
-  const convertVariant = (variant: string): string => {
-    variant = variant.trim()
-    if (!variant) return ""
-
-    // 保留 p. 前缀
-    const hasPrefix = /^p\./i.test(variant)
-    const prefix = hasPrefix ? "p." : ""
-    const cleanVariant = variant.replace(/^p\./i, "")
-
-    if (conversionMode === "toOne") {
-      // 三字母转单字母
-      let result = cleanVariant
-      
-      // 处理终止密码子 - 需要转义特殊字符
-      Object.keys(stopCodonMap).forEach(stop => {
-        // 转义正则表达式特殊字符
-        const escapedStop = stop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        const regex = new RegExp(escapedStop, "g")
-        result = result.replace(regex, stopCodonFormat)
-      })
-      
-      // 转换氨基酸
-      Object.entries(aminoAcidMap).forEach(([three, { one }]) => {
-        const regex = new RegExp(three, "g")
-        result = result.replace(regex, one)
-      })
-      
-      return prefix + result
-    } else {
-      // 单字母转三字母 (toThree)
-      let result = cleanVariant
-      
-      // 转换氨基酸（需要保留数字和其他文本如del、ins、dup、delins等）
-      // 匹配模式：单字母+数字+可选的(单字母或特殊变异类型)
-      // 例如：V559C, V560del, L858_E861delinsD
-      result = result.replace(/([A-Z])(\d+)(?:_([A-Z])(\d+))?(del|ins|dup|delins|fs|ext)?([A-Z*X])?/g, 
-        (match, aa1, pos1, aa2, pos2, varType, aa3) => {
-          const three1 = oneToThreeMap[aa1] || aa1
-          
-          // 处理范围变异（如 L858_E861delinsD）
-          if (aa2 && pos2) {
-            const three2 = oneToThreeMap[aa2] || aa2
-            let result = `${three1}${pos1}_${three2}${pos2}`
-            
-            // 添加变异类型
-            if (varType) {
-              result += varType
-            }
-            
-            // 添加目标氨基酸（如果有）
-            if (aa3) {
-              let three3 = oneToThreeMap[aa3] || aa3
-              if (aa3 === "*" || aa3 === "X") {
-                three3 = stopCodonFormat
-              }
-              result += three3
-            }
-            
-            return result
-          }
-          
-          // 处理单个位置的变异
-          let result = `${three1}${pos1}`
-          
-          // 添加变异类型（del, ins, dup等）
-          if (varType) {
-            result += varType
-          }
-          
-          // 添加目标氨基酸（如果有）
-          if (aa3) {
-            let three3 = oneToThreeMap[aa3] || aa3
-            if (aa3 === "*" || aa3 === "X") {
-              three3 = stopCodonFormat
-            }
-            result += three3
-          }
-          
-          return result
-        })
-      
-      return prefix + result
-    }
-  }
-
   // 批量转换
   const handleConvert = () => {
     if (isOverLimit) return // 超过限制时不执行转换
     
     const lines = input.split("\n")
-    const converted = lines.map(line => convertVariant(line)).join("\n")
+    const converted = lines.map((line) => convertAminoAcidVariant(line, conversionMode, stopCodonFormat)).join("\n")
     setOutput(converted)
   }
 
