@@ -174,7 +174,7 @@ export function StandardCurveFitting() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label className="">{t("tools.standard-curve.fitType", "Fit Type")}</Label>
-                <Select value={fitType} onValueChange={(v) => setFitType(v as any)}>
+                <Select value={fitType} onValueChange={(v) => setFitType(v as 'linear' | 'logarithmic' | 'exponential' | 'power')}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>

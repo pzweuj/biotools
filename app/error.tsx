@@ -23,9 +23,17 @@ export default function GlobalError({
         <h1 className="text-2xl font-bold text-foreground font-mono">
           Something went wrong / 出现错误
         </h1>
-        <p className="text-sm text-muted-foreground font-mono break-words">
-          {error?.message || "Unknown error"}
-        </p>
+        {process.env.NODE_ENV === "production" ? (
+          <p className="text-sm text-muted-foreground font-mono break-words">
+            请重试。若问题持续，把下面的编号发给维护者。
+            <br />
+            Please retry. If this continues, send the reference below to the maintainer.
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground font-mono break-words">
+            {error?.message || "Unknown error"}
+          </p>
+        )}
         {error?.digest && (
           <p className="text-xs text-muted-foreground font-mono opacity-70">
             digest: {error.digest}

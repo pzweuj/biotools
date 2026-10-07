@@ -190,7 +190,7 @@ export function GelElectrophoresisAnalyzer() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <Label className="">{t("tools.gel-electrophoresis.gelType", "Gel Type")}</Label>
-                    <Select value={gelType} onValueChange={(value: any) => setGelType(value)}>
+                    <Select value={gelType} onValueChange={(value) => setGelType(value as 'dna' | 'protein')}>
                       <SelectTrigger className="">
                         <SelectValue />
                       </SelectTrigger>

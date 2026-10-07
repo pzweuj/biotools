@@ -42,7 +42,8 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        if (response.ok) {
+        // response.ok 即 HTTP 200–299，错误响应不会写入缓存
+        if (response.ok && response.type === "basic") {
           const clone = response.clone()
           caches.open(CACHE).then((cache) => cache.put(request, clone))
         }
@@ -54,8 +55,10 @@ self.addEventListener("fetch", (event) => {
 
 async function fetchAndCache(request) {
   const response = await fetch(request)
-  if (response.ok) {
-    caches.open(CACHE).then((cache) => cache.put(request, response.clone()))
+  // response.ok 即 HTTP 200–299；只缓存同源基本响应
+  if (response.ok && response.type === "basic") {
+    const clone = response.clone()
+    caches.open(CACHE).then((cache) => cache.put(request, clone))
   }
   return response
 }

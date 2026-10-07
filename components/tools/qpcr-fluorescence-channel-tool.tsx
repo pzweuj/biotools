@@ -44,6 +44,8 @@ type SelectedChannel = {
   channel: string
 }
 
+type QpcrChannel = QpcrInstrument["channels"][number]
+
 // 荧光基团数据库
 const FLUOROPHORES: Fluorophore[] = [
   { name: "FAM", excitation: 494, emission: 518, brightness: "high", stability: "good", cost: "low", applications: ["qPCR", "Sequencing", "Genotyping"], color: "#00FF00" },
@@ -127,7 +129,7 @@ export function QpcrFluorescenceChannelTool() {
   const currentInstrument = INSTRUMENTS.find(inst => inst.name === selectedInstrument)
 
   // 检查荧光基团与通道的兼容性
-  const checkCompatibility = (fluorophore: Fluorophore, channel: any) => {
+  const checkCompatibility = (fluorophore: Fluorophore, channel: QpcrChannel) => {
     const excitationDiff = Math.abs(fluorophore.excitation - channel.excitation)
     const emissionDiff = Math.abs(fluorophore.emission - channel.emission)
     
@@ -138,7 +140,7 @@ export function QpcrFluorescenceChannelTool() {
   }
 
   // 获取推荐的荧光基团
-  const getRecommendedFluorophores = (channel: any) => {
+  const getRecommendedFluorophores = (channel: QpcrChannel) => {
     return FLUOROPHORES
       .map(fluor => ({
         ...fluor,

@@ -35,7 +35,7 @@ const ENZYMES: Array<{
 const IUPAC = DNA_IUPAC
 
 function rc(seq: string): string {
-  const map: any = { A: "T", T: "A", G: "C", C: "G", a: "t", t: "a", g: "c", c: "g" }
+  const map: Record<string, string> = { A: "T", T: "A", G: "C", C: "G", a: "t", t: "a", g: "c", c: "g" }
   return seq.split("").reverse().map((c) => map[c] || c).join("")
 }
 

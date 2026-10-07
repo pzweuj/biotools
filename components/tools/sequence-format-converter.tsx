@@ -364,7 +364,7 @@ export function SequenceFormatConverter() {
               {/* 输出格式 */}
               <div className="space-y-2">
                 <Label className="">{t("tools.sequence-format-converter.outputFormat", "Output Format")}</Label>
-                <Select value={outputFormat} onValueChange={(value: any) => setOutputFormat(value)}>
+                <Select value={outputFormat} onValueChange={(value) => setOutputFormat(value as 'fasta' | 'genbank' | 'embl')}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>

@@ -19,13 +19,20 @@ import { Checkbox } from "@/components/ui/checkbox"
 // Local API proxy
 const API_PROXY = "/api/transvar"
 
+/** 每个数据库的注解结果条目（上游 API 返回结构） */
+interface TransvarResult {
+  database: string
+  success: boolean
+  result: string
+}
+
 interface ApiResult {
   success: boolean
   input?: string
   refversion?: string
   mode?: string
   databases?: string[]
-  results?: any[]
+  results?: TransvarResult[]
   error?: string | null
 }
 
@@ -167,7 +174,7 @@ export function TransVar() {
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
       }
 
-      const data = await response.json()
+      const data = (await response.json()) as ApiResult
       setResult(data)
     } catch (error) {
       setResult({
@@ -191,7 +198,7 @@ export function TransVar() {
   }
 
   // Render annotation result for one database as a table
-  const renderAnnotationResult = (item: any, idx: number) => {
+  const renderAnnotationResult = (item: TransvarResult, idx: number) => {
     if (!item.result) {
       return (
         <Card key={idx} className="border-muted">
@@ -308,7 +315,7 @@ export function TransVar() {
             {t("tools.transvar.annotationResults")} ({data.results.length})
           </Label>
           <div className="space-y-4">
-            {data.results.map((item: any, idx: number) => renderAnnotationResult(item, idx))}
+            {data.results.map((item, idx) => renderAnnotationResult(item, idx))}
           </div>
         </div>
       </div>
@@ -316,7 +323,7 @@ export function TransVar() {
   }
 
   // Raw JSON section
-  const RawJsonSection = ({ data }: { data: any }) => (
+  const RawJsonSection = ({ data }: { data: ApiResult }) => (
     <details className="group">
       <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground flex items-center gap-2">
         <span className="group-open:rotate-90 transition-transform">▶</span>

@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Calculator, Beaker, Dna } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-import { calculateConcentration, normalizeSequence, nucleicAcidMolecularWeight, parseFasta, proteinMolecularWeight } from "@/lib/bio"
+import { calculateConcentration, normalizeSequence, nucleicAcidMolecularWeight, parseFasta, proteinMolecularWeight, type ConcentrationResult } from "@/lib/bio"
 
 interface MWResult {
   sequence: string
@@ -23,6 +23,14 @@ interface MWResult {
   molecularWeight: number
   type: 'dna' | 'rna' | 'protein'
   composition: { [key: string]: number }
+}
+
+interface DilutionResult {
+  c1: number
+  v1: number
+  c2: number
+  v2: number
+  dilutionFactor: number
 }
 
 export function MolecularWeightCalculator() {
@@ -38,7 +46,7 @@ export function MolecularWeightCalculator() {
   const [molecularWeight, setMolecularWeight] = useState("")
   const [massUnit, setMassUnit] = useState("ng")
   const [volumeUnit, setVolumeUnit] = useState("μL")
-  const [concentrationResult, setConcentrationResult] = useState<any>(null)
+  const [concentrationResult, setConcentrationResult] = useState<ConcentrationResult | null>(null)
   const [concentrationError, setConcentrationError] = useState<string | null>(null)
 
   // 稀释计算状态
@@ -46,7 +54,7 @@ export function MolecularWeightCalculator() {
   const [v1, setV1] = useState("")
   const [c2, setC2] = useState("")
   const [v2, setV2] = useState("")
-  const [dilutionResult, setDilutionResult] = useState<any>(null)
+  const [dilutionResult, setDilutionResult] = useState<DilutionResult | null>(null)
 
   const calculateMolecularWeight = (sequence: string, type: 'dna' | 'rna' | 'protein') => {
     const cleanSeq = sequence.toUpperCase().replace(/\s+/g, '')
@@ -172,7 +180,7 @@ export function MolecularWeightCalculator() {
     const c2Val = parseFloat(c2)
     const v2Val = parseFloat(v2)
 
-    let result: any = null
+    let result: DilutionResult | null = null
     if ([c1Val, v1Val, c2Val, v2Val].some((value) => Number.isFinite(value) && value < 0)) {
       setDilutionResult(null)
       return
@@ -255,7 +263,7 @@ export function MolecularWeightCalculator() {
                 </Label>
                 <div className="flex items-center gap-2">
                   <Label className="text-xs">{t("tools.molecular-weight-calculator.sequenceType", "Type")}:</Label>
-                  <Select value={sequenceType} onValueChange={(value) => { setSequenceType(value as any); setMwResults([]); setMwError(null); setConcentrationResult(null); setConcentrationError(null) }}>
+                  <Select value={sequenceType} onValueChange={(value) => { setSequenceType(value as 'dna' | 'rna' | 'protein'); setMwResults([]); setMwError(null); setConcentrationResult(null); setConcentrationError(null) }}>
                     <SelectTrigger className="w-24">
                       <SelectValue />
                     </SelectTrigger>

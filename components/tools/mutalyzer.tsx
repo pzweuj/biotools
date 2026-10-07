@@ -16,9 +16,87 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 // 使用本地API代理避免CORS问题
 const MUTALYZER_API_PROXY = "/api/mutalyzer"
 
+// 定义 Mutalyzer API 响应类型
+interface MutalyzerDescription {
+  description: string
+  tag?: {
+    details?: string
+  }
+}
+
+interface MutalyzerEquivalentDescriptions {
+  c?: MutalyzerDescription[]
+  p?: MutalyzerDescription[]
+  [key: string]: string[] | MutalyzerDescription[] | undefined
+}
+
+interface MutalyzerProtein {
+  description: string
+}
+
+interface MutalyzerRna {
+  description: string
+}
+
+interface MutalyzerInfo {
+  details: string
+}
+
+interface MutalyzerSequence {
+  seq: string
+}
+
+interface MutalyzerNormalizeResponse {
+  input_description?: string
+  normalized_description?: string
+  corrected_description?: string
+  equivalent_descriptions?: MutalyzerEquivalentDescriptions
+  protein?: MutalyzerProtein
+  rna?: MutalyzerRna
+  infos?: MutalyzerInfo[]
+}
+
+interface MutalyzerMapResponse {
+  mapped_description?: string
+  ref_seq_differences?: boolean
+  equivalent_descriptions?: MutalyzerEquivalentDescriptions
+  descriptions?: Record<string, string | string[]>
+}
+
+interface MutalyzerExtractResponse {
+  description?: string
+}
+
+interface MutalyzerMutateResponse {
+  sequence?: MutalyzerSequence
+  mutated_sequence?: string
+  reference_sequence?: string
+  sequences?: MutalyzerSequence[]
+}
+
+type MutalyzerResponse = 
+  | MutalyzerNormalizeResponse 
+  | MutalyzerMapResponse 
+  | MutalyzerExtractResponse 
+  | MutalyzerMutateResponse 
+  | string 
+  | Record<string, unknown>
+
+function formatDescriptionList(value: unknown): string {
+  if (typeof value === "string") return value
+  if (!Array.isArray(value)) return value == null ? "" : String(value)
+  return value.map((item) => {
+    if (typeof item === "string") return item
+    if (item && typeof item === "object" && "description" in item && typeof item.description === "string") {
+      return item.description
+    }
+    return String(item)
+  }).join(", ")
+}
+
 interface ApiResult {
   success: boolean
-  data?: any
+  data?: MutalyzerResponse
   error?: string
 }
 
@@ -55,10 +133,14 @@ export function Mutalyzer() {
       // 使用本地API代理，将endpoint作为查询参数传递
       const response = await fetch(`${MUTALYZER_API_PROXY}?endpoint=${encodeURIComponent(endpoint)}`)
       if (!response.ok) {
+        // 代理只返回状态，不回显上游响应体
         const errorData = await response.json().catch(() => ({ error: response.statusText }))
-        return { success: false, error: errorData.error || `HTTP ${response.status}: ${response.statusText}` }
+        const errorMessage = typeof errorData.error === "string" && errorData.error
+          ? errorData.error
+          : `HTTP ${response.status}: ${response.statusText}`
+        return { success: false, error: errorMessage }
       }
-      const data = await response.json()
+      const data = (await response.json()) as MutalyzerResponse
       return { success: true, data }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
@@ -126,45 +208,63 @@ export function Mutalyzer() {
   }
 
   // Parse and render formatted result
-  const renderFormattedResult = (data: any) => {
-    // Normalize result
-    if (data.normalized_description || data.corrected_description) {
+  const renderFormattedResult = (data: MutalyzerResponse) => {
+    // Handle string responses first (before object type narrowing)
+    if (typeof data === 'string') {
+      if (!data.trim()) return null
       return (
         <div className="space-y-3">
-          {data.input_description && (
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.extractedDesc")}</div>
+            <code className="block bg-primary/10 border border-primary/30 p-3 rounded text-sm font-mono font-semibold">
+              {data}
+            </code>
+          </div>
+        </div>
+      )
+    }
+    
+    if (!data || typeof data !== 'object') return null
+    
+    // 检查是否是标准化响应
+    const normalizeData = data as MutalyzerNormalizeResponse
+    if (normalizeData.normalized_description || normalizeData.corrected_description) {
+      return (
+        <div className="space-y-3">
+          {normalizeData.input_description && (
             <div className="space-y-1">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.inputDesc")}</div>
-              <code className="block bg-muted p-3 rounded text-sm font-mono">{data.input_description}</code>
+              <code className="block bg-muted p-3 rounded text-sm font-mono">{normalizeData.input_description}</code>
             </div>
           )}
           
-          {data.normalized_description && (
+          {normalizeData.normalized_description && (
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.normalizedDesc")}</div>
-                {data.normalized_description.includes(':g.') && (
+                {normalizeData.normalized_description.includes(':g.') && (
                   <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded font-semibold">
                     {t("tools.mutalyzer.genomicCoord")}
                   </span>
                 )}
-                {data.normalized_description.includes(':c.') && (
+                {normalizeData.normalized_description.includes(':c.') && (
                   <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded font-semibold">
                     {t("tools.mutalyzer.transcriptCoord")}
                   </span>
                 )}
               </div>
               <code className="block bg-primary/10 border border-primary/30 p-3 rounded text-sm font-mono font-semibold">
-                {data.normalized_description}
+                {normalizeData.normalized_description}
               </code>
             </div>
           )}
 
           {/* Equivalent c. descriptions */}
-          {data.equivalent_descriptions?.c && data.equivalent_descriptions.c.length > 0 && (
+          {normalizeData.equivalent_descriptions?.c && normalizeData.equivalent_descriptions.c.length > 0 && (
             <div className="space-y-2">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.cDescriptions")}</div>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                {data.equivalent_descriptions.c.map((item: any, idx: number) => (
+                {normalizeData.equivalent_descriptions.c.map((item, idx) => (
                   <div key={idx} className="bg-muted p-2 rounded text-xs font-mono space-y-1">
                     <div className="flex items-center gap-2">
                       <code className="text-sm">{item.description}</code>
@@ -181,11 +281,11 @@ export function Mutalyzer() {
           )}
 
           {/* Equivalent p. descriptions */}
-          {data.equivalent_descriptions?.p && data.equivalent_descriptions.p.length > 0 && (
+          {normalizeData.equivalent_descriptions?.p && normalizeData.equivalent_descriptions.p.length > 0 && (
             <div className="space-y-2">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.pDescriptions")}</div>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                {data.equivalent_descriptions.p.map((item: any, idx: number) => (
+                {normalizeData.equivalent_descriptions.p.map((item, idx) => (
                   <div key={idx} className="bg-muted p-2 rounded text-xs font-mono space-y-1">
                     <div className="flex items-center gap-2">
                       <code className="text-sm">{item.description}</code>
@@ -201,24 +301,24 @@ export function Mutalyzer() {
             </div>
           )}
 
-          {data.protein?.description && (
+          {normalizeData.protein?.description && (
             <div className="space-y-1">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.proteinDesc")}</div>
-              <code className="block bg-muted p-3 rounded text-sm font-mono">{data.protein.description}</code>
+              <code className="block bg-muted p-3 rounded text-sm font-mono">{normalizeData.protein.description}</code>
             </div>
           )}
 
-          {data.rna?.description && (
+          {normalizeData.rna?.description && (
             <div className="space-y-1">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.rnaDesc")}</div>
-              <code className="block bg-muted p-3 rounded text-sm font-mono">{data.rna.description}</code>
+              <code className="block bg-muted p-3 rounded text-sm font-mono">{normalizeData.rna.description}</code>
             </div>
           )}
 
-          {data.infos && data.infos.length > 0 && (
+          {normalizeData.infos && normalizeData.infos.length > 0 && (
             <div className="space-y-2">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.notices")}</div>
-              {data.infos.map((info: any, idx: number) => (
+              {normalizeData.infos.map((info, idx) => (
                 <Alert key={idx} className="text-xs">
                   <AlertCircle className="h-3 w-3" />
                   <AlertDescription>{info.details}</AlertDescription>
@@ -231,27 +331,28 @@ export function Mutalyzer() {
     }
 
     // Map result
-    if (data.mapped_description || data.equivalent_descriptions || data.descriptions) {
+    const mapData = data as MutalyzerMapResponse
+    if (mapData.mapped_description || mapData.equivalent_descriptions || mapData.descriptions) {
       return (
         <div className="space-y-3">
-          {data.mapped_description && (
+          {mapData.mapped_description && (
             <div className="space-y-1">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.mappedDesc")}</div>
               <code className="block bg-primary/10 border border-primary/30 p-3 rounded text-sm font-mono font-semibold">
-                {data.mapped_description}
+                {mapData.mapped_description}
               </code>
             </div>
           )}
           
-          {data.ref_seq_differences !== undefined && (
+          {mapData.ref_seq_differences !== undefined && (
             <div className="space-y-1">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.refSeqDiff")}</div>
               <div className={`p-3 rounded text-sm font-medium ${
-                data.ref_seq_differences 
+                mapData.ref_seq_differences 
                   ? "bg-yellow-50 dark:bg-yellow-950/20 text-yellow-800 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-900"
                   : "bg-green-50 dark:bg-green-950/20 text-green-800 dark:text-green-400 border border-green-200 dark:border-green-900"
               }`}>
-                {data.ref_seq_differences 
+                {mapData.ref_seq_differences 
                   ? `⚠️ ${t("tools.mutalyzer.hasDifferences")}`
                   : `✓ ${t("tools.mutalyzer.noDifferences")}`
                 }
@@ -259,27 +360,27 @@ export function Mutalyzer() {
             </div>
           )}
 
-          {data.equivalent_descriptions && (
+          {mapData.equivalent_descriptions && (
             <div className="space-y-2">
               <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.equivalentDesc")}</div>
-              {Object.entries(data.equivalent_descriptions).map(([key, value]: [string, any]) => (
+              {Object.entries(mapData.equivalent_descriptions).map(([key, value]) => (
                 <div key={key} className="space-y-1">
                   <div className="text-xs text-muted-foreground capitalize">{key}</div>
                   <code className="block bg-muted p-2 rounded text-sm font-mono">
-                    {Array.isArray(value) ? value.join(", ") : String(value)}
+                    {formatDescriptionList(value)}
                   </code>
                 </div>
               ))}
             </div>
           )}
 
-          {data.descriptions && !data.equivalent_descriptions && (
+          {mapData.descriptions && !mapData.equivalent_descriptions && (
             <div className="space-y-2">
-              {Object.entries(data.descriptions).map(([key, value]: [string, any]) => (
+              {Object.entries(mapData.descriptions).map(([key, value]) => (
                 <div key={key} className="space-y-1">
                   <div className="text-sm font-medium text-muted-foreground capitalize">{key}</div>
                   <code className="block bg-muted p-3 rounded text-sm font-mono">
-                    {Array.isArray(value) ? value.join(", ") : String(value)}
+                    {formatDescriptionList(value)}
                   </code>
                 </div>
               ))}
@@ -289,33 +390,32 @@ export function Mutalyzer() {
       )
     }
 
-    // Extract result - handle both object with description field and direct string
-    if (data.description || (typeof data === 'string' && data.trim())) {
-      const description = data.description || data
+    // Extract result - handle object with description field
+    const extractData = data as MutalyzerExtractResponse
+    if (extractData.description) {
       return (
         <div className="space-y-3">
           <div className="space-y-1">
             <div className="text-sm font-medium text-muted-foreground">{t("tools.mutalyzer.extractedDesc")}</div>
             <code className="block bg-primary/10 border border-primary/30 p-3 rounded text-sm font-mono font-semibold">
-              {description}
+              {extractData.description}
             </code>
           </div>
-          {data.description && (
-            <Alert className="text-xs">
-              <AlertCircle className="h-3 w-3" />
-              <AlertDescription>
-                {t("tools.mutalyzer.extractHintNote")}
-              </AlertDescription>
-            </Alert>
-          )}
+          <Alert className="text-xs">
+            <AlertCircle className="h-3 w-3" />
+            <AlertDescription>
+              {t("tools.mutalyzer.extractHintNote")}
+            </AlertDescription>
+          </Alert>
         </div>
       )
     }
 
     // Mutate result - handle nested sequence object
-    if (data.sequence || data.mutated_sequence || data.sequences) {
-      const mutatedSeq = data.sequence?.seq || data.mutated_sequence
-      const referenceSeq = data.reference_sequence
+    const mutateData = data as MutalyzerMutateResponse
+    if (mutateData.sequence || mutateData.mutated_sequence || mutateData.sequences) {
+      const mutatedSeq = mutateData.sequence?.seq || mutateData.mutated_sequence
+      const referenceSeq = mutateData.reference_sequence
       const seqLength = mutatedSeq ? mutatedSeq.length : 0
       
       return (
@@ -394,7 +494,7 @@ export function Mutalyzer() {
       )
     }
 
-    const formattedResult = renderFormattedResult(result.data)
+    const formattedResult = result.data ? renderFormattedResult(result.data) : null
 
     return (
       <div className="mt-4 space-y-4">

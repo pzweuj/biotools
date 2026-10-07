@@ -19,9 +19,94 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 // Local API proxy
 const API_PROXY = "/api/spliceai"
 
+interface ScoreBase {
+  g_name: string
+  g_id: string
+  t_id: string
+  t_type: string
+  t_strand: string
+  t_priority: string
+  t_refseq_ids?: string[]
+}
+
+/** Pangolin 转录本评分，只有 DS_SG / DS_SL */
+interface PangolinScore extends ScoreBase {
+  DS_SG: string
+  DS_SL: string
+}
+
+/** SpliceAI 转录本评分，只有四个 delta 分数和位置 */
+interface SpliceAiScore extends ScoreBase {
+  DS_AG: string
+  DS_AL: string
+  DS_DG: string
+  DS_DL: string
+  DP_AG: string
+  DP_AL: string
+  DP_DG: string
+  DP_DL: string
+  EXON_STARTS?: number[]
+  EXON_ENDS?: number[]
+  CDS_START?: number
+  CDS_END?: number
+}
+
+interface PangolinNonZeroScore {
+  pos: number
+  SL_REF: string
+  SL_ALT: string
+  SG_REF: string
+  SG_ALT: string
+}
+
+interface SpliceAiNonZeroScore {
+  pos: number
+  RA: string
+  AA: string
+  RD: string
+  AD: string
+}
+
+interface Aberration {
+  aberration_type: string
+  confidence: string
+  max_delta_score: number
+  description: string
+  affected_region?: {
+    region_type: string
+  }
+}
+
+interface Sai10kPredictions {
+  aberration: Aberration
+  frameshift?: { description: string }
+}
+
+interface PredictionMeta {
+  variant: string
+  hg: string
+  mask: string
+  distance: string
+}
+
+interface PangolinResponse extends PredictionMeta {
+  scores: PangolinScore[]
+  allNonZeroScores: PangolinNonZeroScore[]
+  allNonZeroScoresStrand?: string
+  allNonZeroScoresTranscriptId?: string
+}
+
+interface SpliceAiModelResponse extends PredictionMeta {
+  scores: SpliceAiScore[]
+  allNonZeroScores: SpliceAiNonZeroScore[]
+  sai10kPredictions?: Sai10kPredictions
+}
+
+type PredictionResponse = PangolinResponse | SpliceAiModelResponse
+
 interface ApiResult {
   success: boolean
-  data?: any
+  data?: PredictionResponse
   error?: string
 }
 
@@ -76,7 +161,7 @@ export function SpliceAI() {
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
       }
 
-      const data = await response.json()
+      const data = (await response.json()) as PredictionResponse
       setResult({ success: true, data })
     } catch (error) {
       setResult({
@@ -108,7 +193,7 @@ export function SpliceAI() {
   }
 
   // Render Pangolin result
-  const renderPangolinResult = (data: any) => {
+  const renderPangolinResult = (data: PangolinResponse) => {
     const {
       variant,
       hg,
@@ -144,7 +229,7 @@ export function SpliceAI() {
             <Label className="text-base font-semibold">{t("tools.spliceai.transcriptScores")} ({scores.length})</Label>
             <ScrollArea className="h-[400px]">
               <div className="space-y-4 pr-4">
-                {scores.map((scoreData: any, idx: number) => {
+                {scores.map((scoreData: PangolinScore, idx: number) => {
                   const dsSg = parseFloat(scoreData.DS_SG)
                   const dsSl = parseFloat(scoreData.DS_SL)
                   const maxScore = Math.max(dsSg, dsSl, Math.abs(dsSl))
@@ -237,7 +322,7 @@ export function SpliceAI() {
             </div>
             <ScrollArea className="h-[150px]">
               <div className="space-y-2 pr-4">
-                {allNonZeroScores.map((score: any, idx: number) => (
+                {allNonZeroScores.map((score: PangolinNonZeroScore, idx: number) => (
                   <div key={idx} className="flex items-center justify-between bg-muted/20 p-2 rounded text-sm">
                     <span className="font-mono font-semibold">pos: {score.pos}</span>
                     <div className="flex gap-3 text-xs">
@@ -258,7 +343,7 @@ export function SpliceAI() {
   }
 
   // Render SpliceAI result
-  const renderSpliceAIResult = (data: any) => {
+  const renderSpliceAIResult = (data: SpliceAiModelResponse) => {
     const {
       variant,
       hg,
@@ -270,7 +355,7 @@ export function SpliceAI() {
     } = data
 
     // Find the primary transcript (MS priority)
-    const primaryTranscript = scores.find((s: any) => s.t_priority === "MS") || scores[0]
+    const primaryTranscript = scores.find((s: SpliceAiScore) => s.t_priority === "MS") || scores[0]
 
     return (
       <div className="space-y-6">
@@ -442,25 +527,29 @@ export function SpliceAI() {
                 </div>
 
                 {/* Exon Structure */}
-                {primaryTranscript.EXON_STARTS && primaryTranscript.EXON_ENDS && (
-                  <div className="space-y-2">
-                    <Label className="text-sm">{t("tools.spliceai.exonStructure")}</Label>
-                    <div className="text-xs text-muted-foreground">
-                      {t("tools.spliceai.numExons")}: {primaryTranscript.EXON_STARTS.length} |
-                      CDS: {primaryTranscript.CDS_START?.toLocaleString()} - {primaryTranscript.CDS_END?.toLocaleString()}
-                    </div>
-                    <ScrollArea className="h-[100px]">
-                      <div className="space-y-1 pr-4 text-xs font-mono">
-                        {primaryTranscript.EXON_STARTS.map((start: number, idx: number) => (
-                          <div key={idx} className="flex justify-between bg-muted/20 p-1 rounded">
-                            <span>Exon {idx + 1}:</span>
-                            <span>{start.toLocaleString()} - {primaryTranscript.EXON_ENDS[idx].toLocaleString()}</span>
-                          </div>
-                        ))}
+                {primaryTranscript.EXON_STARTS && primaryTranscript.EXON_ENDS && (() => {
+                  const exonStarts = primaryTranscript.EXON_STARTS
+                  const exonEnds = primaryTranscript.EXON_ENDS
+                  return (
+                    <div className="space-y-2">
+                      <Label className="text-sm">{t("tools.spliceai.exonStructure")}</Label>
+                      <div className="text-xs text-muted-foreground">
+                        {t("tools.spliceai.numExons")}: {exonStarts.length} |
+                        CDS: {primaryTranscript.CDS_START?.toLocaleString()} - {primaryTranscript.CDS_END?.toLocaleString()}
                       </div>
-                    </ScrollArea>
-                  </div>
-                )}
+                      <ScrollArea className="h-[100px]">
+                        <div className="space-y-1 pr-4 text-xs font-mono">
+                          {exonStarts.map((start: number, idx: number) => (
+                            <div key={idx} className="flex justify-between bg-muted/20 p-1 rounded">
+                              <span>Exon {idx + 1}:</span>
+                              <span>{start.toLocaleString()} - {exonEnds[idx].toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )
+                })()}
               </CardContent>
             </Card>
 
@@ -472,7 +561,7 @@ export function SpliceAI() {
                 </summary>
                 <ScrollArea className="h-[200px] mt-2">
                   <div className="space-y-2 pr-4">
-                    {scores.filter((s: any) => s.t_priority !== "MS").slice(0, 10).map((scoreData: any, idx: number) => (
+                    {scores.filter((s: SpliceAiScore) => s.t_priority !== "MS").slice(0, 10).map((scoreData: SpliceAiScore, idx: number) => (
                       <Card key={idx} className="bg-muted/20">
                         <CardContent className="pt-2 pb-2">
                           <div className="flex flex-wrap gap-2 items-center mb-1">
@@ -508,7 +597,7 @@ export function SpliceAI() {
             </Label>
             <ScrollArea className="h-[120px]">
               <div className="space-y-2 pr-4">
-                {allNonZeroScores.map((score: any, idx: number) => (
+                {allNonZeroScores.map((score: SpliceAiNonZeroScore, idx: number) => (
                   <div key={idx} className="flex items-center justify-between bg-muted/20 p-2 rounded text-sm">
                     <span className="font-mono font-semibold">pos: {score.pos}</span>
                     <div className="flex gap-3 text-xs">
@@ -561,7 +650,7 @@ export function SpliceAI() {
   )
 
   // Raw JSON section component
-  const RawJsonSection = ({ data }: { data: any }) => (
+  const RawJsonSection = ({ data }: { data: PredictionResponse }) => (
     <details className="group">
       <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground flex items-center gap-2">
         <span className="group-open:rotate-90 transition-transform">▶</span>
@@ -733,9 +822,11 @@ export function SpliceAI() {
                   </div>
                   <Card>
                     <CardContent className="pt-6">
-                      {model === "spliceai"
-                        ? renderSpliceAIResult(result.data)
-                        : renderPangolinResult(result.data)}
+                      {result.data
+                        ? (model === "spliceai"
+                            ? renderSpliceAIResult(result.data as SpliceAiModelResponse)
+                            : renderPangolinResult(result.data as PangolinResponse))
+                        : null}
                     </CardContent>
                   </Card>
                 </div>

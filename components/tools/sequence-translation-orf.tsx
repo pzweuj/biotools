@@ -371,7 +371,7 @@ export function SequenceTranslationOrf() {
       <ToolPageContent>
         {inputError && <Alert variant="destructive"><AlertDescription>{inputError}</AlertDescription></Alert>}
         {/* 模式选择 */}
-        <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
+        <Tabs value={mode} onValueChange={(v) => { if (v === 'simple' || v === 'orf' || v === 'six-frame') setMode(v) }} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="simple" className="text-xs">
               {t("tools.sequence-translation-orf.simpleMode", "Simple Translation")}
@@ -389,7 +389,7 @@ export function SequenceTranslationOrf() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="space-y-2">
                 <Label className="">{t("tools.sequence-translation.inputType", "Input Type")}</Label>
-                <Select value={inputType} onValueChange={(v) => { setInputType(v as any); setOutput(""); setInputError(null) }}>
+                <Select value={inputType} onValueChange={(v) => { setInputType(v as 'DNA' | 'RNA'); setOutput(""); setInputError(null) }}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
@@ -430,7 +430,7 @@ export function SequenceTranslationOrf() {
 
               <div className="space-y-2">
                 <Label className="">{t("tools.sequence-translation.stopMode", "Stop Codon")}</Label>
-                <Select value={stopMode} onValueChange={(v) => { setStopMode(v as any); setOutput(""); setInputError(null) }}>
+                <Select value={stopMode} onValueChange={(v) => { setStopMode(v as 'asterisk' | 'stop' | 'truncate'); setOutput(""); setInputError(null) }}>
                   <SelectTrigger className="">
                     <SelectValue />
                   </SelectTrigger>
