@@ -1,16 +1,74 @@
 "use client"
-import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent } from "@/components/tool-page"
+import { ToolPage, ToolPageHeader, ToolPageTitle, ToolPageDescription, ToolPageContent, ToolSection } from "@/components/tool-page"
 
-import { useState } from "react"
+import { Fragment, useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Copy, Check, Download } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { copyText, downloadBlob } from "@/lib/bio"
 import { useToolStorage } from "@/hooks/use-tool-storage"
 import { TryExample } from "@/components/try-example"
+
+type PairingRow = {
+  code: string
+  complement: string
+  meaningKey: string
+  complementMeaningKey: string
+  noteKey?: string
+}
+
+const PAIRING_GROUPS: { titleKey: string; rows: PairingRow[] }[] = [
+  {
+    titleKey: "tools.base-complement.pairingGroupStandard",
+    rows: [
+      { code: "A", complement: "T", meaningKey: "tools.base-complement.pairingAdenine", complementMeaningKey: "tools.base-complement.pairingThymine" },
+      { code: "T", complement: "A", meaningKey: "tools.base-complement.pairingThymine", complementMeaningKey: "tools.base-complement.pairingAdenine" },
+      { code: "G", complement: "C", meaningKey: "tools.base-complement.pairingGuanine", complementMeaningKey: "tools.base-complement.pairingCytosine" },
+      { code: "C", complement: "G", meaningKey: "tools.base-complement.pairingCytosine", complementMeaningKey: "tools.base-complement.pairingGuanine" },
+    ],
+  },
+  {
+    titleKey: "tools.base-complement.pairingGroupAmbiguous",
+    rows: [
+      { code: "R", complement: "Y", meaningKey: "tools.base-complement.pairingPurine", complementMeaningKey: "tools.base-complement.pairingPyrimidine" },
+      { code: "Y", complement: "R", meaningKey: "tools.base-complement.pairingPyrimidine", complementMeaningKey: "tools.base-complement.pairingPurine" },
+      { code: "S", complement: "S", meaningKey: "tools.base-complement.pairingStrong", complementMeaningKey: "tools.base-complement.pairingStrong", noteKey: "tools.base-complement.pairingSelfComplementary" },
+      { code: "W", complement: "W", meaningKey: "tools.base-complement.pairingWeak", complementMeaningKey: "tools.base-complement.pairingWeak", noteKey: "tools.base-complement.pairingSelfComplementary" },
+      { code: "K", complement: "M", meaningKey: "tools.base-complement.pairingKeto", complementMeaningKey: "tools.base-complement.pairingAmino" },
+      { code: "M", complement: "K", meaningKey: "tools.base-complement.pairingAmino", complementMeaningKey: "tools.base-complement.pairingKeto" },
+      { code: "B", complement: "V", meaningKey: "tools.base-complement.pairingNotA", complementMeaningKey: "tools.base-complement.pairingNotT" },
+      { code: "V", complement: "B", meaningKey: "tools.base-complement.pairingNotT", complementMeaningKey: "tools.base-complement.pairingNotA" },
+      { code: "D", complement: "H", meaningKey: "tools.base-complement.pairingNotC", complementMeaningKey: "tools.base-complement.pairingNotG" },
+      { code: "H", complement: "D", meaningKey: "tools.base-complement.pairingNotG", complementMeaningKey: "tools.base-complement.pairingNotC" },
+      { code: "N", complement: "N", meaningKey: "tools.base-complement.pairingAny", complementMeaningKey: "tools.base-complement.pairingAny", noteKey: "tools.base-complement.pairingSelfComplementary" },
+    ],
+  },
+  {
+    titleKey: "tools.base-complement.pairingGroupGap",
+    rows: [
+      { code: "-", complement: "-", meaningKey: "tools.base-complement.pairingGap", complementMeaningKey: "tools.base-complement.pairingGap", noteKey: "tools.base-complement.pairingUnchanged" },
+      { code: ".", complement: ".", meaningKey: "tools.base-complement.pairingGap", complementMeaningKey: "tools.base-complement.pairingGap", noteKey: "tools.base-complement.pairingUnchanged" },
+    ],
+  },
+]
+
+function PairingCode({ value, emphasized = false }: { value: string; emphasized?: boolean }) {
+  return (
+    <span
+      className={`inline-flex h-7 min-w-7 items-center justify-center rounded-md border px-1.5 font-mono text-sm font-medium ${
+        emphasized
+          ? "border-primary/20 bg-primary/10 text-primary"
+          : "border-border bg-muted/50 text-foreground"
+      }`}
+    >
+      {value}
+    </span>
+  )
+}
 
 export function BaseComplement() {
   const { t } = useI18n()
@@ -300,6 +358,58 @@ export function BaseComplement() {
             {output && <div>{t("tools.base-complement.outputLength")}: {output.length}</div>}
           </div>
         )}
+
+        <ToolSection
+          title={t("tools.base-complement.pairingTableTitle")}
+          description={t("tools.base-complement.pairingTableDescription")}
+        >
+          <div className="overflow-hidden rounded-md border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-card/50 hover:bg-card/50">
+                  <TableHead className="w-20 font-mono text-xs">{t("tools.base-complement.pairingCode")}</TableHead>
+                  <TableHead className="font-mono text-xs">{t("tools.base-complement.pairingMeaning")}</TableHead>
+                  <TableHead className="w-20 font-mono text-xs">{t("tools.base-complement.pairingComplement")}</TableHead>
+                  <TableHead className="font-mono text-xs">{t("tools.base-complement.pairingComplementMeaning")}</TableHead>
+                  <TableHead className="w-28 font-mono text-xs">{t("tools.base-complement.pairingNote")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {PAIRING_GROUPS.map((group) => (
+                  <Fragment key={group.titleKey}>
+                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                      <TableCell colSpan={5} className="py-2 font-mono text-xs text-muted-foreground">
+                        {t(group.titleKey)}
+                      </TableCell>
+                    </TableRow>
+                    {group.rows.map((row) => (
+                      <TableRow key={`${group.titleKey}-${row.code}`}>
+                        <TableCell>
+                          <PairingCode value={row.code} />
+                        </TableCell>
+                        <TableCell className="font-mono text-sm text-muted-foreground">
+                          {t(row.meaningKey)}
+                        </TableCell>
+                        <TableCell>
+                          <PairingCode value={row.complement} emphasized />
+                        </TableCell>
+                        <TableCell className="font-mono text-sm text-muted-foreground">
+                          {t(row.complementMeaningKey)}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {row.noteKey ? t(row.noteKey) : ""}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </Fragment>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <p className="font-mono text-sm text-muted-foreground">
+            {t("tools.base-complement.pairingTableFootnote")}
+          </p>
+        </ToolSection>
       </ToolPageContent>
     </ToolPage>
   )
