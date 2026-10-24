@@ -19,7 +19,7 @@
 | `codons.ts` | `STANDARD_CODE` / `VERT_MITO_CODE` / `translateDna` |
 | `molecular-weight.ts` | Protein free-amino-acid and OH-terminated DNA/RNA mass conventions |
 | `linear-regression.ts` | Centered OLS with finite-input, constant-X and constant-Y diagnostics |
-| `primer-dimer.ts` | Exhaustive antiparallel Watson–Crick complementarity screen |
+| `primer-dimer.ts` | Exhaustive antiparallel Watson–Crick screen with separate 3′ and duplex alignments |
 | `restriction.ts` | IUPAC recognition-site scan with 0-based inter-base cut coordinates |
 | `qpcr.ts` | Technical-replicate aggregation and equal-weight control ΔΔCt baseline |
 | `sgrna.ts` | One-base-at-a-time overlapping PAM scan on both strands |
@@ -47,7 +47,7 @@
 - 蛋白质质量使用游离氨基酸平均质量，按 `Σ质量 − (n−1)×18.01528 Da` 扣除肽键失水；仅忽略末尾 `*`，内部终止符和 `X` 不产生质量。
 - DNA/RNA 质量使用核苷酸单磷酸平均质量，按每个连接扣水，并扣除一个末端磷酸相对 OH 的 `79.96633 Da`。结果口径是未修饰、线性、单链、5′OH/3′OH；含 `N` 或其他未知碱基时拒绝计算。
 - 限制酶切口是 0-based 的碱基间坐标；环状扫描将模板按模重复以覆盖跨原点位点，并按物理切口去重。输入中的 IUPAC/未知字符不会被当作确定匹配。
-- 引物二聚体只报告穷举相对位移后的配对数、较长链归一化比例、最长连续配对和两条链的 3′端连续配对。第二条引物先反转后按 Watson–Crick 配对；该结果是筛查信号，不是 ΔG 或风险等级。
+- 引物二聚体穷举反向平行的 Watson–Crick 位移。每对引物同时保留配对数最多的双链（平局再比最长连续、3′ 之和、3′ 较大值、更小的绝对位移），以及 3′ 连续配对之和最大的比对（平局再比 3′ 较大值、配对数、最长连续、更小的绝对位移）。结构图保留完整序列，竖线只标在互补列上。重叠区一致率是配对数除以重叠长度。3′ 连续配对 ≥ 4 或最长连续配对 ≥ 8 只用于界面高亮，不是 ΔG 或风险等级。不计算 G·T、空位和发卡。
 - qPCR 先按“组别＋样本＋基因”平均技术重复孔，再按每个对照样本等权平均 ΔCt；`2^-ΔΔCt` 假定扩增效率相等且约为 100%。
 - sgRNA 按每个碱基扫描两条链，保留重叠 PAM；反链结果的位置是正链上 spacer 左端的 1-based 坐标，含未知 PAM 或 spacer 的候选会跳过并计数提示。
 - Index 自动模式在有第二列时采用组合式双 Index；组合模式只要求组合唯一，UDI 还要求两侧分别唯一。错配提示使用每侧汉明距离不超过 `2×允许错配数` 的条件，方向关系只发出警告。
