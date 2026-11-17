@@ -16,6 +16,7 @@ export const TOOL_LOADERS: Record<string, ComponentType> = {
   // sequence-analysis
   "sequence-stats": dyn(() => import("@/components/tools/sequence-stats"), "SequenceStats"),
   "base-complement": dyn(() => import("@/components/tools/base-complement"), "BaseComplement"),
+  "sequence-finder": dyn(() => import("@/components/tools/sequence-finder"), "SequenceFinder"),
   "sequence-translation-orf": dyn(() => import("@/components/tools/sequence-translation-orf"), "SequenceTranslationOrf"),
   "codon-optimizer": dyn(() => import("@/components/tools/codon-optimizer"), "CodonOptimizer"),
   "gc-skew-analyzer": dyn(() => import("@/components/tools/gc-skew-analyzer"), "GcSkewAnalyzer"),

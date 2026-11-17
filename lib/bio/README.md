@@ -13,6 +13,7 @@
 |---|---|
 | `alphabet.ts` | DNA/RNA 互补表（含 IUPAC）、氨基酸单字母↔三字母 |
 | `sequence.ts` | `cleanSequence` / `complement` / `reverseComplement` / `countBases` / `gcContent` / `atContent` / `shannonEntropy` / `parseFasta` / `parseSingleSequenceInput` / `toFasta` |
+| `sequence-finder.ts` | `normalizeSequenceFinderQuery` / `findSequenceMatches`（正向、反向、互补、反向互补四向字面查找，1-based inclusive 坐标） |
 | `coordinates.ts` | `findAllMatches` / `locateForwardPrimer` / `locateReversePrimer` / `locatePrimer` / `computeAmplicon`（引物结合区 -> 基因组坐标，1-based inclusive；报告含未知碱基而跳过的候选窗口） |
 | `tm.ts` | `tmWallace` / `tmBasicGc` / `tmSaltAdjusted` |
 | `tm-nearest-neighbor.ts` | SantaLucia/Allawi DNA/DNA nearest-neighbor Tm (`DNA_NN3`) |
@@ -56,6 +57,7 @@
 - 标准曲线和凝胶共用 `calibration.ts` 的严格数值解析与中心化 OLS；对数域输入不满足定义域、X 不变或反算斜率为零时不输出预测。指数/幂函数只做对数线性化后的正向 Y 预测。
 - 质量浓度转换使用 `g/L = mg/mL` 的等价单位链；质量可为 0，体积和分子量必须为有限正数，核酸拷贝数使用 Avogadro 常数。
 - 序列统计的 GC/AT 百分比以总序列长度为分母，Shannon 熵只用确定的 A/C/G/T 频率归一化，N 与其他 IUPAC 字符单独报告。
+- 序列查找对已知序列做字面精确匹配，不展开 IUPAC 简并；查询必须为 ACGT 且至少 8 bp，坐标相对每条 FASTA 记录起点为 1-based inclusive，四种形式可能在同一位置重叠命中。
 - pI 使用固定的 N/C 端和侧链 pKa 的 Henderson–Hasselbalch 二分近似，数值不代表所有 pKa 体系的精确结果。
 
 ## 后续 TODO

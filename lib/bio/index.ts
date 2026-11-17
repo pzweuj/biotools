@@ -1,6 +1,7 @@
 // 集中导出 — 工具组件可 import { reverseComplement, ... } from '@/lib/bio'
 export * from "./alphabet"
 export * from "./sequence"
+export * from "./sequence-finder"
 export * from "./coordinates"
 export * from "./tm"
 export * from "./tm-nearest-neighbor"

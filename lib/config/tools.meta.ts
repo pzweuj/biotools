@@ -25,6 +25,7 @@ import { PcrIcon } from "@/components/icons/pcr-icon"
 import { CurveIcon } from "@/components/icons/curve-icon"
 import { GcSkewIcon } from "@/components/icons/gc-skew-icon"
 import { PrimerCoordinateIcon } from "@/components/icons/primer-coordinate-icon"
+import { SequenceFinderIcon } from "@/components/icons/sequence-finder-icon"
 
 export const TOOL_CATEGORIES: ToolMetaCategory[] = [
   {
@@ -33,6 +34,7 @@ export const TOOL_CATEGORIES: ToolMetaCategory[] = [
     tools: [
       { id: "sequence-stats", nameKey: "tools.sequence-stats.name", descriptionKey: "tools.sequence-stats.description", category: "sequence-analysis", icon: StatsIcon },
       { id: "base-complement", nameKey: "tools.base-complement.name", descriptionKey: "tools.base-complement.description", category: "sequence-analysis", icon: DnaIcon },
+      { id: "sequence-finder", nameKey: "tools.sequence-finder.name", descriptionKey: "tools.sequence-finder.description", category: "sequence-analysis", icon: SequenceFinderIcon },
       { id: "sequence-translation-orf", nameKey: "tools.sequence-translation-orf.name", descriptionKey: "tools.sequence-translation-orf.description", category: "sequence-analysis", icon: DnaIcon },
       { id: "codon-optimizer", nameKey: "tools.codon-optimizer.name", descriptionKey: "tools.codon-optimizer.description", category: "sequence-analysis", icon: CodonOptimizerIcon },
       { id: "gc-skew-analyzer", nameKey: "tools.gc-skew.name", descriptionKey: "tools.gc-skew.description", category: "sequence-analysis", icon: GcSkewIcon },

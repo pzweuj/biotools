@@ -8,8 +8,8 @@
 
 **所有计算都在你的浏览器中本地完成** —— 序列、引物、qPCR Cq 表、VCF 等数据**永远不会**上传到服务器。
 
-- 🔒 **本地工具（27+）**：序列分析、引物 Tm、PCR、qPCR、TMB、限制酶、稀释、缓冲液… 全部在浏览器内执行。
-- 🌐 **联网工具（6 个）**：Mutalyzer、SpliceAI、TransVar、ManeLoca、DeepHPO、Warfarin 调用各自上游 API；侧边栏明确标记 `🌐 Online` 徽章。
+- 🔒 **本地工具（30 个）**：序列分析、序列查找、引物 Tm、PCR、qPCR、TMB、限制酶、稀释、缓冲液… 全部在浏览器内执行。
+- 🌐 **联网工具（7 个）**：Mutalyzer、SpliceAI、TransVar、ManeLoca、DeepHPO、Warfarin、FusionDraw 调用各自上游 API；侧边栏明确标记 `🌐 Online` 徽章。
 - 🚫 **零账号、零云存储**：没有登录、没有用户数据库、没有日志。
 - 🚫 **零 AI 入参**：项目实验性的 PageAgent 已下线，不会把你的输入交给任何大模型。
 - 📊 仅启用 [Vercel Analytics](https://vercel.com/docs/analytics) 的访问统计（PV / Web Vitals 指标），**不收集任何输入数据**。
