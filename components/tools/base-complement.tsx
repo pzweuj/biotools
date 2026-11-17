@@ -74,7 +74,7 @@ export function BaseComplement() {
   const { t } = useI18n()
   const [input, setInput] = useToolStorage("base-complement:input", "")
   const [output, setOutput] = useState("")
-  const [preserveDelimiters, setPreserveDelimiters] = useToolStorage("base-complement:preserveDelimiters", true)
+  const [preserveDelimiters, setPreserveDelimiters] = useToolStorage("base-complement:preserveDelimiters", false)
   const [copied, setCopied] = useState(false)
 
   // 完整的IUPAC碱基互补映射表
@@ -257,28 +257,33 @@ export function BaseComplement() {
         </div>
 
         {/* 分隔符处理选项 */}
-        <div className="flex items-center space-x-3 p-3 rounded-md border border-border bg-card/50">
-          <Checkbox
-            id="preserve-delimiters"
-            checked={preserveDelimiters}
-            onCheckedChange={(checked) => setPreserveDelimiters(checked as boolean)}
-            className="border-2 border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
-          <Label 
-            htmlFor="preserve-delimiters" 
-            className={`font-mono text-sm cursor-pointer transition-colors ${
-              preserveDelimiters ? 'text-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            {t("tools.base-complement.preserveDelimiters")}
-          </Label>
-          <div className={`text-xs font-mono px-2 py-1 rounded transition-colors ${
-            preserveDelimiters 
-              ? 'bg-primary/10 text-primary border border-primary/20' 
-              : 'bg-muted text-muted-foreground border border-border'
-          }`}>
-            {preserveDelimiters ? t("common.enabled", "已启用") : t("common.disabled", "已禁用")}
+        <div className="space-y-2 rounded-md border border-border bg-card/50 p-3">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="preserve-delimiters"
+              checked={preserveDelimiters}
+              onCheckedChange={(checked) => setPreserveDelimiters(checked as boolean)}
+              className="border-2 border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+            <Label 
+              htmlFor="preserve-delimiters" 
+              className={`font-mono text-sm cursor-pointer transition-colors ${
+                preserveDelimiters ? 'text-foreground' : 'text-muted-foreground'
+              }`}
+            >
+              {t("tools.base-complement.preserveDelimiters")}
+            </Label>
+            <div className={`text-xs font-mono px-2 py-1 rounded transition-colors ${
+              preserveDelimiters 
+                ? 'bg-primary/10 text-primary border border-primary/20' 
+                : 'bg-muted text-muted-foreground border border-border'
+            }`}>
+              {preserveDelimiters ? t("common.enabled", "已启用") : t("common.disabled", "已禁用")}
+            </div>
           </div>
+          <p className="text-xs leading-5 text-muted-foreground">
+            {t("tools.base-complement.preserveDelimitersHint")}
+          </p>
         </div>
 
         {/* 操作按钮 */}
@@ -296,7 +301,7 @@ export function BaseComplement() {
             {t("common.clear")}
           </Button>
           <TryExample
-            example={{ input: "ATCGTACGTTAGCATCGATCG\nTAGCTAGCTAGCTAGCTGCTA", preserveDelimiters: true }}
+            example={{ input: "ATCGTACGTTAGCATCGATCG\nTAGCTAGCTAGCTAGCTGCTA" }}
             onApply={handleTryExample}
           />
         </div>
